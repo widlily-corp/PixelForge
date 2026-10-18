@@ -76,6 +76,21 @@ public partial class MainWindow : Window
         }
     }
 
+    private IBrush GetBrush(string resourceKey, IBrush fallback)
+    {
+        if (this.TryFindResource(resourceKey, out var res) && res is IBrush b)
+        {
+            return b;
+        }
+
+        if (Application.Current != null && Application.Current.TryFindResource(resourceKey, out var appRes) && appRes is IBrush ab)
+        {
+            return ab;
+        }
+
+        return fallback;
+    }
+
     private void UpdateActiveToolHighlight()
     {
         if (ViewModel == null)
@@ -84,8 +99,8 @@ public partial class MainWindow : Window
         }
 
         var activeTool = ViewModel.ToolViewModel.ActiveTool;
-        var highlightBrush = (IBrush)this.FindResource("AccentPrimaryBrush")!;
-        var subtleBorderBrush = (IBrush)this.FindResource("BorderSubtleBrush")!;
+        var highlightBrush = GetBrush("AccentPrimaryBrush", Brushes.DodgerBlue);
+        var subtleBorderBrush = GetBrush("BorderSubtleBrush", Brushes.DimGray);
 
         SetButtonHighlight(ToolPencilButton, activeTool == CanvasToolType.Pencil, highlightBrush, subtleBorderBrush);
         SetButtonHighlight(ToolEraserButton, activeTool == CanvasToolType.Eraser, highlightBrush, subtleBorderBrush);
@@ -137,7 +152,7 @@ public partial class MainWindow : Window
             Height = 290,
             CanResize = false,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            Background = (IBrush)this.FindResource("SurfaceBaseBrush")!,
+            Background = GetBrush("SurfaceBaseBrush", new SolidColorBrush(Color.Parse("#1A1D27"))),
             Content = new Border
             {
                 Padding = new Thickness(24),
@@ -154,21 +169,21 @@ public partial class MainWindow : Window
                             FontSize = 24,
                             FontWeight = FontWeight.Bold,
                             HorizontalAlignment = HorizontalAlignment.Center,
-                            Foreground = (IBrush)this.FindResource("TextPrimaryBrush")!
+                            Foreground = GetBrush("TextPrimaryBrush", Brushes.White)
                         },
                         new TextBlock
                         {
                             Text = "Версия 0.0.1",
                             FontSize = 14,
                             FontWeight = FontWeight.SemiBold,
-                            Foreground = (IBrush)this.FindResource("AccentPrimaryBrush")!,
+                            Foreground = GetBrush("AccentPrimaryBrush", Brushes.DodgerBlue),
                             HorizontalAlignment = HorizontalAlignment.Center
                         },
                         new TextBlock
                         {
                             Text = "Современный и быстрый редактор пиксель-арта на .NET 8 и Avalonia UI с поддержкой SkiaSharp, слоев и симметрии.",
                             FontSize = 12,
-                            Foreground = (IBrush)this.FindResource("TextSecondaryBrush")!,
+                            Foreground = GetBrush("TextSecondaryBrush", Brushes.LightGray),
                             TextWrapping = TextWrapping.Wrap,
                             TextAlignment = TextAlignment.Center
                         },
@@ -176,7 +191,7 @@ public partial class MainWindow : Window
                         {
                             Text = "Copyright © 2026 widlily-corp. Лицензия Apache-2.0.",
                             FontSize = 11,
-                            Foreground = (IBrush)this.FindResource("TextMutedBrush")!,
+                            Foreground = GetBrush("TextMutedBrush", Brushes.Gray),
                             HorizontalAlignment = HorizontalAlignment.Center
                         }
                     }

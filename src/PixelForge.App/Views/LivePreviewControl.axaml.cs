@@ -141,18 +141,37 @@ public partial class LivePreviewControl : UserControl
         UpdateDisplaySize();
     }
 
+    private IBrush GetBrush(string resourceKey, IBrush fallback)
+    {
+        if (this.TryFindResource(resourceKey, out var res) && res is IBrush b)
+        {
+            return b;
+        }
+
+        if (Application.Current != null && Application.Current.TryFindResource(resourceKey, out var appRes) && appRes is IBrush ab)
+        {
+            return ab;
+        }
+
+        return fallback;
+    }
+
     private void SetScale(int scale)
     {
         _scale = scale;
 
-        Scale1xButton.Background = scale == 1 ? (IBrush)this.FindResource("AccentPrimaryBrush")! : (IBrush)this.FindResource("SurfacePanelBrush")!;
-        Scale1xButton.Foreground = scale == 1 ? Brushes.Black : (IBrush)this.FindResource("TextSecondaryBrush")!;
+        var accent = GetBrush("AccentPrimaryBrush", Brushes.DodgerBlue);
+        var panel = GetBrush("SurfacePanelBrush", new SolidColorBrush(Color.Parse("#202330")));
+        var textSec = GetBrush("TextSecondaryBrush", Brushes.LightGray);
 
-        Scale2xButton.Background = scale == 2 ? (IBrush)this.FindResource("AccentPrimaryBrush")! : (IBrush)this.FindResource("SurfacePanelBrush")!;
-        Scale2xButton.Foreground = scale == 2 ? Brushes.Black : (IBrush)this.FindResource("TextSecondaryBrush")!;
+        Scale1xButton.Background = scale == 1 ? accent : panel;
+        Scale1xButton.Foreground = scale == 1 ? Brushes.Black : textSec;
 
-        Scale4xButton.Background = scale == 4 ? (IBrush)this.FindResource("AccentPrimaryBrush")! : (IBrush)this.FindResource("SurfacePanelBrush")!;
-        Scale4xButton.Foreground = scale == 4 ? Brushes.Black : (IBrush)this.FindResource("TextSecondaryBrush")!;
+        Scale2xButton.Background = scale == 2 ? accent : panel;
+        Scale2xButton.Foreground = scale == 2 ? Brushes.Black : textSec;
+
+        Scale4xButton.Background = scale == 4 ? accent : panel;
+        Scale4xButton.Foreground = scale == 4 ? Brushes.Black : textSec;
 
         UpdateDisplaySize();
     }

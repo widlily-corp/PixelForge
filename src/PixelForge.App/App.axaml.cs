@@ -1,4 +1,3 @@
-using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -28,15 +27,10 @@ public partial class App : Application
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            var mainWindowType = Assembly.GetExecutingAssembly().GetType("PixelForge.App.Views.MainWindow")
-                              ?? Assembly.GetExecutingAssembly().GetType("PixelForge.App.MainWindow");
-
-            if (mainWindowType != null)
+            desktop.MainWindow = new PixelForge.App.Views.MainWindow
             {
-                var window = (Window)Activator.CreateInstance(mainWindowType)!;
-                window.DataContext = Services.GetRequiredService<MainViewModel>();
-                desktop.MainWindow = window;
-            }
+                DataContext = Services.GetRequiredService<MainViewModel>()
+            };
         }
 
         base.OnFrameworkInitializationCompleted();

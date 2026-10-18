@@ -267,10 +267,27 @@ public partial class ColorPickerView : UserControl
         }
     }
 
+    private IBrush GetBrush(string resourceKey, IBrush fallback)
+    {
+        if (this.TryFindResource(resourceKey, out var res) && res is IBrush b)
+        {
+            return b;
+        }
+
+        if (Application.Current != null && Application.Current.TryFindResource(resourceKey, out var appRes) && appRes is IBrush ab)
+        {
+            return ab;
+        }
+
+        return fallback;
+    }
+
     private void RebuildSwatches()
     {
         PaletteWrapPanel.Children.Clear();
         ColorCountText.Text = $"{_currentPalette.Count} цветов";
+
+        var borderBrush = GetBrush("BorderSubtleBrush", new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)));
 
         foreach (var color in _currentPalette)
         {
@@ -281,7 +298,7 @@ public partial class ColorPickerView : UserControl
                 Margin = new Thickness(2),
                 CornerRadius = new CornerRadius(3),
                 Background = new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B)),
-                BorderBrush = (IBrush)this.FindResource("BorderSubtleBrush")!,
+                BorderBrush = borderBrush,
                 BorderThickness = new Thickness(1),
                 Cursor = new Cursor(StandardCursorType.Hand)
             };
