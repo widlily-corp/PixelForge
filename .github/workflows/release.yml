@@ -1,0 +1,132 @@
+name: Release
+
+on:
+  push:
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish-release:
+    name: Build & Publish Release
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore PixelForge.sln
+
+      - name: Build Solution (Release)
+        run: dotnet build PixelForge.sln -c Release --no-restore /warnaserror
+
+      - name: Run Unit Tests
+        run: dotnet test tests/PixelForge.Core.Tests/PixelForge.Core.Tests.csproj -c Release --no-build --verbosity minimal
+
+      - name: Package Inno Setup Installer & Clean Notes
+        id: prep_release
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $version = if ($tag -and $tag.StartsWith("v")) { $tag.Substring(1) } else { "0.1.0" }
+          Write-Host "Publishing PixelForge Release v$version..."
+
+          # 1. Clean previous release notes, keep only current
+          Get-ChildItem -Path . -Filter "RELEASE_NOTES_v*.md" | Where-Object { $_.Name -ne "RELEASE_NOTES_v${version}.md" } | Remove-Item -Force -ErrorAction SilentlyContinue
+
+          # 2. Publish to staging directory
+          $stagingDir = "publish/staging"
+          if (Test-Path $stagingDir) { Remove-Item -Path $stagingDir -Recurse -Force }
+          New-Item -ItemType Directory -Path $stagingDir -Force | Out-Null
+          New-Item -ItemType Directory -Path "publish/win-x64" -Force | Out-Null
+
+          dotnet publish src/PixelForge.App/PixelForge.App.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained `
+            -p:PublishSingleFile=false `
+            -p:DebugType=none `
+            -p:DebugSymbols=false `
+            -p:Version=$version `
+            -p:AssemblyVersion=$version `
+            -p:FileVersion=$version `
+            -o $stagingDir
+
+          # 3. Clean PDBs and XML docs
+          Get-ChildItem -Path $stagingDir -Include *.pdb,*.xml -Recurse -ErrorAction SilentlyContinue | Remove-Item -Force
+
+          # 4. Compile Inno Setup installer
+          $iscc = (Get-Command iscc -ErrorAction SilentlyContinue)?.Source
+          if (-not $iscc) { $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" }
+          if (-not (Test-Path $iscc)) { $iscc = "C:\Program Files\Inno Setup 6\ISCC.exe" }
+
+          $absStaging = [System.IO.Path]::GetFullPath($stagingDir)
+          $absOutput = [System.IO.Path]::GetFullPath("publish/win-x64")
+
+          & "$iscc" /Qp "/DAppVersion=$version" "/DSourceDir=$absStaging" "/DOutputDir=$absOutput" installer/PixelForge.iss
+          Remove-Item -Path $stagingDir -Recurse -Force
+
+          # 5. Compute SHA-256 and generate latest.json manifest
+          $setupExe = "publish/win-x64/PixelForge_${version}_x64-setup.exe"
+          $setupHash = (Get-FileHash -Path $setupExe -Algorithm SHA256).Hash.ToLower()
+          $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+
+          $notes = "PixelForge v$version update released."
+          if (Test-Path "RELEASE_NOTES_v$version.md") {
+              $notes = Get-Content -Path "RELEASE_NOTES_v$version.md" -Raw
+          } elseif (Test-Path "RELEASE_NOTES.md") {
+              $notes = Get-Content -Path "RELEASE_NOTES.md" -Raw
+          }
+
+          $manifest = [ordered]@{
+              version   = $version
+              notes     = $notes
+              pub_date  = $timestamp
+              platforms = [ordered]@{
+                  "windows-x86_64" = [ordered]@{
+                      url       = "https://github.com/widlily-corp/PixelForge/releases/download/v$version/PixelForge_${version}_x64-setup.exe"
+                      signature = ""
+                  }
+                  "windows-x86_64-setup" = [ordered]@{
+                      url       = "https://github.com/widlily-corp/PixelForge/releases/download/v$version/PixelForge_${version}_x64-setup.exe"
+                      signature = ""
+                  }
+              }
+              sha256    = $setupHash
+              downloadUrl = "https://github.com/widlily-corp/PixelForge/releases/download/v$version/PixelForge_${version}_x64-setup.exe"
+          } | ConvertTo-Json -Depth 5
+
+          Set-Content -Path "publish/win-x64/latest.json" -Value $manifest -Encoding UTF8
+          Write-Host "Generated latest.json manifest."
+
+          # Output body to GitHub step output
+          $delimiter = [System.Guid]::NewGuid().ToString()
+          "body<<$delimiter" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          $notes | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "$delimiter" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+      - name: Upload Published Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: PixelForge-win-x64
+          path: publish/win-x64/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            publish/win-x64/PixelForge_*_x64-setup.exe
+            publish/win-x64/latest.json
+          name: PixelForge ${{ github.ref_name }}
+          body: ${{ steps.prep_release.outputs.body }}
+          generate_release_notes: true
+          draft: false
+          prerelease: false
