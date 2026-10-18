@@ -31,4 +31,4 @@ jobs:
         run: dotnet build PixelForge.sln -c Release --no-restore /warnaserror
 
       - name: Run Unit Tests
-        run: dotnet test tests/PixelForge.Core.Tests/PixelForge.Core.Tests.csproj -c Release --no-build --verbosity normal
+        run: dotnet test PixelForge.sln -c Release --no-build --verbosity normal

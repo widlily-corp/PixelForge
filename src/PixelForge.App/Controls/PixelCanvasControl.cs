@@ -6,6 +6,7 @@ using Avalonia.Media;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
 using Avalonia.Threading;
+using PixelForge.App.Services;
 using PixelForge.App.ViewModels;
 using PixelForge.Core.History;
 using PixelForge.Core.Models;
@@ -256,7 +257,16 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
 
     void IDisposable.Dispose()
     {
+        // Reusable Skia paints and composite buffers are retained across frames for the lifetime
+        // of PixelCanvasControl. Avalonia calls ICustomDrawOperation.Dispose() at the conclusion
+        // of every frame; disposing them here causes an AccessViolationException on frame 2.
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
         _compositeBitmap?.Dispose();
+        _compositeBitmap = null;
         _checkerboardPaint.Dispose();
         _bitmapPaint.Dispose();
         _gridPaint.Dispose();
@@ -285,47 +295,56 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         float destH = canvasH * zoom;
         var destRect = new SKRect(_panX, _panY, _panX + destW, _panY + destH);
 
-        canvas.Save();
-
-        // 1. Checkerboard transparency background
-        canvas.DrawRect(destRect, _checkerboardPaint);
-
-        // 2. Offscreen composite of layers with SKFilterQuality.None (Nearest Neighbor)
-        EnsureCompositeUpdated(vm.Canvas);
-        if (_compositeBitmap != null)
+        int saveCount = canvas.Save();
+        try
         {
-            canvas.DrawBitmap(_compositeBitmap, destRect, _bitmapPaint);
+            // 1. Checkerboard transparency background
+            canvas.DrawRect(destRect, _checkerboardPaint);
+
+            // 2. Offscreen composite of layers with SKFilterQuality.None (Nearest Neighbor)
+            EnsureCompositeUpdated(vm.Canvas);
+            if (_compositeBitmap != null)
+            {
+                canvas.DrawBitmap(_compositeBitmap, destRect, _bitmapPaint);
+            }
+
+            // 3. Tool live preview overlay (e.g. current shape, line, selection)
+            RenderToolPreview(canvas, destRect, zoom);
+
+            // 4. Adaptive pixel grid when zoom >= 4x
+            if (vm.ShowGrid && zoom >= 4f)
+            {
+                RenderPixelGrid(canvas, destRect, canvasW, canvasH, zoom);
+            }
+
+            // 5. Symmetry axes X / Y
+            if (vm.ShowSymmetryX || vm.ShowSymmetryY)
+            {
+                RenderSymmetryAxes(canvas, destRect, canvasW, canvasH, zoom, vm.ShowSymmetryX, vm.ShowSymmetryY);
+            }
+
+            // 6. Selection outline (marching ants)
+            if (vm.Selection.IsActive)
+            {
+                RenderSelectionMarquee(canvas, destRect, zoom, vm.Selection);
+            }
+
+            // 7. Hover cursor pixel outline
+            if (_isHovering && _currentHoverPixelX >= 0 && _currentHoverPixelX < canvasW &&
+                _currentHoverPixelY >= 0 && _currentHoverPixelY < canvasH && !_isDrawing)
+            {
+                RenderCursorHover(canvas, destRect, zoom);
+            }
         }
-
-        // 3. Tool live preview overlay (e.g. current shape, line, selection)
-        RenderToolPreview(canvas, destRect, zoom);
-
-        // 4. Adaptive pixel grid when zoom >= 4x
-        if (vm.ShowGrid && zoom >= 4f)
+        catch (Exception ex)
         {
-            RenderPixelGrid(canvas, destRect, canvasW, canvasH, zoom);
+            AppLogger.LogError("PixelCanvasControl", "Exception occurred during Skia canvas render pass", ex);
+            CrashReportService.Instance.CaptureCrash(ex, "PixelCanvasControl.Render", isTerminating: false);
         }
-
-        // 5. Symmetry axes X / Y
-        if (vm.ShowSymmetryX || vm.ShowSymmetryY)
+        finally
         {
-            RenderSymmetryAxes(canvas, destRect, canvasW, canvasH, zoom, vm.ShowSymmetryX, vm.ShowSymmetryY);
+            canvas.RestoreToCount(saveCount);
         }
-
-        // 6. Selection outline (marching ants)
-        if (vm.Selection.IsActive)
-        {
-            RenderSelectionMarquee(canvas, destRect, zoom, vm.Selection);
-        }
-
-        // 7. Hover cursor pixel outline
-        if (_isHovering && _currentHoverPixelX >= 0 && _currentHoverPixelX < canvasW &&
-            _currentHoverPixelY >= 0 && _currentHoverPixelY < canvasH && !_isDrawing)
-        {
-            RenderCursorHover(canvas, destRect, zoom);
-        }
-
-        canvas.Restore();
     }
 
     private void EnsureCompositeUpdated(PixelCanvas pixelCanvas)
@@ -346,18 +365,14 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         {
             pixelCanvas.GetCompositePixels(_compositePixels);
 
-            var pin = GCHandle.Alloc(_compositePixels, GCHandleType.Pinned);
-            try
+            unsafe
             {
-                _compositeBitmap.InstallPixels(
-                    new SKImageInfo(w, h, SKColorType.Rgba8888, SKAlphaType.Unpremul),
-                    pin.AddrOfPinnedObject(),
-                    w * 4);
+                fixed (PixelColor* src = _compositePixels)
+                {
+                    Buffer.MemoryCopy(src, (void*)_compositeBitmap.GetPixels(), (long)total * 4, (long)total * 4);
+                }
             }
-            finally
-            {
-                pin.Free();
-            }
+            _compositeBitmap.NotifyPixelsChanged();
 
             _isDirtyComposite = false;
         }

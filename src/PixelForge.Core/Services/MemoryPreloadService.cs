@@ -178,11 +178,26 @@ public class MemoryPreloadService : IMemoryPreloadService
                 break;
             }
 
-            // Check if page is committed and readable
-            bool isCommitted = (mbi.State & MEM_COMMIT) != 0;
-            bool isAccessible = (mbi.Protect & PAGE_NOACCESS) == 0 && (mbi.Protect & PAGE_GUARD) == 0;
+            const uint PAGE_READONLY = 0x02;
+            const uint PAGE_READWRITE = 0x04;
+            const uint PAGE_WRITECOPY = 0x08;
+            const uint PAGE_EXECUTE_READ = 0x20;
+            const uint PAGE_EXECUTE_READWRITE = 0x40;
+            const uint PAGE_EXECUTE_WRITECOPY = 0x80;
 
-            if (isCommitted && isAccessible)
+            uint baseProtect = mbi.Protect & 0xFF;
+            bool isCommitted = (mbi.State & MEM_COMMIT) != 0;
+            bool isGuard = (mbi.Protect & PAGE_GUARD) != 0;
+            bool isNoAccess = (mbi.Protect & PAGE_NOACCESS) != 0;
+            bool isReadable = !isGuard && !isNoAccess &&
+                              (baseProtect == PAGE_READONLY ||
+                               baseProtect == PAGE_READWRITE ||
+                               baseProtect == PAGE_WRITECOPY ||
+                               baseProtect == PAGE_EXECUTE_READ ||
+                               baseProtect == PAGE_EXECUTE_READWRITE ||
+                               baseProtect == PAGE_EXECUTE_WRITECOPY);
+
+            if (isCommitted && isReadable)
             {
                 try
                 {

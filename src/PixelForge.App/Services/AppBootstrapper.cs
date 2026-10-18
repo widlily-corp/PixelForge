@@ -115,6 +115,7 @@ public class AppBootstrapper
         services.AddSingleton<IClipboardService, ClipboardService>();
         services.AddSingleton<IUpdateService, UpdateService>();
         services.AddSingleton<IMemoryPreloadService>(_ => MemoryPreloadService.Instance);
+        services.AddSingleton<ICrashReportService>(_ => CrashReportService.Instance);
         services.AddSingleton<ThemeService>();
         services.AddSingleton<UndoRedoService>();
         services.AddSingleton<MainViewModel>();

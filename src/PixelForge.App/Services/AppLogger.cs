@@ -166,11 +166,27 @@ public static class AppLogger
     {
         var ex = e.ExceptionObject as Exception;
         LogFatal("CrashHandler", $"Unhandled AppDomain Exception encountered! IsTerminating={e.IsTerminating}", ex);
+        try
+        {
+            CrashReportService.Instance.CaptureCrash(ex, "AppDomain.UnhandledException", e.IsTerminating);
+        }
+        catch
+        {
+            // Survive secondary faults
+        }
     }
 
     private static void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
     {
         LogError("CrashHandler", "Unobserved Task Exception encountered!", e.Exception);
+        try
+        {
+            CrashReportService.Instance.CaptureCrash(e.Exception, "TaskScheduler.UnobservedTaskException", false);
+        }
+        catch
+        {
+            // Survive secondary faults
+        }
         e.SetObserved();
     }
 
