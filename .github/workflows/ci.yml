@@ -44,46 +44,53 @@ jobs:
           -p:IncludeNativeLibrariesForSelfExtract=true
           -o publish/win-x64
 
-      - name: Create ZIP Package
+      - name: Prepare Release Artifacts (WiScripts Standard)
         shell: pwsh
         run: |
-          Compress-Archive -Path "publish/win-x64/PixelForge.App.exe", "README.md", "LICENSE", "NOTICE" -DestinationPath "publish/win-x64/PixelForge-win-x64.zip" -Force
+          $tag = "${{ github.ref_name }}"
+          $version = if ($tag -and $tag.StartsWith("v")) { $tag.Substring(1) } else { "0.0.1" }
+          
+          # Copy to canonical installer and portable names
+          Copy-Item "publish/win-x64/PixelForge.App.exe" -Destination "publish/win-x64/PixelForge_${version}_x64-setup.exe" -Force
+          Copy-Item "publish/win-x64/PixelForge.App.exe" -Destination "publish/win-x64/PixelForge.exe" -Force
 
-      - name: Generate latest.json Release Manifest
-        shell: pwsh
-        run: |
-          $exePath = "publish/win-x64/PixelForge.App.exe"
-          $zipPath = "publish/win-x64/PixelForge-win-x64.zip"
-          if (Test-Path $exePath) {
-              $exeHash = (Get-FileHash -Path $exePath -Algorithm SHA256).Hash.ToLower()
-          } else {
-              $exeHash = "none"
-          }
-          if (Test-Path $zipPath) {
-              $zipHash = (Get-FileHash -Path $zipPath -Algorithm SHA256).Hash.ToLower()
-          } else {
-              $zipHash = "none"
+          # Compute SHA-256
+          $setupHash = (Get-FileHash -Path "publish/win-x64/PixelForge_${version}_x64-setup.exe" -Algorithm SHA256).Hash.ToLower()
+          $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+          
+          # Check for release notes file
+          $notes = "PixelForge v$version update released."
+          if (Test-Path "RELEASE_NOTES_v$version.md") {
+              $notes = Get-Content -Path "RELEASE_NOTES_v$version.md" -Raw
+          } elseif (Test-Path "RELEASE_NOTES.md") {
+              $notes = Get-Content -Path "RELEASE_NOTES.md" -Raw
           }
 
-          $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
           $manifest = [ordered]@{
-              version      = "0.0.1"
-              releaseDate  = $timestamp
-              releaseNotes = "Релиз PixelForge v0.0.1: слои, инструменты пиксель-арта, симметрия X/Y, Live Preview 1x, палитры и Skia-рендеринг"
-              downloadUrl  = "https://github.com/widlily-corp/PixelForge/releases/download/v0.0.1/PixelForge-win-x64.zip"
-              exeSha256    = $exeHash
-              zipSha256    = $zipHash
-          }
+              version   = $version
+              notes     = $notes
+              pub_date  = $timestamp
+              platforms = [ordered]@{
+                  "windows-x86_64" = [ordered]@{
+                      url       = "https://github.com/widlily-corp/PixelForge/releases/download/v$version/PixelForge_${version}_x64-setup.exe"
+                      signature = ""
+                  }
+                  "windows-x86_64-setup" = [ordered]@{
+                      url       = "https://github.com/widlily-corp/PixelForge/releases/download/v$version/PixelForge_${version}_x64-setup.exe"
+                      signature = ""
+                  }
+              }
+              sha256    = $setupHash
+              downloadUrl = "https://github.com/widlily-corp/PixelForge/releases/download/v$version/PixelForge_${version}_x64-setup.exe"
+          } | ConvertTo-Json -Depth 5
 
-          $json = $manifest | ConvertTo-Json -Depth 4
-          Set-Content -Path "publish/win-x64/latest.json" -Value $json -Encoding UTF8
-          Write-Host "Generated latest.json:"
-          Write-Host $json
+          Set-Content -Path "publish/win-x64/latest.json" -Value $manifest -Encoding UTF8
+          Write-Host "Generated WiScripts-compliant latest.json manifest."
 
       - name: Upload Published Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: PixelForge-win-x64-v0.0.1
+          name: PixelForge-win-x64
           path: publish/win-x64/
 
       - name: Create GitHub Release
@@ -91,10 +98,10 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            publish/win-x64/PixelForge.App.exe
-            publish/win-x64/PixelForge-win-x64.zip
+            publish/win-x64/PixelForge_*_x64-setup.exe
+            publish/win-x64/PixelForge.exe
             publish/win-x64/latest.json
           name: PixelForge ${{ github.ref_name }}
+          body_path: RELEASE_NOTES_${{ github.ref_name }}.md
           draft: false
           prerelease: false
-          generate_release_notes: true
