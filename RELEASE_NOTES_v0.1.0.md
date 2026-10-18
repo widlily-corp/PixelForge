@@ -2,7 +2,7 @@
 
 We are excited to announce **PixelForge Windows v0.1.0** — our major performance and packaging upgrade!
 
-This release introduces full RAM working set residency, pre-JIT compiled hot paths, an Adobe-style splash screen with real subsystem preloading, and a compact LZMA2 ultra-compressed Windows installer (reducing download size from 73+ MB to 35 MB).
+This release introduces full RAM working set residency, pre-JIT compiled hot paths, a high-performance startup splash screen with real-time subsystem preloading, and a compact LZMA2 ultra-compressed Windows installer (reducing download size from 73+ MB to 35 MB).
 
 ---
 
@@ -19,7 +19,7 @@ This release introduces full RAM working set residency, pre-JIT compiled hot pat
 - **Off-screen Graphics Warm-up**: Pre-exercises SkiaSharp 2D rasterizer pipelines, shaders, and font glyph tables before presenting the main interface, eliminating the first-draw stutter.
 - **Optimized Garbage Collection**: Workstation concurrent GC enabled (`<ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>`) for consistent 60+ FPS without frame drops.
 
-### 3. 🎨 Adobe-Style Real Startup Splash Screen (`SplashWindow`)
+### 3. 🎨 High-Performance Startup Splash Screen (`SplashWindow`)
 - **Professional Studio Design**: Borderless, sleek widescreen dark studio card (`#12131C`) with subtle radial gradients, glowing cyan accents (`#00D2FF`), and branding typography.
 - **Real-Time Subsystem Progress**: Dynamic progress bar (0%..100%) reporting genuine initialization milestones:
   - Working set expansion & RAM locking

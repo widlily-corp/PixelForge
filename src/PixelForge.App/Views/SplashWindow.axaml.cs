@@ -5,7 +5,7 @@ using PixelForge.Core.Services;
 namespace PixelForge.App.Views;
 
 /// <summary>
-/// Professional Adobe-style splash window that displays real-time subsystem
+/// Professional high-performance splash window that displays real-time subsystem
 /// initialization, memory preloading, and component preheating progress.
 /// </summary>
 public partial class SplashWindow : Window

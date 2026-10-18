@@ -105,7 +105,7 @@
                 </StackPanel>
             </StackPanel>
 
-            <!-- Bottom Progress & Adobe-Style Loading Status -->
+            <!-- Bottom Progress & Real-Time Loading Status -->
             <Border Grid.Row="1"
                     Background="#161924"
                     BorderBrush="#252A3C"

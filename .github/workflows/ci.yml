@@ -90,6 +90,9 @@ jobs:
               $notes = Get-Content -Path "RELEASE_NOTES.md" -Raw
           }
 
+          # Clean up older release notes files
+          Get-ChildItem -Path . -Filter "RELEASE_NOTES_v*.md" | Where-Object { $_.Name -ne "RELEASE_NOTES_v${version}.md" } | Remove-Item -Force -ErrorAction SilentlyContinue
+
           $manifest = [ordered]@{
               version   = $version
               notes     = $notes

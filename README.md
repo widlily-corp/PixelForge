@@ -5,101 +5,119 @@
 </p>
 
 <p align="center">
-  <strong>Современный, быстрый и отзывчивый редактор пиксель-арта для настольных систем</strong>
+  <strong>Современный, высокопроизводительный аппаратно-ускоренный редактор пиксель-арта для настольных систем</strong>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.0.1-blue.svg" alt="Version 0.0.1" />
+  <img src="https://img.shields.io/badge/version-0.1.0-blue.svg" alt="Version 0.1.0" />
   <img src="https://img.shields.io/badge/.NET-8.0-purple.svg" alt=".NET 8.0" />
   <img src="https://img.shields.io/badge/Avalonia-11.1.3-informational.svg" alt="Avalonia 11" />
   <img src="https://img.shields.io/badge/Rendering-SkiaSharp-orange.svg" alt="SkiaSharp" />
+  <img src="https://img.shields.io/badge/Installer-Inno%20Setup%20LZMA2-brightgreen.svg" alt="Inno Setup LZMA2" />
   <img src="https://img.shields.io/badge/License-Apache--2.0-green.svg" alt="Apache 2.0 License" />
   <img src="https://img.shields.io/badge/Platform-Windows%20x64-lightgrey.svg" alt="Windows x64" />
 </p>
 
 ---
 
-## 🎨 Возможности
+## 🚀 Ключевые возможности v0.1.0
 
-- **Многослойный холст:**
-  - Неограниченное число слоев, регулировка прозрачности (0–100%), включение/выключение видимости, слияние слоев вниз (`Merge Down`), дублирование.
-- **Аппаратно-ускоренный рендеринг SkiaSharp:**
-  - Плавное панорамирование и масштабирование (1x..32x) с центрированием на курсоре мыши.
-  - Режим `NearestNeighbor` без размытия пикселей.
-  - Адаптивная пиксельная сетка при зуме ≥ 4x.
-- **Полный набор инструментов пиксель-арта:**
-  - **Карандаш (B):** Непрерывный штрих с интерполяцией Брезенхейма.
-  - **Ластик (E):** Очистка пикселей до прозрачности.
-  - **Заливка (G):** Быстрый алгоритм Flood Fill связных областей.
-  - **Пипетка (I):** Мгновенное взятие цвета с активного слоя или композита.
-  - **Линия (L):** Прямые линии с предпросмотром при перетаскивании.
-  - **Прямоугольник (R/U):** Контурные и залитые прямоугольники.
-  - **Эллипс (C):** Симметричные окружности и эллипсы (Midpoint-алгоритм).
-  - **Выделение (S/M):** Прямоугольная область с поддержкой перемещения, вырезания, копирования и вставки.
-- **Симметричное рисование в реальном времени:**
-  - Зеркальное отражение по оси X (горизонталь) и по оси Y (вертикаль) для всех инструментов рисования.
-- **Live Preview 1x:**
-  - Нативная панель предпросмотра арта в истинном масштабе 1:1 на шахматном фоне прозрачности с возможностью быстрого переключения в 2x и 4x.
-- **Палитра и ColorPicker:**
-  - RGBA слайдеры с визуальной индикацией значений.
-  - Ввод цвета в шестнадцатеричном формате (`#RRGGBB` / `#AARRGGBB`).
-  - Быстрая смена основного и фонового цветов (`X`).
-  - Встроенные ретро-палитры: **DawnBringer 32 (Default 32)**, **PICO-8 (16)**, **GameBoy (4)**, **NES (54)**.
-  - Добавление пользовательских цветов в палитру на лету.
-- **Разреженная история действий (Undo/Redo):**
-  - Экономия памяти: сохраняются только измененные пиксели (`PixelDelta`), а не копии холста.
-- **Файловый формат и экспорт:**
-  - Собственный формат `.pxproj` (JSON с base64-кодированными буферами слоев и палитрой).
-  - Фоновое автосохранение с защитой от сбоев.
-  - Экспорт в **PNG** (с сохранением альфа-канала) и **BMP**.
-- **Темы оформления:**
-  - Темная тема (Dark Theme) по умолчанию и светлая тема (Light Theme) с переключением в меню.
-- **OTA-обновления:**
-  - Проверка обновлений через GitHub Releases (`latest.json`) при старте и по кнопке в меню «Справка».
+### 🧠 Полная выгрузка в ОЗУ (Zero-Paging RAM Resident)
+- **High-Priority Working Set:** Вызов Win32 `SetProcessWorkingSetSize` выделяет приложению рабочий набор от 256 МБ до 1024 МБ в физической ОЗУ.
+- **Предварительный Pre-faulting страниц:** Модуль `MemoryPreloadService` при старте обходит все 4КБ страницы памяти загруженных сборок и нативных библиотек (`libSkiaSharp.dll`, Avalonia, PixelForge), гарантируя 100% резидентность кода в памяти без задержек дискового свопа.
+- **Блокировка страниц (`VirtualLock`):** Защита критических страниц памяти процесса от вытеснения в файл подкачки Windows.
+- **Опережающая JIT-компиляция (Pre-JIT):** Компиляция всех методов критических типов (`RuntimeHelpers.PrepareMethod`) при старте приложения исключает микрофризы во время рисования.
+
+### 🎨 Экран запуска студии с реальной предзагрузкой (`SplashWindow`)
+- **Профессиональный дизайн:** Темная студийная тема (`#12131C`) с неоновыми акцентами (`#00D2FF` / `#818CF8`) и индикацией прогресса.
+- **Динамический прогресс-бар (0% → 100%):** Отображает реальное состояние инициализации подсистем:
+  1. Выделение и фиксация рабочего набора ОЗУ;
+  2. Загрузка страниц сборок и нативных библиотек;
+  3. Pre-JIT компиляция горячих путей рендеринга и истории;
+  4. Прогрев графического конвейера SkiaSharp;
+  5. Кэширование палитр и матрицы инструментов;
+  6. Подготовка рабочего пространства студии.
+- **Асинхронный запуск (`AppBootstrapper`):** Бесшовный переход к рабочему окну без подвисания интерфейса.
+
+### ⚡ Высокопроизводительный конвейер SkiaSharp (60+ FPS)
+- **ReadyToRun & Tiered PGO:** Включена опережающая AOT-компиляция машинного кода под x64 и многопоточный GC рабочей станции.
+- **Прогрев графического пайплайна (Pipeline Warm-up):** Предварительный оффскрин-рендеринг исключает задержку первого кадра (First Draw Penalty).
+- **Кристальная четкость (`NearestNeighbor`):** Плавное масштабирование от 1x до 32x с фокусом на курсор мыши без смазывания пикселей (`SKFilterQuality.None`).
+- **Zero GC-Alloc:** Кэширование всех кистей `SKPaint` и растровых буферов — ноль аллокаций в кадровом цикле отрисовки.
+- **Адаптивная пиксельная сетка:** Автоматическое включение сетки при зуме ≥ 4x.
+- **Симметрия X / Y в реальном времени:** Зеркальное рисование по горизонтали и вертикали.
+
+### 🖌️ Полный арсенал инструментов пиксель-арта
+- **Карандаш (B):** Непрерывный штрих с интерполяцией по алгоритму Брезенхейма.
+- **Ластик (E):** Стирание в честный альфа-канал.
+- **Заливка (G):** Быстрый алгоритм BFS Flood Fill связных областей.
+- **Пипетка (I):** Мгновенный сэмплинг цвета со слоя или композита холста.
+- **Линия (L):** Отрезки по алгоритму Брезенхейма с предпросмотром в реальном времени.
+- **Прямоугольник (R/U) & Эллипс (C):** Контурные и залитые геометрические фигуры (Midpoint эллипс).
+- **Выделение (S/M):** Прямоугольная область с поддержкой перемещения, вырезания, копирования и вставки (<kbd>Ctrl+C</kbd>, <kbd>Ctrl+X</kbd>, <kbd>Ctrl+V</kbd>).
+
+### 💽 Слои, Палитры, История & Экспорт
+- **Многослойный холст:** Неограниченное число слоев, регулировка непрозрачности (0–100%), видимость, слияние вниз (`Merge Down`), дублирование.
+- **Live Preview 1x:** Плавающая панель предпросмотра арта в масштабе 1:1, 2x и 4x на шахматном фоне.
+- **Встроенные ретро-палитры:** DawnBringer 32 (Default), PICO-8 (16), GameBoy (4 DMG), NES (54) и расширенный RGBA ColorPicker.
+- **Разреженная история Undo/Redo:** Хранение разреженных дельт пикселей (`PixelDelta`) — до 150 шагов при потреблении памяти менее 1 МБ.
+- **Фоновое автосохранение:** Аварийное сохранение проекта в AppData.
+- **Экспорт:** PNG с поддержкой прозрачности и 24/32-битный BMP без потери качества.
+
+### 📦 Компактный Inno Setup установщик (LZMA2 Ultra)
+- **Ультра-сжатие LZMA2:** Размер файла установщика уменьшен с **73+ МБ до 35.04 МБ** (>52% экономии трафика).
+- **Полная интеграция с Windows:**
+  - Ассоциация файлов проектов `.pxproj` с кастомной иконкой;
+  - Создание ярлыков в меню «Пуск» и на рабочем столе;
+  - Регистрация чистого деинсталлятора в разделе «Установленные приложения» Windows.
+- **OTA-обновления:** Автоматическая проверка обновлений через GitHub Releases (`latest.json`).
 
 ---
 
-## ⌨️ Таблица горячих клавиш
+## ⌨️ Горячие клавиши
 
-| Инструмент / Действие | Горячая клавиша | Описание |
+| Действие | Сочетание клавиш | Описание |
 | :--- | :---: | :--- |
 | **Карандаш (Pencil)** | <kbd>B</kbd> | Рисование основным цветом |
 | **Ластик (Eraser)** | <kbd>E</kbd> | Стирание пикселей в прозрачность |
 | **Заливка (Paint Bucket)** | <kbd>G</kbd> | Заливка связной области цвета |
 | **Пипетка (Eyedropper)** | <kbd>I</kbd> | Взятие цвета под курсором |
 | **Линия (Line)** | <kbd>L</kbd> | Отрезок по алгоритму Брезенхейма |
-| **Прямоугольник (Rectangle)** | <kbd>R</kbd> / <kbd>U</kbd> | Рисование прямоугольников |
-| **Эллипс (Ellipse)** | <kbd>C</kbd> | Рисование эллипсов и кругов |
+| **Прямоугольник (Rectangle)** | <kbd>R</kbd> / <kbd>U</kbd> | Прямоугольник (контур / заливка) |
+| **Эллипс (Ellipse)** | <kbd>C</kbd> | Эллипс / круг (контур / заливка) |
 | **Выделение (Selection)** | <kbd>S</kbd> / <kbd>M</kbd> | Прямоугольное выделение пикселей |
-| **Поменять цвета (Swap Colors)** | <kbd>X</kbd> | Поменять местами Primary и Secondary |
+| **Поменять цвета местами** | <kbd>X</kbd> | Переключение Primary ↔ Secondary |
 | **Отмена (Undo)** | <kbd>Ctrl</kbd> + <kbd>Z</kbd> | Отменить последнее действие |
 | **Повтор (Redo)** | <kbd>Ctrl</kbd> + <kbd>Y</kbd> / <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd> | Повторить отмененное действие |
-| **Новый проект** | <kbd>Ctrl</kbd> + <kbd>N</kbd> | Создать новый холст (с диалогом выбора размера) |
-| **Открыть проект** | <kbd>Ctrl</kbd> + <kbd>O</kbd> | Загрузить файл `.pxproj` |
+| **Новый холст** | <kbd>Ctrl</kbd> + <kbd>N</kbd> | Создать новый проект |
+| **Открыть проект** | <kbd>Ctrl</kbd> + <kbd>O</kbd> | Открыть файл `.pxproj` |
 | **Сохранить проект** | <kbd>Ctrl</kbd> + <kbd>S</kbd> | Сохранить проект |
-| **Сохранить как...** | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd> | Сохранить проект под новым именем |
-| **Копировать** | <kbd>Ctrl</kbd> + <kbd>C</kbd> | Скопировать выделение или слой в буфер |
-| **Вырезать** | <kbd>Ctrl</kbd> + <kbd>X</kbd> | Вырезать выделение в буфер |
-| **Вставить** | <kbd>Ctrl</kbd> + <kbd>V</kbd> | Вставить пиксели из буфера как плавающее выделение |
-| **Включить/выключить сетку** | <kbd>Ctrl</kbd> + <kbd>G</kbd> | Переключение отображения пиксельной сетки |
-| **Приблизить масштаб** | <kbd>Ctrl</kbd> + <kbd>+</kbd> / Колесо мыши вверх | Увеличение зума холста |
-| **Отдалить масштаб** | <kbd>Ctrl</kbd> + <kbd>-</kbd> / Колесо мыши вниз | Уменьшение зума холста |
-| **Панорамирование (Pan)** | <kbd>Space</kbd> + Перетаскивание / Средняя кнопка мыши | Смещение области просмотра холста |
+| **Сохранить как...** | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd> | Сохранить с выбором имени |
+| **Копировать / Вырезать / Вставить** | <kbd>Ctrl</kbd> + <kbd>C</kbd> / <kbd>X</kbd> / <kbd>V</kbd> | Операции с выделенной областью |
+| **Сетка пикселей** | <kbd>Ctrl</kbd> + <kbd>G</kbd> | Включение / выключение сетки |
+| **Масштаб (Zoom)** | <kbd>Ctrl</kbd> + <kbd>+</kbd> / <kbd>-</kbd> или Колесо мыши | Плавный зум с фокусом на курсор |
+| **Панорамирование (Pan)** | <kbd>Space</kbd> + Drag или Средняя кнопка мыши | Перемещение холста |
 
 ---
 
-## 🏛️ Архитектурная схема
+## 🏛️ Архитектура системы
 
 ```mermaid
 graph TD
+    subgraph Bootstrap ["Запуск и предзагрузка ОЗУ"]
+        SW["SplashWindow (Экран запуска)"]
+        AB["AppBootstrapper (Асинхронный оркестратор)"]
+        MPS["MemoryPreloadService (Working Set / Pre-JIT / Skia Warm-up)"]
+        SW --> AB
+        AB --> MPS
+    end
+
     subgraph UI ["Слой представления (PixelForge.App)"]
-        MW["MainWindow (3 колонки)"]
-        TB["Тулбар инструментов"]
-        PC["PixelCanvasControl (SkiaSharp)"]
-        LP["LivePreviewControl (1x Preview)"]
+        MW["MainWindow (3-колоночный лейаут)"]
+        PC["PixelCanvasControl (SkiaSharp 60+ FPS)"]
+        LP["LivePreviewControl (1x/2x/4x Preview)"]
         CP["ColorPickerView (Слайдеры, Hex, Палитры)"]
         LM["Менеджер слоев (Layer Manager)"]
-        NCD["NewCanvasDialog (Диалог создания)"]
     end
 
     subgraph MVVM ["Слой ViewModel (CommunityToolkit.Mvvm)"]
@@ -114,17 +132,17 @@ graph TD
     subgraph Core ["Ядро приложения (PixelForge.Core)"]
         PCanvas["PixelCanvas (Композит слоев)"]
         Layers["Layer Stack & PixelColor"]
-        Tools["Tools: Pencil, Eraser, Fill, Eye, Line, Rect, Ellipse, Select"]
+        Tools["ITool: Pencil, Eraser, Fill, Eye, Line, Rect, Ellipse, Select"]
         History["UndoRedoService & PixelDelta"]
-        Palettes["PalettePresets: Default32, Pico8, GameBoy, Nes"]
+        Palettes["PalettePresets: DawnBringer32, Pico8, GameBoy, NES"]
         Export["ExportService (PNG / BMP)"]
         ProjectSvc["ProjectService (.pxproj)"]
         AutoSave["AutosaveService"]
         OTA["UpdateService (latest.json)"]
     end
 
+    AB --> MW
     MW --> MVM
-    TB --> TVM
     PC --> CVM
     LP --> CVM
     CP --> PVM
@@ -146,42 +164,42 @@ graph TD
 
 ---
 
-## 📥 Скачать и запустить
+## 📥 Скачать и установить
 
-Готовое приложение можно скачать прямо со страницы **[Релизов (GitHub Releases)](https://github.com/widlily-corp/PixelForge/releases/latest)**:
+Готовый компактный установщик доступен на странице **[Релизов GitHub Releases](https://github.com/widlily-corp/PixelForge/releases/latest)**:
 
-1. Перейдите во вкладку **[Releases](https://github.com/widlily-corp/PixelForge/releases/latest)**.
-2. Скачайте официальный исполняемый файл **`PixelForge.exe`**.
-3. Запустите двойным кликом — приложение полностью автономно (self-contained single-file), установка .NET Runtime не требуется!
+1. Перейдите в раздел **[Releases](https://github.com/widlily-corp/PixelForge/releases/latest)**;
+2. Скачайте официальный установщик: **`PixelForge_0.1.0_x64-setup.exe`** (~35 МБ);
+3. Запустите установку — инсталлятор автоматически зарегистрирует ассоциацию файлов `.pxproj`, создаст ярлыки и обеспечит быстрый старт программы.
 
 ---
 
-## 🛠️ Сборка и публикация
+## 🛠️ Сборка из исходного кода
 
 ### Требования
-- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) (или новее)
+- [Inno Setup 6](https://jrsoftware.org/isinfo.php) (для сборки установщика: `winget install JRSoftware.InnoSetup`)
 
-### Сборка всего решения
-```bash
-dotnet build PixelForge.sln
+### Сборка и тестирование
+```powershell
+# Сборка Release
+dotnet build PixelForge.sln -c Release /warnaserror
+
+# Запуск тестов (xUnit)
+dotnet test PixelForge.sln -c Release --no-build
 ```
 
-### Запуск тестов
-```bash
-dotnet test tests/PixelForge.Core.Tests/PixelForge.Core.Tests.csproj
+### Сборка компактного установщика (Inno Setup LZMA2 Ultra)
+```powershell
+powershell -ExecutionPolicy Bypass -File .agents/scripts/pack-release.ps1 -Version "0.1.0"
 ```
-
-### Релизная публикация автономного EXE (win-x64, Self-Contained Single File)
-```bash
-dotnet publish src/PixelForge.App/PixelForge.App.csproj -c Release -r win-x64 --self-contained -p:PublishSingleFile=true
-```
-Собранный исполняемый файл будет расположен в:
-`src/PixelForge.App/bin/Release/net8.0/win-x64/publish/PixelForge.App.exe`
+Собранный инсталлятор будет расположен в:
+`publish/win-x64/PixelForge_0.1.0_x64-setup.exe` (~35 МБ).
 
 ---
 
-## 📄 License & Notice
+## 📄 Лицензия
 
-This project is licensed under the Apache-2.0 License - see the [LICENSE](LICENSE) file for details.
+Проект распространяется под свободной лицензией **Apache-2.0**. Подробности в файле [LICENSE](LICENSE).
 
-NOTICE: Copyright 2026 widlily-corp.
+Copyright © 2026 widlily-corp.
