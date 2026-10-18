@@ -145,9 +145,10 @@ public partial class MainWindow : Window
 
     private async void OnAboutClick(object? sender, RoutedEventArgs e)
     {
+        var version = ViewModel != null ? "0.1.0" : "0.1.0";
         var aboutWindow = new Window
         {
-            Title = "О программе — PixelForge v0.0.1",
+            Title = $"О программе — PixelForge v{version}",
             Width = 420,
             Height = 290,
             CanResize = false,
@@ -173,7 +174,7 @@ public partial class MainWindow : Window
                         },
                         new TextBlock
                         {
-                            Text = "Версия 0.0.1",
+                            Text = $"Версия {version}",
                             FontSize = 14,
                             FontWeight = FontWeight.SemiBold,
                             Foreground = GetBrush("AccentPrimaryBrush", Brushes.DodgerBlue),

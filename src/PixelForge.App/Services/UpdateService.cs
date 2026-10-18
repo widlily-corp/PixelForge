@@ -14,7 +14,7 @@ public class UpdateService : IUpdateService
     private readonly HttpClient _httpClient;
     private readonly string _manifestUrl;
 
-    public string CurrentVersion => "0.0.1";
+    public string CurrentVersion => "0.1.0";
 
     public UpdateService(HttpClient? httpClient = null, string? manifestUrl = null)
     {

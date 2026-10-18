@@ -42,21 +42,41 @@ jobs:
           $version = if ($tag -and $tag.StartsWith("v")) { $tag.Substring(1) } else { "0.0.1" }
           Write-Host "Publishing PixelForge for version: $version"
 
-          # Publish with dynamic version stamping
+          # Publish into staging directory
+          $stagingDir = "publish/staging"
+          if (Test-Path $stagingDir) { Remove-Item -Path $stagingDir -Recurse -Force }
+          New-Item -ItemType Directory -Path $stagingDir -Force | Out-Null
+          New-Item -ItemType Directory -Path "publish/win-x64" -Force | Out-Null
+
           dotnet publish src/PixelForge.App/PixelForge.App.csproj `
             -c Release `
             -r win-x64 `
             --self-contained `
-            -p:PublishSingleFile=true `
-            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:PublishSingleFile=false `
+            -p:DebugType=none `
+            -p:DebugSymbols=false `
             -p:Version=$version `
             -p:AssemblyVersion=$version `
             -p:FileVersion=$version `
-            -o publish/win-x64
+            -o $stagingDir
 
-          # Canonical installer and portable executables
-          Copy-Item "publish/win-x64/PixelForge.App.exe" -Destination "publish/win-x64/PixelForge_${version}_x64-setup.exe" -Force
-          Copy-Item "publish/win-x64/PixelForge.App.exe" -Destination "publish/win-x64/PixelForge.exe" -Force
+          # Clean PDBs and XML docs
+          Get-ChildItem -Path $stagingDir -Include *.pdb,*.xml -Recurse -ErrorAction SilentlyContinue | Remove-Item -Force
+
+          # Build Inno Setup installer
+          $iscc = (Get-Command iscc -ErrorAction SilentlyContinue)?.Source
+          if (-not $iscc) {
+              $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          }
+          if (-not (Test-Path $iscc)) {
+              $iscc = "C:\Program Files\Inno Setup 6\ISCC.exe"
+          }
+
+          $absStaging = [System.IO.Path]::GetFullPath($stagingDir)
+          $absOutput = [System.IO.Path]::GetFullPath("publish/win-x64")
+
+          & "$iscc" /Qp "/DAppVersion=$version" "/DSourceDir=$absStaging" "/DOutputDir=$absOutput" installer/PixelForge.iss
+          Remove-Item -Path $stagingDir -Recurse -Force
 
           # Compute SHA-256
           $setupHash = (Get-FileHash -Path "publish/win-x64/PixelForge_${version}_x64-setup.exe" -Algorithm SHA256).Hash.ToLower()
@@ -109,7 +129,6 @@ jobs:
         with:
           files: |
             publish/win-x64/PixelForge_*_x64-setup.exe
-            publish/win-x64/PixelForge.exe
             publish/win-x64/latest.json
           name: PixelForge ${{ github.ref_name }}
           body: ${{ steps.prep_release.outputs.body }}

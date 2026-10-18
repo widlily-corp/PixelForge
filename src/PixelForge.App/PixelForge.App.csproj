@@ -9,7 +9,13 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>PixelForge.App</RootNamespace>
     <ApplicationIcon>Assets/icon.ico</ApplicationIcon>
-    <Version>0.0.1</Version>
+    <Version>0.1.0</Version>
+    <!-- Performance & RAM Optimization Flags -->
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <TieredCompilation>true</TieredCompilation>
+    <TieredPGO>true</TieredPGO>
+    <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
   </PropertyGroup>
 
   <ItemGroup>
