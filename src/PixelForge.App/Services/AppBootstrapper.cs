@@ -27,42 +27,57 @@ public class AppBootstrapper
     /// </summary>
     public async Task<MainWindow> BootstrapAsync(CancellationToken cancellationToken = default)
     {
-        var progressReporter = new Progress<PreloadProgress>(p => _onProgress?.Invoke(p));
+        AppLogger.LogInfo("Bootstrap", "Starting Core subsystem preloading...");
+        var progressReporter = new Progress<PreloadProgress>(p =>
+        {
+            _onProgress?.Invoke(p);
+            AppLogger.LogDebug("Bootstrap", $"[{p.Percentage}%] {p.StageName}: {p.Details}");
+        });
 
         // 1. Run Core memory preloading (Working set expansion, RAM locking, Core pre-JIT, Skia warm-up)
         await MemoryPreloadService.Instance.PreloadAsync(progressReporter, cancellationToken).ConfigureAwait(false);
+        AppLogger.LogInfo("Bootstrap", "Core memory preloading complete.");
 
         // 2. Pre-JIT App layer ViewModels and Controls
+        AppLogger.LogInfo("Bootstrap", "Starting Pre-JIT compilation of App types...");
         _onProgress?.Invoke(new PreloadProgress(92, "Pre-compiling UI & Canvas Shaders", "Pre-JITing PixelCanvasControl and ViewModels..."));
         cancellationToken.ThrowIfCancellationRequested();
         PreJitAppTypes();
+        AppLogger.LogInfo("Bootstrap", "App types Pre-JIT complete.");
 
         // 3. Configure DI container
+        AppLogger.LogInfo("Bootstrap", "Configuring Dependency Injection container...");
         _onProgress?.Invoke(new PreloadProgress(96, "Building Service Matrix", "Resolving dependency injection container..."));
         cancellationToken.ThrowIfCancellationRequested();
         var services = new ServiceCollection();
         ConfigureServices(services);
         var serviceProvider = services.BuildServiceProvider();
         App.Services = serviceProvider;
+        AppLogger.LogInfo("Bootstrap", "Dependency Injection container built.");
 
         // 4. Instantiate MainWindow and ViewModel on UI thread
+        AppLogger.LogInfo("Bootstrap", "Instantiating MainWindow and MainViewModel on UI thread...");
         _onProgress?.Invoke(new PreloadProgress(98, "Preparing Studio Workspace", "Initializing viewport and controls..."));
         cancellationToken.ThrowIfCancellationRequested();
 
         MainWindow? mainWindow = null;
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
+            AppLogger.LogInfo("Bootstrap", "Resolving MainViewModel from DI...");
             var mainVm = serviceProvider.GetRequiredService<MainViewModel>();
+            AppLogger.LogInfo("Bootstrap", "Instantiating MainWindow...");
             mainWindow = new MainWindow
             {
                 DataContext = mainVm
             };
+            AppLogger.LogInfo("Bootstrap", "MainWindow instantiated successfully.");
         });
 
         // Small pause for visual smoothness so user sees 100% complete
         _onProgress?.Invoke(new PreloadProgress(100, "Ready to Create", "PixelForge Studio ready."));
         await Task.Delay(150, cancellationToken).ConfigureAwait(false);
 
+        AppLogger.LogInfo("Bootstrap", "BootstrapAsync completed successfully.");
         return mainWindow!;
     }
 

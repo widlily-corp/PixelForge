@@ -19,40 +19,63 @@ namespace PixelForge.App.Controls;
 /// </summary>
 public class PixelCanvasControl : Control, ICustomDrawOperation
 {
-    public static readonly StyledProperty<CanvasViewModel?> CanvasViewModelProperty =
-        AvaloniaProperty.Register<PixelCanvasControl, CanvasViewModel?>(nameof(CanvasViewModel));
+    private CanvasViewModel? _canvasViewModel;
+    private ToolViewModel? _toolViewModel;
+    private PaletteViewModel? _paletteViewModel;
+    private HistoryViewModel? _historyViewModel;
 
-    public static readonly StyledProperty<ToolViewModel?> ToolViewModelProperty =
-        AvaloniaProperty.Register<PixelCanvasControl, ToolViewModel?>(nameof(ToolViewModel));
+    public static readonly DirectProperty<PixelCanvasControl, CanvasViewModel?> CanvasViewModelProperty =
+        AvaloniaProperty.RegisterDirect<PixelCanvasControl, CanvasViewModel?>(
+            nameof(CanvasViewModel),
+            o => o.CanvasViewModel,
+            (o, v) => o.CanvasViewModel = v);
 
-    public static readonly StyledProperty<PaletteViewModel?> PaletteViewModelProperty =
-        AvaloniaProperty.Register<PixelCanvasControl, PaletteViewModel?>(nameof(PaletteViewModel));
+    public static readonly DirectProperty<PixelCanvasControl, ToolViewModel?> ToolViewModelProperty =
+        AvaloniaProperty.RegisterDirect<PixelCanvasControl, ToolViewModel?>(
+            nameof(ToolViewModel),
+            o => o.ToolViewModel,
+            (o, v) => o.ToolViewModel = v);
 
-    public static readonly StyledProperty<HistoryViewModel?> HistoryViewModelProperty =
-        AvaloniaProperty.Register<PixelCanvasControl, HistoryViewModel?>(nameof(HistoryViewModel));
+    public static readonly DirectProperty<PixelCanvasControl, PaletteViewModel?> PaletteViewModelProperty =
+        AvaloniaProperty.RegisterDirect<PixelCanvasControl, PaletteViewModel?>(
+            nameof(PaletteViewModel),
+            o => o.PaletteViewModel,
+            (o, v) => o.PaletteViewModel = v);
+
+    public static readonly DirectProperty<PixelCanvasControl, HistoryViewModel?> HistoryViewModelProperty =
+        AvaloniaProperty.RegisterDirect<PixelCanvasControl, HistoryViewModel?>(
+            nameof(HistoryViewModel),
+            o => o.HistoryViewModel,
+            (o, v) => o.HistoryViewModel = v);
 
     public CanvasViewModel? CanvasViewModel
     {
-        get => GetValue(CanvasViewModelProperty);
-        set => SetValue(CanvasViewModelProperty, value);
+        get => _canvasViewModel;
+        set
+        {
+            if (SetAndRaise(CanvasViewModelProperty, ref _canvasViewModel, value))
+            {
+                OnCanvasViewModelChanged();
+            }
+        }
     }
 
     public ToolViewModel? ToolViewModel
     {
-        get => GetValue(ToolViewModelProperty);
-        set => SetValue(ToolViewModelProperty, value);
+        get => _toolViewModel;
+        set => SetAndRaise(ToolViewModelProperty, ref _toolViewModel, value);
     }
 
     public PaletteViewModel? PaletteViewModel
     {
-        get => GetValue(PaletteViewModelProperty);
-        set => SetValue(PaletteViewModelProperty, value);
+        get => _paletteViewModel;
+        set => SetAndRaise(PaletteViewModelProperty, ref _paletteViewModel, value);
     }
 
     public HistoryViewModel? HistoryViewModel
     {
-        get => GetValue(HistoryViewModelProperty);
-        set => SetValue(HistoryViewModelProperty, value);
+        get => _historyViewModel;
+        set => SetAndRaise(HistoryViewModelProperty, ref _historyViewModel, value);
     }
 
     // Viewport transform
@@ -143,8 +166,6 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         Focusable = true;
 
         InitializeCheckerboardShader();
-
-        CanvasViewModelProperty.Changed.AddClassHandler<PixelCanvasControl>((c, _) => c.OnCanvasViewModelChanged());
     }
 
     private void InitializeCheckerboardShader()

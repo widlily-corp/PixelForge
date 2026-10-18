@@ -3,12 +3,14 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:PixelForge.App.ViewModels"
+        xmlns:models="using:PixelForge.Core.Models"
         xmlns:controls="using:PixelForge.App.Controls"
         xmlns:views="using:PixelForge.App.Views"
         mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
         x:Class="PixelForge.App.Views.MainWindow"
+        x:Name="RootWindow"
         x:DataType="vm:MainViewModel"
-        Title="{Binding Title, FallbackValue='PixelForge v0.0.1'}"
+        Title="{Binding Title, FallbackValue='PixelForge v0.1.0'}"
         Icon="/Assets/icon.ico"
         Width="1280" Height="800"
         MinWidth="1024" MinHeight="680"
@@ -333,7 +335,7 @@
                             <!-- Layer Opacity Slider -->
                             <Grid Grid.Row="1" ColumnDefinitions="Auto,*,36" Margin="0,0,0,8">
                                 <TextBlock Grid.Column="0" Text="Непрозр." FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
-                                <Slider Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding LayerViewModel.ActiveLayer.Opacity, FallbackValue=1.0}"
+                                <Slider Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding LayerViewModel.ActiveLayer.Opacity, FallbackValue=1}"
                                         VerticalAlignment="Center" Margin="0,0,4,0" />
                                 <TextBlock Grid.Column="2" Text="{Binding LayerViewModel.ActiveLayer.Opacity, StringFormat='{}{0:P0}', FallbackValue='100%'}"
                                            FontSize="10" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}" />
@@ -344,11 +346,11 @@
                                      SelectedItem="{Binding LayerViewModel.ActiveLayer, Mode=TwoWay}"
                                      Background="Transparent" BorderThickness="0">
                                 <ListBox.ItemTemplate>
-                                    <DataTemplate>
+                                    <DataTemplate x:DataType="models:Layer">
                                         <Grid ColumnDefinitions="Auto,*,Auto" Height="28">
                                             <!-- Visibility Toggle Button -->
                                             <Button Grid.Column="0" Classes="action-btn" Padding="4"
-                                                    Command="{Binding $parent[views:MainWindow].((vm:MainViewModel)DataContext).LayerViewModel.ToggleVisibilityCommand}"
+                                                    Command="{Binding #RootWindow.DataContext.LayerViewModel.ToggleVisibilityCommand}"
                                                     CommandParameter="{Binding}"
                                                     ToolTip.Tip="Видимость слоя">
                                                 <Panel>

@@ -19,11 +19,14 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        AppLogger.LogInfo("App", "OnFrameworkInitializationCompleted started.");
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             // Prevent immediate app exit while transitioning from Splash to MainWindow
             desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
+            AppLogger.LogInfo("App", "Displaying SplashWindow...");
             var splash = new SplashWindow();
             splash.Show();
 
@@ -32,23 +35,46 @@ public partial class App : Application
             {
                 try
                 {
+                    AppLogger.LogInfo("Bootstrapper", "Initializing AppBootstrapper...");
                     var bootstrapper = new AppBootstrapper(progress => splash.UpdateProgress(progress));
                     var mainWindow = await bootstrapper.BootstrapAsync().ConfigureAwait(false);
+                    AppLogger.LogInfo("Bootstrapper", "Bootstrap completed successfully. Scheduling UI transition...");
 
                     await Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        desktop.MainWindow = mainWindow;
-                        desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
-                        mainWindow.Show();
-                        splash.Close();
+                        try
+                        {
+                            AppLogger.LogInfo("UI", "Assigning MainWindow to desktop lifetime...");
+                            desktop.MainWindow = mainWindow;
+                            desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
+
+                            AppLogger.LogInfo("UI", "Calling MainWindow.Show()...");
+                            mainWindow.Show();
+
+                            AppLogger.LogInfo("UI", "Closing SplashWindow...");
+                            splash.Close();
+                            AppLogger.LogInfo("UI", "Workspace ready and active.");
+                        }
+                        catch (Exception uiEx)
+                        {
+                            AppLogger.LogFatal("UI", "Critical exception during MainWindow display or Splash close!", uiEx);
+                            throw;
+                        }
                     });
                 }
                 catch (Exception ex)
                 {
+                    AppLogger.LogFatal("Bootstrapper", "Critical bootstrap failure encountered!", ex);
                     await Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        Console.WriteLine($"Critical bootstrap failure: {ex}");
-                        splash.Close();
+                        try
+                        {
+                            splash.Close();
+                        }
+                        catch
+                        {
+                            // Ignore secondary errors on close
+                        }
                         desktop.Shutdown(-1);
                     });
                 }
