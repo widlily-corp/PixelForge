@@ -13,11 +13,11 @@ public partial class Layer : ObservableObject
 
     public Guid Id { get; init; }
 
-    public int Width { get; }
+    public int Width { get; private set; }
 
-    public int Height { get; }
+    public int Height { get; private set; }
 
-    public PixelColor[] Pixels { get; }
+    public PixelColor[] Pixels { get; private set; }
 
     public string Name
     {
@@ -84,6 +84,37 @@ public partial class Layer : ObservableObject
         Pixels = pixels;
         _isVisible = true;
         _opacity = 1f;
+    }
+
+    /// <summary>
+    /// Updates the layer dimensions and replaces the pixel buffer during canvas resize.
+    /// </summary>
+    public void SetDimensionsAndPixels(int newWidth, int newHeight, PixelColor[] newPixels)
+    {
+        if (newWidth <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(newWidth), "Width must be greater than zero.");
+        }
+
+        if (newHeight <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(newHeight), "Height must be greater than zero.");
+        }
+
+        ArgumentNullException.ThrowIfNull(newPixels);
+
+        if (newPixels.Length != newWidth * newHeight)
+        {
+            throw new ArgumentException($"Pixel array length ({newPixels.Length}) does not match new dimensions ({newWidth}x{newHeight} = {newWidth * newHeight}).", nameof(newPixels));
+        }
+
+        Width = newWidth;
+        Height = newHeight;
+        Pixels = newPixels;
+
+        OnPropertyChanged(nameof(Width));
+        OnPropertyChanged(nameof(Height));
+        OnPropertyChanged(nameof(Pixels));
     }
 
     /// <summary>

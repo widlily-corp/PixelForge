@@ -1,0 +1,167 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="460" d:DesignHeight="540"
+        x:Class="PixelForge.App.Views.ResizeCanvasDialog"
+        Title="Размер холста — PixelForge"
+        Width="460" Height="540"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource SurfaceBaseBrush}">
+
+    <Window.Styles>
+        <Style Selector="Button.preset-btn">
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="8,2" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.preset-btn:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+        </Style>
+
+        <Style Selector="Button.anchor-btn">
+            <Setter Property="Width" Value="36" />
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.anchor-btn:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+        </Style>
+    </Window.Styles>
+
+    <Border Padding="20">
+        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto">
+            <!-- 1. Header -->
+            <StackPanel Grid.Row="0" Spacing="2" Margin="0,0,0,14">
+                <TextBlock Text="Размер холста" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                <TextBlock Name="CurrentDimensionsText" Text="Текущий размер: 32 × 32 px" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
+            </StackPanel>
+
+            <!-- 2. New Dimensions Inputs -->
+            <Border Grid.Row="1" Background="{DynamicResource SurfacePanelBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}"
+                    BorderThickness="1" CornerRadius="6" Padding="14,10" Margin="0,0,0,12">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="НОВЫЙ РАЗМЕР (8–1024 px)" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
+                    <Grid ColumnDefinitions="*,16,*">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Ширина (px)" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
+                            <NumericUpDown Name="WidthInput" Value="32" Minimum="8" Maximum="1024" Increment="8"
+                                           FormatString="0"
+                                           Background="{DynamicResource SurfaceCardBrush}"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                           BorderBrush="{DynamicResource BorderSubtleBrush}" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Spacing="4">
+                            <TextBlock Text="Высота (px)" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
+                            <NumericUpDown Name="HeightInput" Value="32" Minimum="8" Maximum="1024" Increment="8"
+                                           FormatString="0"
+                                           Background="{DynamicResource SurfaceCardBrush}"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                           BorderBrush="{DynamicResource BorderSubtleBrush}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <CheckBox Name="KeepAspectCheckBox" Content="Сохранять пропорции (1:1)" FontSize="12"
+                              Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                </StackPanel>
+            </Border>
+
+            <!-- 3. Presets & Quick Scales -->
+            <StackPanel Grid.Row="2" Spacing="6" Margin="0,0,0,12">
+                <TextBlock Text="БЫСТРЫЕ ПРЕСЕТЫ И МАСШТАБ" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
+                <WrapPanel Orientation="Horizontal">
+                    <Button Name="Preset16Button" Classes="preset-btn" Content="16 × 16" Margin="0,0,6,6" />
+                    <Button Name="Preset32Button" Classes="preset-btn" Content="32 × 32" Margin="0,0,6,6" />
+                    <Button Name="Preset48Button" Classes="preset-btn" Content="48 × 48" Margin="0,0,6,6" />
+                    <Button Name="Preset64Button" Classes="preset-btn" Content="64 × 64" Margin="0,0,6,6" />
+                    <Button Name="Preset128Button" Classes="preset-btn" Content="128 × 128" Margin="0,0,6,6" />
+                    <Button Name="Preset256Button" Classes="preset-btn" Content="256 × 256" Margin="0,0,6,6" />
+                    <Button Name="ScaleHalfButton" Classes="preset-btn" Content="0.5× (÷2)" Margin="0,0,6,6" />
+                    <Button Name="ScaleDoubleButton" Classes="preset-btn" Content="2.0× (×2)" Margin="0,0,6,6" />
+                </WrapPanel>
+            </StackPanel>
+
+            <!-- 4. Mode Selection -->
+            <StackPanel Grid.Row="3" Spacing="6" Margin="0,0,0,12">
+                <TextBlock Text="РЕЖИМ ПРЕОБРАЗОВАНИЯ" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
+                <Grid ColumnDefinitions="*,*">
+                    <RadioButton Name="AnchorModeRadio" Grid.Column="0" Content="Якорь размещения"
+                                 IsChecked="True" GroupName="ResizeModeGroup" FontSize="12"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" />
+                    <RadioButton Name="ScaleModeRadio" Grid.Column="1" Content="Масштабировать пиксели"
+                                 GroupName="ResizeModeGroup" FontSize="12"
+                                 Foreground="{DynamicResource TextPrimaryBrush}" />
+                </Grid>
+            </StackPanel>
+
+            <!-- 5. 3x3 Anchor Selection Grid -->
+            <Border Name="AnchorPanel" Grid.Row="4" Background="{DynamicResource SurfacePanelBrush}"
+                    BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1"
+                    CornerRadius="6" Padding="12,10" Margin="0,0,0,12">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="4">
+                        <TextBlock Text="Точка привязки (Якорь):" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}" />
+                        <TextBlock Name="AnchorDescriptionText" Text="По центру (равномерное расширение)"
+                                   FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
+                    </StackPanel>
+
+                    <!-- 3x3 Grid Buttons -->
+                    <Grid Grid.Column="1" RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,Auto,Auto">
+                        <Button Name="AnchorTopLeft" Grid.Row="0" Grid.Column="0" Classes="anchor-btn" Content="↖" Margin="2" />
+                        <Button Name="AnchorTopCenter" Grid.Row="0" Grid.Column="1" Classes="anchor-btn" Content="↑" Margin="2" />
+                        <Button Name="AnchorTopRight" Grid.Row="0" Grid.Column="2" Classes="anchor-btn" Content="↗" Margin="2" />
+
+                        <Button Name="AnchorMiddleLeft" Grid.Row="1" Grid.Column="0" Classes="anchor-btn" Content="←" Margin="2" />
+                        <Button Name="AnchorCenter" Grid.Row="1" Grid.Column="1" Classes="anchor-btn" Content="•" Margin="2" />
+                        <Button Name="AnchorMiddleRight" Grid.Row="1" Grid.Column="2" Classes="anchor-btn" Content="→" Margin="2" />
+
+                        <Button Name="AnchorBottomLeft" Grid.Row="2" Grid.Column="0" Classes="anchor-btn" Content="↙" Margin="2" />
+                        <Button Name="AnchorBottomCenter" Grid.Row="2" Grid.Column="1" Classes="anchor-btn" Content="↓" Margin="2" />
+                        <Button Name="AnchorBottomRight" Grid.Row="2" Grid.Column="2" Classes="anchor-btn" Content="↘" Margin="2" />
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!-- 6. Spacer -->
+            <Panel Grid.Row="5" />
+
+            <!-- 7. Action Buttons -->
+            <Grid Grid.Row="6" ColumnDefinitions="*,Auto,8,Auto">
+                <TextBlock Name="ErrorText" Grid.Column="0" VerticalAlignment="Center"
+                           Foreground="{DynamicResource AccentDangerBrush}" FontSize="12" TextWrapping="Wrap" />
+
+                <Button Name="CancelButton" Grid.Column="1" Content="Отмена"
+                        Padding="16,8" CornerRadius="6"
+                        Background="{DynamicResource SurfaceCardBrush}"
+                        Foreground="{DynamicResource TextPrimaryBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" />
+
+                <Button Name="ApplyButton" Grid.Column="3" Content="Применить"
+                        Padding="20,8" CornerRadius="6"
+                        Background="{DynamicResource AccentPrimaryBrush}"
+                        Foreground="#0A0E17" FontWeight="SemiBold"
+                        IsDefault="True" />
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

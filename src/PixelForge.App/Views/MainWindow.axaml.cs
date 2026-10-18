@@ -24,6 +24,9 @@ public partial class MainWindow : Window
         // Menu handlers
         MenuNew.Click += OnNewProjectClick;
         QuickNewButton.Click += OnNewProjectClick;
+        MenuResizeCanvas.Click += OnResizeCanvasClick;
+        QuickResizeButton.Click += OnResizeCanvasClick;
+        StatusDimensionsButton.Click += OnResizeCanvasClick;
         MenuExit.Click += (_, _) => Close();
         MenuAbout.Click += OnAboutClick;
 
@@ -138,6 +141,23 @@ public partial class MainWindow : Window
         }
     }
 
+    private async void OnResizeCanvasClick(object? sender, RoutedEventArgs e)
+    {
+        if (ViewModel == null)
+        {
+            return;
+        }
+
+        var currentW = ViewModel.CanvasViewModel.CanvasWidth;
+        var currentH = ViewModel.CanvasViewModel.CanvasHeight;
+        var dialog = new ResizeCanvasDialog(currentW, currentH);
+        var result = await dialog.ShowDialog<ResizeCanvasResult?>(this);
+        if (result != null)
+        {
+            ViewModel.ResizeCanvas(result.Width, result.Height, result.Anchor, result.Mode);
+        }
+    }
+
     private void OnToggleThemeClick(object? sender, RoutedEventArgs e)
     {
         ViewModel?.ThemeService.ToggleTheme();
@@ -219,6 +239,14 @@ public partial class MainWindow : Window
 
         bool ctrl = e.KeyModifiers.HasFlag(KeyModifiers.Control);
         bool shift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+        bool alt = e.KeyModifiers.HasFlag(KeyModifiers.Alt);
+
+        if ((ctrl && alt && e.Key == Key.C) || (ctrl && e.Key == Key.R))
+        {
+            e.Handled = true;
+            OnResizeCanvasClick(this, new RoutedEventArgs());
+            return;
+        }
 
         if (ctrl)
         {

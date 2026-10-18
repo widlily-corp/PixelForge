@@ -9,7 +9,7 @@ namespace PixelForge.App.Services;
 /// </summary>
 public class UpdateService : IUpdateService
 {
-    public const string DefaultManifestUrl = "https://raw.githubusercontent.com/Widlily/PixelForge/main/latest.json";
+    public const string DefaultManifestUrl = "https://raw.githubusercontent.com/widlily-corp/PixelForge/main/latest.json";
 
     private readonly HttpClient _httpClient;
     private readonly string _manifestUrl;

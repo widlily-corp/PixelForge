@@ -9,9 +9,20 @@ namespace PixelForge.Core.Models;
 public partial class PixelCanvas : ObservableObject
 {
     private Layer? _activeLayer;
+    private int _width;
+    private int _height;
 
-    public int Width { get; }
-    public int Height { get; }
+    public int Width
+    {
+        get => _width;
+        private set => SetProperty(ref _width, value);
+    }
+
+    public int Height
+    {
+        get => _height;
+        private set => SetProperty(ref _height, value);
+    }
 
     public ObservableCollection<Layer> Layers { get; } = new();
 
@@ -33,12 +44,31 @@ public partial class PixelCanvas : ObservableObject
             throw new ArgumentOutOfRangeException(nameof(height), "Height must be greater than zero.");
         }
 
-        Width = width;
-        Height = height;
+        _width = width;
+        _height = height;
 
         var defaultLayer = new Layer("Layer 1", width, height);
         Layers.Add(defaultLayer);
         ActiveLayer = defaultLayer;
+    }
+
+    /// <summary>
+    /// Updates the canvas dimensions during a resize operation.
+    /// </summary>
+    public void SetDimensions(int newWidth, int newHeight)
+    {
+        if (newWidth <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(newWidth), "Width must be greater than zero.");
+        }
+
+        if (newHeight <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(newHeight), "Height must be greater than zero.");
+        }
+
+        Width = newWidth;
+        Height = newHeight;
     }
 
     public PixelCanvas(int width, int height, IEnumerable<Layer> layers, Layer? activeLayer = null)

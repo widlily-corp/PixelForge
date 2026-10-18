@@ -77,6 +77,20 @@ public partial class CanvasViewModel : ViewModelBase
         OnPropertyChanged(nameof(DimensionsText));
     }
 
+    /// <summary>
+    /// Notifies listeners that canvas dimensions have changed (e.g. after a resize command).
+    /// </summary>
+    public void NotifyDimensionsChanged()
+    {
+        SymmetryAxisX = Canvas.Width / 2;
+        SymmetryAxisY = Canvas.Height / 2;
+        Selection.Clear();
+
+        OnPropertyChanged(nameof(CanvasWidth));
+        OnPropertyChanged(nameof(CanvasHeight));
+        OnPropertyChanged(nameof(DimensionsText));
+    }
+
     public void UpdateCursor(int x, int y, bool isInside)
     {
         CursorX = x;

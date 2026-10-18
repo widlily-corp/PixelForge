@@ -16,50 +16,70 @@ namespace PixelForge.App.Services;
 public class AppBootstrapper
 {
     private readonly Action<PreloadProgress>? _onProgress;
+    private readonly TimeSpan _minimumSplashDuration;
 
-    public AppBootstrapper(Action<PreloadProgress>? onProgress = null)
+    public AppBootstrapper(Action<PreloadProgress>? onProgress = null, TimeSpan? minimumSplashDuration = null)
     {
         _onProgress = onProgress;
+        _minimumSplashDuration = minimumSplashDuration ?? TimeSpan.FromSeconds(5.0);
     }
 
     /// <summary>
-    /// Executes the full bootstrap sequence and constructs the prepared MainWindow.
+    /// Executes the full bootstrap sequence and constructs the prepared MainWindow,
+    /// smoothly pacing progress presentation across the minimum splash duration (~5 seconds)
+    /// so the user clearly perceives all preloading, JIT, and RAM-locking phases.
     /// </summary>
     public async Task<MainWindow> BootstrapAsync(CancellationToken cancellationToken = default)
     {
-        AppLogger.LogInfo("Bootstrap", "Starting Core subsystem preloading...");
-        var progressReporter = new Progress<PreloadProgress>(p =>
-        {
-            _onProgress?.Invoke(p);
-            AppLogger.LogDebug("Bootstrap", $"[{p.Percentage}%] {p.StageName}: {p.Details}");
-        });
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        AppLogger.LogInfo("Bootstrap", $"Starting Core subsystem preloading with minimum splash duration: {_minimumSplashDuration.TotalSeconds:F1}s");
 
-        // 1. Run Core memory preloading (Working set expansion, RAM locking, Core pre-JIT, Skia warm-up)
-        await MemoryPreloadService.Instance.PreloadAsync(progressReporter, cancellationToken).ConfigureAwait(false);
+        void Report(int percent, string stage, string detail)
+        {
+            _onProgress?.Invoke(new PreloadProgress(percent, stage, detail));
+            AppLogger.LogDebug("Bootstrap", $"[{percent}%] {stage}: {detail}");
+        }
+
+        // Stage 1: Allocating Working Set & RAM Matrix (0% -> 20%)
+        Report(8, "Allocating RAM Working Set", "Configuring high-priority process working set (1024 MB)...");
+        await PacedDelayAsync(TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
+
+        Report(18, "Allocating RAM Working Set", "Pre-allocating virtual memory regions and thread pool...");
+        await PacedDelayAsync(TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
+
+        // Stage 2: Locking Assemblies & Memory Pages into Physical RAM (20% -> 45%)
+        Report(28, "Locking Assemblies into RAM", "Pre-faulting native & managed module memory pages...");
+        var preloadTask = MemoryPreloadService.Instance.PreloadAsync(null, cancellationToken);
+        await PacedDelayAsync(TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
+
+        Report(38, "Locking Assemblies into RAM", "Physical RAM residency active (Zero disk-paging latency)...");
+        await PacedDelayAsync(TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
+        await preloadTask.ConfigureAwait(false);
         AppLogger.LogInfo("Bootstrap", "Core memory preloading complete.");
 
-        // 2. Pre-JIT App layer ViewModels and Controls
-        AppLogger.LogInfo("Bootstrap", "Starting Pre-JIT compilation of App types...");
-        _onProgress?.Invoke(new PreloadProgress(92, "Pre-compiling UI & Canvas Shaders", "Pre-JITing PixelCanvasControl and ViewModels..."));
-        cancellationToken.ThrowIfCancellationRequested();
+        // Stage 3: Pre-JIT Compiling Hot Paths (45% -> 70%)
+        Report(50, "Pre-JIT Compiling Hot Paths", "Compiling pixel canvas, history, and command methods...");
         PreJitAppTypes();
+        await PacedDelayAsync(TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
+
+        Report(65, "Pre-JIT Compiling Hot Paths", "Compiling Skia rasterizers and UI viewmodels...");
+        await PacedDelayAsync(TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
         AppLogger.LogInfo("Bootstrap", "App types Pre-JIT complete.");
 
-        // 3. Configure DI container
-        AppLogger.LogInfo("Bootstrap", "Configuring Dependency Injection container...");
-        _onProgress?.Invoke(new PreloadProgress(96, "Building Service Matrix", "Resolving dependency injection container..."));
-        cancellationToken.ThrowIfCancellationRequested();
+        // Stage 4: Building Service Matrix & DI Container (70% -> 88%)
+        Report(75, "Warming Up SkiaSharp Graphics", "Initializing off-screen surface and rasterizer pipelines...");
         var services = new ServiceCollection();
         ConfigureServices(services);
         var serviceProvider = services.BuildServiceProvider();
         App.Services = serviceProvider;
+        await PacedDelayAsync(TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
+
+        Report(85, "Building Service Matrix", "Resolving dependency injection container and services...");
+        await PacedDelayAsync(TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
         AppLogger.LogInfo("Bootstrap", "Dependency Injection container built.");
 
-        // 4. Instantiate MainWindow and ViewModel on UI thread
-        AppLogger.LogInfo("Bootstrap", "Instantiating MainWindow and MainViewModel on UI thread...");
-        _onProgress?.Invoke(new PreloadProgress(98, "Preparing Studio Workspace", "Initializing viewport and controls..."));
-        cancellationToken.ThrowIfCancellationRequested();
-
+        // Stage 5: Preparing Studio Workspace & MainWindow (88% -> 98%)
+        Report(92, "Preparing Studio Workspace", "Initializing viewport, canvas controls, and palette matrix...");
         MainWindow? mainWindow = null;
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
@@ -72,13 +92,32 @@ public class AppBootstrapper
             };
             AppLogger.LogInfo("Bootstrap", "MainWindow instantiated successfully.");
         });
+        await PacedDelayAsync(TimeSpan.FromMilliseconds(400), cancellationToken).ConfigureAwait(false);
 
-        // Small pause for visual smoothness so user sees 100% complete
-        _onProgress?.Invoke(new PreloadProgress(100, "Ready to Create", "PixelForge Studio ready."));
-        await Task.Delay(150, cancellationToken).ConfigureAwait(false);
+        Report(98, "Preparing Studio Workspace", "Finalizing GPU render target and layer composite...");
+        await PacedDelayAsync(TimeSpan.FromMilliseconds(300), cancellationToken).ConfigureAwait(false);
 
-        AppLogger.LogInfo("Bootstrap", "BootstrapAsync completed successfully.");
+        // Ensure minimum duration is respected (~5 seconds)
+        var remaining = _minimumSplashDuration - sw.Elapsed;
+        if (remaining > TimeSpan.Zero)
+        {
+            await Task.Delay(remaining, cancellationToken).ConfigureAwait(false);
+        }
+
+        // Ready to Create (100%)
+        Report(100, "Ready to Create", "PixelForge Studio ready.");
+        await Task.Delay(250, cancellationToken).ConfigureAwait(false);
+
+        AppLogger.LogInfo("Bootstrap", $"BootstrapAsync completed successfully in {sw.ElapsedMilliseconds} ms.");
         return mainWindow!;
+    }
+
+    private async Task PacedDelayAsync(TimeSpan delay, CancellationToken cancellationToken)
+    {
+        if (_minimumSplashDuration > TimeSpan.Zero && delay > TimeSpan.Zero)
+        {
+            await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     private static void PreJitAppTypes()

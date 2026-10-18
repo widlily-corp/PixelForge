@@ -80,6 +80,16 @@
                     <MenuItem Header="Вставить" InputGesture="Ctrl+V" Command="{Binding PasteCommand}" />
                 </MenuItem>
 
+                <!-- Canvas Menu -->
+                <MenuItem Header="Холст">
+                    <MenuItem Name="MenuResizeCanvas" Header="Размер холста..." InputGesture="Ctrl+Alt+C" />
+                    <Separator />
+                    <MenuItem Header="Отразить слой по горизонтали" Command="{Binding FlipActiveLayerHorizontalCommand}" />
+                    <MenuItem Header="Отразить слой по вертикали" Command="{Binding FlipActiveLayerVerticalCommand}" />
+                    <Separator />
+                    <MenuItem Header="Очистить активный слой" Command="{Binding ClearActiveLayerCommand}" />
+                </MenuItem>
+
                 <!-- View Menu -->
                 <MenuItem Header="Вид">
                     <MenuItem Header="Пиксельная сетка" InputGesture="Ctrl+G" Command="{Binding CanvasViewModel.ToggleGridCommand}" />
@@ -109,6 +119,9 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4">
                     <Button Name="QuickNewButton" Classes="action-btn" ToolTip.Tip="Новый холст (Ctrl+N)">
                         <PathIcon Data="{DynamicResource IconNewFile}" Width="16" Height="16" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    </Button>
+                    <Button Name="QuickResizeButton" Classes="action-btn" ToolTip.Tip="Изменить размер холста (Ctrl+Alt+C)">
+                        <PathIcon Data="{DynamicResource IconCrop}" Width="16" Height="16" Foreground="{DynamicResource TextPrimaryBrush}" />
                     </Button>
                     <Button Classes="action-btn" Command="{Binding OpenProjectCommand}" ToolTip.Tip="Открыть проект (Ctrl+O)">
                         <PathIcon Data="{DynamicResource IconFolderOpen}" Width="16" Height="16" Foreground="{DynamicResource TextPrimaryBrush}" />
@@ -393,12 +406,17 @@
                            VerticalAlignment="Center" FontSize="11"
                            Foreground="{DynamicResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" />
 
-                <!-- Canvas Dimensions -->
-                <Border Grid.Column="1" Margin="8,0" Padding="6,2" VerticalAlignment="Center"
-                        Background="{DynamicResource SurfaceCardBrush}" CornerRadius="4">
-                    <TextBlock Text="{Binding CanvasViewModel.DimensionsText}" FontSize="10" FontWeight="SemiBold"
-                               Foreground="{DynamicResource TextSecondaryBrush}" />
-                </Border>
+                <!-- Canvas Dimensions (Click to Resize) -->
+                <Button Name="StatusDimensionsButton" Grid.Column="1" Margin="8,0" Padding="8,2" VerticalAlignment="Center"
+                        Height="22" Classes="action-btn"
+                        Background="{DynamicResource SurfaceCardBrush}" CornerRadius="4"
+                        ToolTip.Tip="Изменить размер холста (Ctrl+Alt+C)">
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <PathIcon Data="{DynamicResource IconCrop}" Width="11" Height="11" Foreground="{DynamicResource AccentPrimaryBrush}" />
+                        <TextBlock Text="{Binding CanvasViewModel.DimensionsText}" FontSize="10" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
 
                 <!-- Zoom Level -->
                 <Border Grid.Column="2" Margin="4,0" Padding="6,2" VerticalAlignment="Center"

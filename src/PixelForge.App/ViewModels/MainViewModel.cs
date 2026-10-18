@@ -174,6 +174,85 @@ public partial class MainViewModel : ViewModelBase
         StatusMessage = $"New canvas ({width}x{height})";
     }
 
+    public void ResizeCanvas(int newWidth, int newHeight, CanvasAnchor anchor = CanvasAnchor.Center, ResizeMode mode = ResizeMode.Anchor)
+    {
+        if (newWidth <= 0 || newHeight <= 0) return;
+        if (newWidth == CanvasViewModel.CanvasWidth && newHeight == CanvasViewModel.CanvasHeight) return;
+
+        var cmd = new ResizeCanvasCommand(
+            CanvasViewModel.Canvas,
+            newWidth,
+            newHeight,
+            anchor,
+            mode,
+            () =>
+            {
+                CanvasViewModel.NotifyDimensionsChanged();
+                IsDirty = true;
+                OnPropertyChanged(nameof(Title));
+            });
+
+        _undoRedoService.ExecuteCommand(cmd);
+        StatusMessage = $"Размер холста изменён на {newWidth} × {newHeight} px";
+    }
+
+    [RelayCommand]
+    public void FlipActiveLayerHorizontal()
+    {
+        FlipActiveLayer(FlipDirection.Horizontal);
+    }
+
+    [RelayCommand]
+    public void FlipActiveLayerVertical()
+    {
+        FlipActiveLayer(FlipDirection.Vertical);
+    }
+
+    public void FlipActiveLayer(FlipDirection direction)
+    {
+        var activeLayer = CanvasViewModel.Canvas.ActiveLayer;
+        if (activeLayer == null) return;
+
+        var cmd = new FlipLayerCommand(
+            activeLayer,
+            direction,
+            () =>
+            {
+                IsDirty = true;
+                OnPropertyChanged(nameof(Title));
+            });
+
+        _undoRedoService.ExecuteCommand(cmd);
+        StatusMessage = $"Слой '{activeLayer.Name}' отражён {(direction == FlipDirection.Horizontal ? "по горизонтали" : "по вертикали")}";
+    }
+
+    [RelayCommand]
+    public void ClearActiveLayer()
+    {
+        var layer = CanvasViewModel.Canvas.ActiveLayer;
+        if (layer == null) return;
+
+        var deltas = new List<PixelDelta>(layer.Width * layer.Height);
+        for (int y = 0; y < layer.Height; y++)
+        {
+            for (int x = 0; x < layer.Width; x++)
+            {
+                var oldCol = layer.GetPixel(x, y);
+                if (oldCol.A > 0)
+                {
+                    deltas.Add(new PixelDelta(x, y, oldCol, PixelColor.Transparent));
+                }
+            }
+        }
+
+        if (deltas.Count > 0)
+        {
+            var cmd = new DrawPixelsCommand(layer, deltas.ToArray(), $"Clear {layer.Name}");
+            _undoRedoService.ExecuteCommand(cmd);
+            StatusMessage = $"Слой '{layer.Name}' очищен";
+        }
+    }
+
     [RelayCommand]
     public async Task OpenProjectAsync()
     {
@@ -393,25 +472,25 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public async Task CheckForUpdatesAsync()
     {
-        StatusMessage = "Checking for updates...";
+        StatusMessage = "Проверка наличия обновлений...";
         var result = await _updateService.CheckForUpdatesAsync(silent: false);
 
         if (!result.Success)
         {
-            StatusMessage = result.ErrorMessage ?? "Failed to check for updates";
+            StatusMessage = "Не удалось связаться с сервером обновлений. Проверьте подключение к сети.";
             return;
         }
 
         if (result.IsUpdateAvailable)
         {
             UpdateDownloadUrl = result.DownloadUrl;
-            UpdateBannerMessage = $"New version v{result.LatestVersion} is available! {result.ReleaseNotes}";
+            UpdateBannerMessage = $"Доступна новая версия v{result.LatestVersion}! {result.ReleaseNotes}";
             IsUpdateBannerVisible = true;
-            StatusMessage = $"Update available: v{result.LatestVersion}";
+            StatusMessage = $"Доступно обновление: v{result.LatestVersion}";
         }
         else
         {
-            StatusMessage = $"PixelForge is up to date (v{_updateService.CurrentVersion})";
+            StatusMessage = $"У вас установлена последняя версия (v{_updateService.CurrentVersion}). Обновления не требуются.";
         }
     }
 
@@ -439,7 +518,7 @@ public partial class MainViewModel : ViewModelBase
             if (result.Success && result.IsUpdateAvailable)
             {
                 UpdateDownloadUrl = result.DownloadUrl;
-                UpdateBannerMessage = $"New version v{result.LatestVersion} is available!";
+                UpdateBannerMessage = $"Доступна новая версия v{result.LatestVersion}!";
                 IsUpdateBannerVisible = true;
             }
         }

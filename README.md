@@ -14,6 +14,7 @@
   <img src="https://img.shields.io/badge/Avalonia-11.1.3-informational.svg" alt="Avalonia 11" />
   <img src="https://img.shields.io/badge/Rendering-SkiaSharp-orange.svg" alt="SkiaSharp" />
   <img src="https://img.shields.io/badge/Installer-Inno%20Setup%20LZMA2-brightgreen.svg" alt="Inno Setup LZMA2" />
+  <img src="https://img.shields.io/badge/Tests-89%20passed-success.svg" alt="Tests 89 passed" />
   <img src="https://img.shields.io/badge/License-Apache--2.0-green.svg" alt="Apache 2.0 License" />
   <img src="https://img.shields.io/badge/Platform-Windows%20x64-lightgrey.svg" alt="Windows x64" />
 </p>
@@ -22,6 +23,13 @@
 
 ## 🚀 Ключевые возможности v0.1.0
 
+### 🖼️ Интерактивное масштабирование холста (Canvas Resize & Transform)
+- **Диалог размера холста (`ResizeCanvasDialog`):** Полный контроль над размерами холста (от 8 до 1024 px). Доступен через верхнее меню (`Холст -> Размер холста...`), горячие клавиши (<kbd>Ctrl+Alt+C</kbd> / <kbd>Ctrl+R</kbd>) или клик по бейджу размеров в нижней строке состояния.
+- **Сетка привязки якоря 3×3:** Выбор точки якоря (Сверху-слева, По центру, Снизу-справа и др.) при расширении или обрезке холста.
+- **Режим масштабирования пикселей (Nearest-Neighbor):** Пропорциональное увеличение/уменьшение пикселей без размытия.
+- **Быстрые пресеты:** Мгновенный выбор 16×16, 32×32, 48×48, 64×64, 128×128, 256×256, удвоение (2×) и уменьшение вдвое (0.5×).
+- **Трансформация слоев:** Зеркальное отражение активного слоя по горизонтали и вертикали (`FlipLayerCommand`), а также полная очистка слоя с обратимостью в истории Undo/Redo.
+
 ### 🧠 Полная выгрузка в ОЗУ (Zero-Paging RAM Resident)
 - **High-Priority Working Set:** Вызов Win32 `SetProcessWorkingSetSize` выделяет приложению рабочий набор от 256 МБ до 1024 МБ в физической ОЗУ.
 - **Предварительный Pre-faulting страниц:** Модуль `MemoryPreloadService` при старте обходит все 4КБ страницы памяти загруженных сборок и нативных библиотек (`libSkiaSharp.dll`, Avalonia, PixelForge), гарантируя 100% резидентность кода в памяти без задержек дискового свопа.
@@ -29,15 +37,14 @@
 - **Опережающая JIT-компиляция (Pre-JIT):** Компиляция всех методов критических типов (`RuntimeHelpers.PrepareMethod`) при старте приложения исключает микрофризы во время рисования.
 
 ### 🎨 Экран запуска студии с реальной предзагрузкой (`SplashWindow`)
-- **Профессиональный дизайн:** Темная студийная тема (`#12131C`) с неоновыми акцентами (`#00D2FF` / `#818CF8`) и индикацией прогресса.
-- **Динамический прогресс-бар (0% → 100%):** Отображает реальное состояние инициализации подсистем:
-  1. Выделение и фиксация рабочего набора ОЗУ;
-  2. Загрузка страниц сборок и нативных библиотек;
-  3. Pre-JIT компиляция горячих путей рендеринга и истории;
-  4. Прогрев графического конвейера SkiaSharp;
-  5. Кэширование палитр и матрицы инструментов;
-  6. Подготовка рабочего пространства студии.
+- **Профессиональный дизайн:** Темная студийная тема (`#12131C`) с неоновыми акцентами (`#00D2FF` / `#818CF8`) и подробной индикацией аппаратного прогресса.
+- **Плавная индикация прогресса (~5 секунд):** Оркестратор `AppBootstrapper` проводит пользователя по всем этапам инициализации (выделение ОЗУ, фиксация страниц, Pre-JIT, прогрев SkiaSharp и сервисы), давая возможность оценить процесс подготовки рабочего окружения.
 - **Асинхронный запуск (`AppBootstrapper`):** Бесшовный переход к рабочему окну без подвисания интерфейса.
+
+### 🛡️ Диагностика, дампы и логирование (`CrashReportService` & `AppLogger`)
+- **Нативные минидампы Windows (`.dmp`):** Автоматическая генерация дампов памяти через Win32 `DbgHelp.dll` (`MiniDumpWriteDump`) при любых сбоях.
+- **Структурированная JSON-телеметрия:** Запись полных сведений о состоянии процесса, ОЗУ и стеке вызовов в `%LOCALAPPDATA%/PixelForge/CrashReports/`.
+- **Потоковый лог (`debug.log`):** Мгновенная запись логов приложения рядом с исполняемым файлом с автосбросом буфера.
 
 ### ⚡ Высокопроизводительный конвейер SkiaSharp (60+ FPS)
 - **ReadyToRun & Tiered PGO:** Включена опережающая AOT-компиляция машинного кода под x64 и многопоточный GC рабочей станции.
@@ -70,7 +77,7 @@
   - Ассоциация файлов проектов `.pxproj` с кастомной иконкой;
   - Создание ярлыков в меню «Пуск» и на рабочем столе;
   - Регистрация чистого деинсталлятора в разделе «Установленные приложения» Windows.
-- **OTA-обновления:** Автоматическая проверка обновлений через GitHub Releases (`latest.json`).
+- **OTA-обновления:** Проверка обновлений через GitHub Releases (`widlily-corp/PixelForge/main/latest.json`).
 
 ---
 
@@ -87,6 +94,7 @@
 | **Эллипс (Ellipse)** | <kbd>C</kbd> | Эллипс / круг (контур / заливка) |
 | **Выделение (Selection)** | <kbd>S</kbd> / <kbd>M</kbd> | Прямоугольное выделение пикселей |
 | **Поменять цвета местами** | <kbd>X</kbd> | Переключение Primary ↔ Secondary |
+| **Размер холста (Resize)** | <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>C</kbd> / <kbd>Ctrl</kbd> + <kbd>R</kbd> | Диалог изменения размеров холста |
 | **Отмена (Undo)** | <kbd>Ctrl</kbd> + <kbd>Z</kbd> | Отменить последнее действие |
 | **Повтор (Redo)** | <kbd>Ctrl</kbd> + <kbd>Y</kbd> / <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd> | Повторить отмененное действие |
 | **Новый холст** | <kbd>Ctrl</kbd> + <kbd>N</kbd> | Создать новый проект |
@@ -105,11 +113,15 @@
 ```mermaid
 graph TD
     subgraph Bootstrap ["Запуск и предзагрузка ОЗУ"]
-        SW["SplashWindow (Экран запуска)"]
+        SW["SplashWindow (Экран запуска 5с)"]
         AB["AppBootstrapper (Асинхронный оркестратор)"]
         MPS["MemoryPreloadService (Working Set / Pre-JIT / Skia Warm-up)"]
+        CRS["CrashReportService (DbgHelp MiniDump & JSON)"]
+        LOG["AppLogger (Потоковый debug.log)"]
         SW --> AB
         AB --> MPS
+        AB --> CRS
+        AB --> LOG
     end
 
     subgraph UI ["Слой представления (PixelForge.App)"]
@@ -118,6 +130,7 @@ graph TD
         LP["LivePreviewControl (1x/2x/4x Preview)"]
         CP["ColorPickerView (Слайдеры, Hex, Палитры)"]
         LM["Менеджер слоев (Layer Manager)"]
+        RCD["ResizeCanvasDialog (Диалог размера холста)"]
     end
 
     subgraph MVVM ["Слой ViewModel (CommunityToolkit.Mvvm)"]
@@ -134,6 +147,7 @@ graph TD
         Layers["Layer Stack & PixelColor"]
         Tools["ITool: Pencil, Eraser, Fill, Eye, Line, Rect, Ellipse, Select"]
         History["UndoRedoService & PixelDelta"]
+        ResizeCmd["ResizeCanvasCommand & FlipLayerCommand"]
         Palettes["PalettePresets: DawnBringer32, Pico8, GameBoy, NES"]
         Export["ExportService (PNG / BMP)"]
         ProjectSvc["ProjectService (.pxproj)"]
@@ -143,6 +157,7 @@ graph TD
 
     AB --> MW
     MW --> MVM
+    MW --> RCD
     PC --> CVM
     LP --> CVM
     CP --> PVM
@@ -156,6 +171,7 @@ graph TD
     CVM --> PCanvas
     LVM --> Layers
     HVM --> History
+    MVM --> ResizeCmd
     MVM --> Export
     MVM --> ProjectSvc
     MVM --> AutoSave
@@ -182,10 +198,10 @@ graph TD
 
 ### Сборка и тестирование
 ```powershell
-# Сборка Release
+# Сборка Release с проверкой на 0 предупреждений
 dotnet build PixelForge.sln -c Release /warnaserror
 
-# Запуск тестов (xUnit)
+# Запуск всех 89 тестов (xUnit + FluentAssertions)
 dotnet test PixelForge.sln -c Release --no-build
 ```
 
