@@ -1,0 +1,41 @@
+# .gitignore for PixelForge (.NET 8 + Avalonia + SkiaSharp)
+
+# Build and binary outputs
+bin/
+obj/
+artifacts/
+publish/
+[Bb]uild/
+
+# Visual Studio / Rider / IDE caches
+.vs/
+.idea/
+.vscode/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.pidb
+*.booproj
+
+# Test results and coverage
+TestResults/
+*.trx
+coverage/
+
+# AppData and local temp files
+autosave/
+*.autosave
+*.tmp
+*.log
+
+# Internal & environment files
+.agents*
+*agent*
+AGENTS*
+
+# OS-specific
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
