@@ -1,0 +1,417 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:PixelForge.App.ViewModels"
+        xmlns:controls="using:PixelForge.App.Controls"
+        xmlns:views="using:PixelForge.App.Views"
+        mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
+        x:Class="PixelForge.App.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="{Binding Title, FallbackValue='PixelForge v0.0.1'}"
+        Icon="/Assets/icon.ico"
+        Width="1280" Height="800"
+        MinWidth="1024" MinHeight="680"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource SurfaceBaseBrush}">
+
+    <Window.Styles>
+        <!-- Toolbar Tool Button Style -->
+        <Style Selector="Button.tool-btn">
+            <Setter Property="Width" Value="38" />
+            <Setter Property="Height" Value="38" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.tool-btn:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+        </Style>
+
+        <!-- Quick Action Icon Button Style -->
+        <Style Selector="Button.action-btn">
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.action-btn:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+        <!-- 1. Top MenuBar -->
+        <Border Grid.Row="0" Background="{DynamicResource SurfacePanelBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,0,0,1">
+            <Menu Height="28">
+                <!-- File Menu -->
+                <MenuItem Header="Файл">
+                    <MenuItem Name="MenuNew" Header="Новый холст..." InputGesture="Ctrl+N" />
+                    <MenuItem Header="Открыть проект..." InputGesture="Ctrl+O" Command="{Binding OpenProjectCommand}" />
+                    <MenuItem Header="Сохранить" InputGesture="Ctrl+S" Command="{Binding SaveProjectCommand}" />
+                    <MenuItem Header="Сохранить как..." InputGesture="Ctrl+Shift+S" Command="{Binding SaveProjectAsCommand}" />
+                    <Separator />
+                    <MenuItem Header="Экспорт в PNG..." Command="{Binding ExportPngCommand}" />
+                    <MenuItem Header="Экспорт в BMP..." Command="{Binding ExportBmpCommand}" />
+                    <Separator />
+                    <MenuItem Name="MenuExit" Header="Выход" InputGesture="Alt+F4" />
+                </MenuItem>
+
+                <!-- Edit Menu -->
+                <MenuItem Header="Правка">
+                    <MenuItem Header="Отменить" InputGesture="Ctrl+Z" Command="{Binding HistoryViewModel.UndoCommand}" />
+                    <MenuItem Header="Повторить" InputGesture="Ctrl+Y" Command="{Binding HistoryViewModel.RedoCommand}" />
+                    <Separator />
+                    <MenuItem Header="Вырезать" InputGesture="Ctrl+X" Command="{Binding CutCommand}" />
+                    <MenuItem Header="Копировать" InputGesture="Ctrl+C" Command="{Binding CopyCommand}" />
+                    <MenuItem Header="Вставить" InputGesture="Ctrl+V" Command="{Binding PasteCommand}" />
+                </MenuItem>
+
+                <!-- View Menu -->
+                <MenuItem Header="Вид">
+                    <MenuItem Header="Пиксельная сетка" InputGesture="Ctrl+G" Command="{Binding CanvasViewModel.ToggleGridCommand}" />
+                    <MenuItem Header="Симметрия по горизонтали (X)" Command="{Binding CanvasViewModel.ToggleSymmetryXCommand}" />
+                    <MenuItem Header="Симметрия по вертикали (Y)" Command="{Binding CanvasViewModel.ToggleSymmetryYCommand}" />
+                    <Separator />
+                    <MenuItem Header="Приблизить" InputGesture="Ctrl++" Command="{Binding CanvasViewModel.ZoomInCommand}" />
+                    <MenuItem Header="Отдалить" InputGesture="Ctrl+-" Command="{Binding CanvasViewModel.ZoomOutCommand}" />
+                    <MenuItem Header="Сбросить масштаб (100%)" Command="{Binding CanvasViewModel.ResetZoomCommand}" />
+                    <Separator />
+                    <MenuItem Name="MenuToggleTheme" Header="Переключить тему (Тёмная/Светлая)" />
+                </MenuItem>
+
+                <!-- Help Menu -->
+                <MenuItem Header="Справка">
+                    <MenuItem Header="Проверить обновления..." Command="{Binding CheckForUpdatesCommand}" />
+                    <Separator />
+                    <MenuItem Name="MenuAbout" Header="О программе..." />
+                </MenuItem>
+            </Menu>
+        </Border>
+
+        <!-- 2. Quick Action Toolbar -->
+        <Border Grid.Row="1" Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,0,0,1" Padding="8,4">
+            <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto">
+                <!-- File Shortcuts -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4">
+                    <Button Name="QuickNewButton" Classes="action-btn" ToolTip.Tip="Новый холст (Ctrl+N)">
+                        <PathIcon Data="{DynamicResource IconNewFile}" Width="16" Height="16" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    </Button>
+                    <Button Classes="action-btn" Command="{Binding OpenProjectCommand}" ToolTip.Tip="Открыть проект (Ctrl+O)">
+                        <PathIcon Data="{DynamicResource IconFolderOpen}" Width="16" Height="16" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    </Button>
+                    <Button Classes="action-btn" Command="{Binding SaveProjectCommand}" ToolTip.Tip="Сохранить проект (Ctrl+S)">
+                        <PathIcon Data="{DynamicResource IconSave}" Width="16" Height="16" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    </Button>
+                </StackPanel>
+
+                <Separator Grid.Column="1" Width="1" Height="20" Margin="8,0" Background="{DynamicResource BorderSubtleBrush}" />
+
+                <!-- History (Undo/Redo) -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
+                    <Button Classes="action-btn" Command="{Binding HistoryViewModel.UndoCommand}" ToolTip.Tip="Отменить (Ctrl+Z)">
+                        <PathIcon Data="{DynamicResource IconUndo}" Width="16" Height="16" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    </Button>
+                    <Button Classes="action-btn" Command="{Binding HistoryViewModel.RedoCommand}" ToolTip.Tip="Повторить (Ctrl+Y)">
+                        <PathIcon Data="{DynamicResource IconRedo}" Width="16" Height="16" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    </Button>
+                </StackPanel>
+
+                <Separator Grid.Column="3" Width="1" Height="20" Margin="8,0" Background="{DynamicResource BorderSubtleBrush}" />
+
+                <!-- Overlays: Grid & Symmetry -->
+                <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="4">
+                    <ToggleButton Name="GridToggle" IsChecked="{Binding CanvasViewModel.ShowGrid, Mode=TwoWay}"
+                                  Height="30" Padding="8,4" CornerRadius="4"
+                                  ToolTip.Tip="Пиксельная сетка (Ctrl+G)">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{DynamicResource IconGrid}" Width="14" Height="14" />
+                            <TextBlock Text="Сетка" FontSize="11" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ToggleButton>
+
+                    <ToggleButton Name="SymXToggle" IsChecked="{Binding CanvasViewModel.ShowSymmetryX, Mode=TwoWay}"
+                                  Height="30" Padding="8,4" CornerRadius="4"
+                                  ToolTip.Tip="Симметрия X (зеркало по горизонтали)">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{DynamicResource IconSymmetryX}" Width="14" Height="14" />
+                            <TextBlock Text="Симм. X" FontSize="11" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ToggleButton>
+
+                    <ToggleButton Name="SymYToggle" IsChecked="{Binding CanvasViewModel.ShowSymmetryY, Mode=TwoWay}"
+                                  Height="30" Padding="8,4" CornerRadius="4"
+                                  ToolTip.Tip="Симметрия Y (зеркало по вертикали)">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{DynamicResource IconSymmetryY}" Width="14" Height="14" />
+                            <TextBlock Text="Симм. Y" FontSize="11" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ToggleButton>
+                </StackPanel>
+
+                <!-- Zoom Controls & Theme Toggle -->
+                <StackPanel Grid.Column="6" Orientation="Horizontal" Spacing="4">
+                    <Button Classes="action-btn" Command="{Binding CanvasViewModel.ZoomOutCommand}" ToolTip.Tip="Отдалить (Ctrl+-)">
+                        <PathIcon Data="{DynamicResource IconZoomOut}" Width="14" Height="14" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    </Button>
+                    <TextBlock Text="{Binding CanvasViewModel.ZoomText}" Width="48" TextAlignment="Center"
+                               VerticalAlignment="Center" FontSize="11" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextSecondaryBrush}" />
+                    <Button Classes="action-btn" Command="{Binding CanvasViewModel.ZoomInCommand}" ToolTip.Tip="Приблизить (Ctrl++)">
+                        <PathIcon Data="{DynamicResource IconZoomIn}" Width="14" Height="14" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    </Button>
+                    <Button Classes="action-btn" Command="{Binding CanvasViewModel.ResetZoomCommand}" ToolTip.Tip="100% масштаб">
+                        <PathIcon Data="{DynamicResource IconZoomFit}" Width="14" Height="14" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    </Button>
+
+                    <Separator Width="1" Height="20" Margin="4,0" Background="{DynamicResource BorderSubtleBrush}" />
+
+                    <Button Name="QuickThemeButton" Classes="action-btn" ToolTip.Tip="Переключить тему оформления">
+                        <PathIcon Data="{DynamicResource IconTheme}" Width="14" Height="14" Foreground="{DynamicResource AccentPrimaryBrush}" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 3. Update Banner Notification (if update is available) -->
+        <Border Grid.Row="2" Background="{DynamicResource AccentPrimaryBrush}" Padding="12,6"
+                IsVisible="{Binding IsUpdateBannerVisible}">
+            <Grid ColumnDefinitions="*,Auto,Auto">
+                <TextBlock Grid.Column="0" Text="{Binding UpdateBannerMessage}"
+                           VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold" Foreground="#0A0E17" />
+                <Button Grid.Column="1" Content="Скачать" Margin="8,0" Padding="12,4" CornerRadius="4"
+                        Background="#0A0E17" Foreground="#FFFFFF" FontSize="11" FontWeight="Bold"
+                        Command="{Binding OpenUpdateDownloadPageCommand}" />
+                <Button Grid.Column="2" Content="✕" Padding="6,4" CornerRadius="4"
+                        Background="Transparent" Foreground="#0A0E17" FontSize="12" FontWeight="Bold"
+                        Command="{Binding DismissUpdateBannerCommand}" />
+            </Grid>
+        </Border>
+
+        <!-- 4. Three-Column Workspace Area -->
+        <Grid Grid.Row="3" ColumnDefinitions="52,*,300">
+            <!-- Left: Tools Palette Column -->
+            <Border Grid.Column="0" Background="{DynamicResource SurfacePanelBrush}"
+                    BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,0,1,0"
+                    Padding="6,10">
+                <Grid RowDefinitions="*,Auto">
+                    <!-- Tools List -->
+                    <StackPanel Grid.Row="0" Spacing="6" HorizontalAlignment="Center">
+                        <!-- Pencil -->
+                        <Button Name="ToolPencilButton" Classes="tool-btn" ToolTip.Tip="Карандаш (B)">
+                            <PathIcon Data="{DynamicResource IconPencil}" Width="18" Height="18"
+                                      Foreground="{DynamicResource TextPrimaryBrush}" />
+                        </Button>
+
+                        <!-- Eraser -->
+                        <Button Name="ToolEraserButton" Classes="tool-btn" ToolTip.Tip="Ластик (E)">
+                            <PathIcon Data="{DynamicResource IconEraser}" Width="18" Height="18"
+                                      Foreground="{DynamicResource TextPrimaryBrush}" />
+                        </Button>
+
+                        <!-- Fill Bucket -->
+                        <Button Name="ToolFillButton" Classes="tool-btn" ToolTip.Tip="Заливка (G)">
+                            <PathIcon Data="{DynamicResource IconFill}" Width="18" Height="18"
+                                      Foreground="{DynamicResource TextPrimaryBrush}" />
+                        </Button>
+
+                        <!-- Eyedropper -->
+                        <Button Name="ToolEyedropperButton" Classes="tool-btn" ToolTip.Tip="Пипетка (I)">
+                            <PathIcon Data="{DynamicResource IconEyedropper}" Width="18" Height="18"
+                                      Foreground="{DynamicResource TextPrimaryBrush}" />
+                        </Button>
+
+                        <!-- Line -->
+                        <Button Name="ToolLineButton" Classes="tool-btn" ToolTip.Tip="Линия (L)">
+                            <PathIcon Data="{DynamicResource IconLine}" Width="18" Height="18"
+                                      Foreground="{DynamicResource TextPrimaryBrush}" />
+                        </Button>
+
+                        <!-- Rectangle -->
+                        <Button Name="ToolRectangleButton" Classes="tool-btn" ToolTip.Tip="Прямоугольник (R)">
+                            <PathIcon Data="{DynamicResource IconRectangle}" Width="18" Height="18"
+                                      Foreground="{DynamicResource TextPrimaryBrush}" />
+                        </Button>
+
+                        <!-- Ellipse -->
+                        <Button Name="ToolEllipseButton" Classes="tool-btn" ToolTip.Tip="Эллипс (C)">
+                            <PathIcon Data="{DynamicResource IconEllipse}" Width="18" Height="18"
+                                      Foreground="{DynamicResource TextPrimaryBrush}" />
+                        </Button>
+
+                        <!-- Selection -->
+                        <Button Name="ToolSelectionButton" Classes="tool-btn" ToolTip.Tip="Выделение (S)">
+                            <PathIcon Data="{DynamicResource IconSelection}" Width="18" Height="18"
+                                      Foreground="{DynamicResource TextPrimaryBrush}" />
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Brush Size Indicator at Bottom -->
+                    <StackPanel Grid.Row="1" Spacing="4" HorizontalAlignment="Center">
+                        <TextBlock Text="Размер" FontSize="9" HorizontalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" />
+                        <Grid ColumnDefinitions="Auto,Auto">
+                            <Button Classes="action-btn" Padding="2" Width="18" Height="18"
+                                    Command="{Binding ToolViewModel.DecreaseBrushSizeCommand}" ToolTip.Tip="Уменьшить кисть">
+                                <TextBlock Text="-" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Button>
+                            <TextBlock Text="{Binding ToolViewModel.BrushSize}" Margin="4,0" FontSize="11" FontWeight="Bold"
+                                       VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <Button Classes="action-btn" Padding="2" Width="18" Height="18"
+                                    Command="{Binding ToolViewModel.IncreaseBrushSizeCommand}" ToolTip.Tip="Увеличить кисть">
+                                <TextBlock Text="+" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Center: Interactive SkiaSharp Canvas Control -->
+            <Border Grid.Column="1" Background="{DynamicResource SurfaceBaseBrush}" ClipToBounds="True">
+                <controls:PixelCanvasControl Name="MainCanvasControl"
+                                            CanvasViewModel="{Binding CanvasViewModel}"
+                                            ToolViewModel="{Binding ToolViewModel}"
+                                            PaletteViewModel="{Binding PaletteViewModel}"
+                                            HistoryViewModel="{Binding HistoryViewModel}"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Stretch" />
+            </Border>
+
+            <!-- Right: Inspector Column (Live Preview 1x, ColorPicker, Layer Manager) -->
+            <Border Grid.Column="2" Background="{DynamicResource SurfacePanelBrush}"
+                    BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1,0,0,0"
+                    Padding="10">
+                <Grid RowDefinitions="Auto,Auto,*">
+                    <!-- Top: Live Preview 1x Control -->
+                    <views:LivePreviewControl Grid.Row="0" Margin="0,0,0,10"
+                                              CanvasSource="{Binding CanvasViewModel.Canvas}" />
+
+                    <!-- Center: ColorPicker & Palette View -->
+                    <views:ColorPickerView Grid.Row="1" Margin="0,0,0,10"
+                                           DataContext="{Binding PaletteViewModel}" />
+
+                    <!-- Bottom: Layers Manager Panel -->
+                    <Border Grid.Row="2" Background="{DynamicResource SurfaceCardBrush}"
+                            BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1"
+                            CornerRadius="8" Padding="12">
+                        <Grid RowDefinitions="Auto,Auto,*">
+                            <!-- Layer Manager Header -->
+                            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <PathIcon Data="{DynamicResource IconLayers}" Width="14" Height="14" Foreground="{DynamicResource AccentPrimaryBrush}" />
+                                    <TextBlock Text="СЛОИ" FontSize="11" FontWeight="Bold"
+                                               Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+
+                                <!-- Layer Actions -->
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                    <Button Classes="action-btn" Command="{Binding LayerViewModel.AddLayerCommand}" ToolTip.Tip="Добавить слой">
+                                        <PathIcon Data="{DynamicResource IconAdd}" Width="13" Height="13" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    </Button>
+                                    <Button Classes="action-btn" Command="{Binding LayerViewModel.DuplicateLayerCommand}" ToolTip.Tip="Дублировать слой">
+                                        <PathIcon Data="{DynamicResource IconNewFile}" Width="13" Height="13" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    </Button>
+                                    <Button Classes="action-btn" Command="{Binding LayerViewModel.MergeDownCommand}" ToolTip.Tip="Объединить с нижним">
+                                        <PathIcon Data="{DynamicResource IconMergeDown}" Width="13" Height="13" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    </Button>
+                                    <Button Classes="action-btn" Command="{Binding LayerViewModel.RemoveLayerCommand}" ToolTip.Tip="Удалить слой">
+                                        <PathIcon Data="{DynamicResource IconDelete}" Width="13" Height="13" Foreground="{DynamicResource AccentDangerBrush}" />
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Layer Opacity Slider -->
+                            <Grid Grid.Row="1" ColumnDefinitions="Auto,*,36" Margin="0,0,0,8">
+                                <TextBlock Grid.Column="0" Text="Непрозр." FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                <Slider Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding LayerViewModel.ActiveLayer.Opacity, FallbackValue=1.0}"
+                                        VerticalAlignment="Center" Margin="0,0,4,0" />
+                                <TextBlock Grid.Column="2" Text="{Binding LayerViewModel.ActiveLayer.Opacity, StringFormat='{}{0:P0}', FallbackValue='100%'}"
+                                           FontSize="10" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}" />
+                            </Grid>
+
+                            <!-- Layers ListBox -->
+                            <ListBox Grid.Row="2" ItemsSource="{Binding LayerViewModel.Layers}"
+                                     SelectedItem="{Binding LayerViewModel.ActiveLayer, Mode=TwoWay}"
+                                     Background="Transparent" BorderThickness="0">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="Auto,*,Auto" Height="28">
+                                            <!-- Visibility Toggle Button -->
+                                            <Button Grid.Column="0" Classes="action-btn" Padding="4"
+                                                    Command="{Binding $parent[views:MainWindow].((vm:MainViewModel)DataContext).LayerViewModel.ToggleVisibilityCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    ToolTip.Tip="Видимость слоя">
+                                                <Panel>
+                                                    <PathIcon Data="{DynamicResource IconEye}" Width="13" Height="13"
+                                                              IsVisible="{Binding IsVisible}"
+                                                              Foreground="{DynamicResource AccentPrimaryBrush}" />
+                                                    <PathIcon Data="{DynamicResource IconEyeOff}" Width="13" Height="13"
+                                                              IsVisible="{Binding !IsVisible}"
+                                                              Foreground="{DynamicResource TextMutedBrush}" />
+                                                </Panel>
+                                            </Button>
+
+                                            <!-- Layer Name -->
+                                            <TextBlock Grid.Column="1" Text="{Binding Name}" Margin="8,0"
+                                                       VerticalAlignment="Center" FontSize="11"
+                                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                                       TextTrimming="CharacterEllipsis" />
+
+                                            <!-- Opacity text -->
+                                            <TextBlock Grid.Column="2" Text="{Binding Opacity, StringFormat='{}{0:P0}'}"
+                                                       VerticalAlignment="Center" FontSize="10"
+                                                       Foreground="{DynamicResource TextMutedBrush}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- 5. Bottom: StatusBar -->
+        <Border Grid.Row="4" Background="{DynamicResource SurfacePanelBrush}"
+                BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,1,0,0"
+                Height="28" Padding="12,0">
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto">
+                <!-- Status Message -->
+                <TextBlock Grid.Column="0" Text="{Binding StatusMessage}"
+                           VerticalAlignment="Center" FontSize="11"
+                           Foreground="{DynamicResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+
+                <!-- Canvas Dimensions -->
+                <Border Grid.Column="1" Margin="8,0" Padding="6,2" VerticalAlignment="Center"
+                        Background="{DynamicResource SurfaceCardBrush}" CornerRadius="4">
+                    <TextBlock Text="{Binding CanvasViewModel.DimensionsText}" FontSize="10" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextSecondaryBrush}" />
+                </Border>
+
+                <!-- Zoom Level -->
+                <Border Grid.Column="2" Margin="4,0" Padding="6,2" VerticalAlignment="Center"
+                        Background="{DynamicResource SurfaceCardBrush}" CornerRadius="4">
+                    <TextBlock Text="{Binding CanvasViewModel.ZoomText}" FontSize="10" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextSecondaryBrush}" />
+                </Border>
+
+                <!-- Cursor Coordinates -->
+                <Border Grid.Column="3" Margin="4,0" Padding="6,2" VerticalAlignment="Center"
+                        Background="{DynamicResource SurfaceCardBrush}" CornerRadius="4">
+                    <TextBlock Text="{Binding CanvasViewModel.CursorCoordinatesText}" FontSize="10" FontWeight="SemiBold"
+                               Foreground="{DynamicResource AccentPrimaryBrush}" />
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

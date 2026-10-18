@@ -1,0 +1,129 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="280" d:DesignHeight="380"
+             x:Class="PixelForge.App.Views.ColorPickerView">
+
+    <Border Background="{DynamicResource SurfaceCardBrush}"
+            BorderBrush="{DynamicResource BorderSubtleBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Padding="12">
+        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*">
+            <!-- Header -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+                <TextBlock Grid.Column="0" Text="ПАЛИТРА И ЦВЕТ" FontSize="11" FontWeight="Bold"
+                           Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                <ComboBox Name="PresetComboBox" Grid.Column="1" Height="26" FontSize="11"
+                          Padding="6,2" VerticalAlignment="Center"
+                          Background="{DynamicResource SurfacePanelBrush}"
+                          BorderBrush="{DynamicResource BorderSubtleBrush}">
+                    <ComboBoxItem Content="Default 32" IsSelected="True" />
+                    <ComboBoxItem Content="PICO-8" />
+                    <ComboBoxItem Content="GameBoy" />
+                    <ComboBoxItem Content="NES 54" />
+                </ComboBox>
+            </Grid>
+
+            <!-- Color Swatches & Hex Display -->
+            <Grid Grid.Row="1" ColumnDefinitions="Auto,12,*" Margin="0,0,0,12">
+                <!-- Primary / Secondary Overlapping Boxes -->
+                <Grid Grid.Column="0" Width="48" Height="48">
+                    <!-- Secondary Color (Behind) -->
+                    <Border Name="SecondaryColorBox" Width="30" Height="30"
+                            HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                            Background="#FFFFFF"
+                            BorderBrush="{DynamicResource BorderStrongBrush}"
+                            BorderThickness="1" CornerRadius="4"
+                            Cursor="Hand" ToolTip.Tip="Вторичный цвет (ПКМ на палитре)" />
+
+                    <!-- Primary Color (In Front) -->
+                    <Border Name="PrimaryColorBox" Width="32" Height="32"
+                            HorizontalAlignment="Left" VerticalAlignment="Top"
+                            Background="#000000"
+                            BorderBrush="{DynamicResource BorderStrongBrush}"
+                            BorderThickness="2" CornerRadius="4"
+                            BoxShadow="0 2 6 #40000000"
+                            Cursor="Hand" ToolTip.Tip="Основной цвет (ЛКМ на палитре)" />
+
+                    <!-- Swap Button -->
+                    <Button Name="SwapColorsButton" Width="18" Height="18" Padding="0"
+                            HorizontalAlignment="Right" VerticalAlignment="Top"
+                            CornerRadius="9" Background="{DynamicResource SurfaceBaseBrush}"
+                            BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1"
+                            ToolTip.Tip="Поменять цвета местами (X)">
+                        <TextBlock Text="⇄" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" />
+                    </Button>
+                </Grid>
+
+                <!-- Hex & Quick Input -->
+                <StackPanel Grid.Column="2" Spacing="4" VerticalAlignment="Center">
+                    <TextBlock Text="HEX КОД" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" />
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBox Name="HexTextBox" Grid.Column="0" Text="#000000" Height="28" FontSize="12"
+                                 FontFamily="Consolas, monospace" VerticalContentAlignment="Center"
+                                 Background="{DynamicResource SurfaceInputBrush}"
+                                 Foreground="{DynamicResource TextPrimaryBrush}"
+                                 BorderBrush="{DynamicResource BorderSubtleBrush}" CornerRadius="4,0,0,4" />
+                        <Button Name="AddColorButton" Grid.Column="1" Content="+" Height="28" Width="28"
+                                Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                Background="{DynamicResource SurfacePanelBrush}"
+                                Foreground="{DynamicResource AccentPrimaryBrush}"
+                                BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,1,1,1"
+                                CornerRadius="0,4,4,0" ToolTip.Tip="Добавить цвет в палитру" />
+                    </Grid>
+                </StackPanel>
+            </Grid>
+
+            <!-- RGBA Sliders -->
+            <StackPanel Grid.Row="2" Spacing="4" Margin="0,0,0,10">
+                <!-- Red -->
+                <Grid ColumnDefinitions="14,*,32">
+                    <TextBlock Grid.Column="0" Text="R" FontSize="11" FontWeight="Bold" Foreground="#EF4444" VerticalAlignment="Center" />
+                    <Slider Name="RedSlider" Grid.Column="1" Minimum="0" Maximum="255" Value="0" Margin="6,0" VerticalAlignment="Center" />
+                    <TextBlock Name="RedValueText" Grid.Column="2" Text="0" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextSecondaryBrush}" />
+                </Grid>
+
+                <!-- Green -->
+                <Grid ColumnDefinitions="14,*,32">
+                    <TextBlock Grid.Column="0" Text="G" FontSize="11" FontWeight="Bold" Foreground="#10B981" VerticalAlignment="Center" />
+                    <Slider Name="GreenSlider" Grid.Column="1" Minimum="0" Maximum="255" Value="0" Margin="6,0" VerticalAlignment="Center" />
+                    <TextBlock Name="GreenValueText" Grid.Column="2" Text="0" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextSecondaryBrush}" />
+                </Grid>
+
+                <!-- Blue -->
+                <Grid ColumnDefinitions="14,*,32">
+                    <TextBlock Grid.Column="0" Text="B" FontSize="11" FontWeight="Bold" Foreground="#3B82F6" VerticalAlignment="Center" />
+                    <Slider Name="BlueSlider" Grid.Column="1" Minimum="0" Maximum="255" Value="0" Margin="6,0" VerticalAlignment="Center" />
+                    <TextBlock Name="BlueValueText" Grid.Column="2" Text="0" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextSecondaryBrush}" />
+                </Grid>
+
+                <!-- Alpha -->
+                <Grid ColumnDefinitions="14,*,32">
+                    <TextBlock Grid.Column="0" Text="A" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                    <Slider Name="AlphaSlider" Grid.Column="1" Minimum="0" Maximum="255" Value="255" Margin="6,0" VerticalAlignment="Center" />
+                    <TextBlock Name="AlphaValueText" Grid.Column="2" Text="255" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextSecondaryBrush}" />
+                </Grid>
+            </StackPanel>
+
+            <!-- Palette Swatches Section Header -->
+            <Grid Grid.Row="3" ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+                <TextBlock Grid.Column="0" Text="ОБРАЗЦЫ ПАЛИТРЫ" FontSize="10" FontWeight="Bold"
+                           Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                <TextBlock Name="ColorCountText" Grid.Column="1" Text="32 цвета" FontSize="10"
+                           Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+            </Grid>
+
+            <!-- Palette Swatches Wrap Area -->
+            <ScrollViewer Grid.Row="4" MaxHeight="140" VerticalScrollBarVisibility="Auto">
+                <WrapPanel Name="PaletteWrapPanel" Orientation="Horizontal" Margin="0,2" />
+            </ScrollViewer>
+        </Grid>
+    </Border>
+</UserControl>

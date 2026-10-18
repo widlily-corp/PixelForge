@@ -1,0 +1,318 @@
+using System;
+using System.ComponentModel;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Media;
+using PixelForge.App.ViewModels;
+
+namespace PixelForge.App.Views;
+
+public partial class MainWindow : Window
+{
+    private MainViewModel? ViewModel => DataContext as MainViewModel;
+
+    public MainWindow()
+    {
+        InitializeComponent();
+
+        Loaded += OnWindowLoaded;
+        KeyDown += OnWindowKeyDown;
+
+        // Menu handlers
+        MenuNew.Click += OnNewProjectClick;
+        QuickNewButton.Click += OnNewProjectClick;
+        MenuExit.Click += (_, _) => Close();
+        MenuAbout.Click += OnAboutClick;
+
+        MenuToggleTheme.Click += OnToggleThemeClick;
+        QuickThemeButton.Click += OnToggleThemeClick;
+
+        // Tool buttons setup
+        ToolPencilButton.Click += (_, _) => SelectTool(CanvasToolType.Pencil);
+        ToolEraserButton.Click += (_, _) => SelectTool(CanvasToolType.Eraser);
+        ToolFillButton.Click += (_, _) => SelectTool(CanvasToolType.Fill);
+        ToolEyedropperButton.Click += (_, _) => SelectTool(CanvasToolType.Eyedropper);
+        ToolLineButton.Click += (_, _) => SelectTool(CanvasToolType.Line);
+        ToolRectangleButton.Click += (_, _) => SelectTool(CanvasToolType.Rectangle);
+        ToolEllipseButton.Click += (_, _) => SelectTool(CanvasToolType.Ellipse);
+        ToolSelectionButton.Click += (_, _) => SelectTool(CanvasToolType.Selection);
+    }
+
+    private void OnWindowLoaded(object? sender, RoutedEventArgs e)
+    {
+        if (ViewModel != null)
+        {
+            ViewModel.ToolViewModel.PropertyChanged += OnToolViewModelPropertyChanged;
+            UpdateActiveToolHighlight();
+        }
+    }
+
+    protected override void OnDataContextChanged(EventArgs e)
+    {
+        base.OnDataContextChanged(e);
+        if (ViewModel != null)
+        {
+            ViewModel.ToolViewModel.PropertyChanged += OnToolViewModelPropertyChanged;
+            UpdateActiveToolHighlight();
+        }
+    }
+
+    private void OnToolViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ToolViewModel.ActiveTool))
+        {
+            UpdateActiveToolHighlight();
+        }
+    }
+
+    private void SelectTool(CanvasToolType tool)
+    {
+        if (ViewModel != null)
+        {
+            ViewModel.ToolViewModel.SelectTool(tool);
+        }
+    }
+
+    private void UpdateActiveToolHighlight()
+    {
+        if (ViewModel == null)
+        {
+            return;
+        }
+
+        var activeTool = ViewModel.ToolViewModel.ActiveTool;
+        var highlightBrush = (IBrush)this.FindResource("AccentPrimaryBrush")!;
+        var subtleBorderBrush = (IBrush)this.FindResource("BorderSubtleBrush")!;
+
+        SetButtonHighlight(ToolPencilButton, activeTool == CanvasToolType.Pencil, highlightBrush, subtleBorderBrush);
+        SetButtonHighlight(ToolEraserButton, activeTool == CanvasToolType.Eraser, highlightBrush, subtleBorderBrush);
+        SetButtonHighlight(ToolFillButton, activeTool == CanvasToolType.Fill, highlightBrush, subtleBorderBrush);
+        SetButtonHighlight(ToolEyedropperButton, activeTool == CanvasToolType.Eyedropper, highlightBrush, subtleBorderBrush);
+        SetButtonHighlight(ToolLineButton, activeTool == CanvasToolType.Line, highlightBrush, subtleBorderBrush);
+        SetButtonHighlight(ToolRectangleButton, activeTool == CanvasToolType.Rectangle, highlightBrush, subtleBorderBrush);
+        SetButtonHighlight(ToolEllipseButton, activeTool == CanvasToolType.Ellipse, highlightBrush, subtleBorderBrush);
+        SetButtonHighlight(ToolSelectionButton, activeTool == CanvasToolType.Selection, highlightBrush, subtleBorderBrush);
+    }
+
+    private static void SetButtonHighlight(Button btn, bool isActive, IBrush activeBrush, IBrush subtleBrush)
+    {
+        if (isActive)
+        {
+            btn.BorderBrush = activeBrush;
+            btn.BorderThickness = new Thickness(2);
+            btn.Background = new SolidColorBrush(Color.FromArgb(30, 0, 210, 255));
+        }
+        else
+        {
+            btn.BorderBrush = Brushes.Transparent;
+            btn.BorderThickness = new Thickness(1);
+            btn.Background = Brushes.Transparent;
+        }
+    }
+
+    private async void OnNewProjectClick(object? sender, RoutedEventArgs e)
+    {
+        var dialog = new NewCanvasDialog();
+        var result = await dialog.ShowDialog<NewCanvasResult?>(this);
+        if (result != null && ViewModel != null)
+        {
+            ViewModel.NewProject(result.Width, result.Height);
+        }
+    }
+
+    private void OnToggleThemeClick(object? sender, RoutedEventArgs e)
+    {
+        ViewModel?.ThemeService.ToggleTheme();
+    }
+
+    private async void OnAboutClick(object? sender, RoutedEventArgs e)
+    {
+        var aboutWindow = new Window
+        {
+            Title = "О программе — PixelForge v0.0.1",
+            Width = 420,
+            Height = 290,
+            CanResize = false,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Background = (IBrush)this.FindResource("SurfaceBaseBrush")!,
+            Content = new Border
+            {
+                Padding = new Thickness(24),
+                Child = new StackPanel
+                {
+                    Spacing = 12,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Children =
+                    {
+                        new TextBlock
+                        {
+                            Text = "PixelForge",
+                            FontSize = 24,
+                            FontWeight = FontWeight.Bold,
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            Foreground = (IBrush)this.FindResource("TextPrimaryBrush")!
+                        },
+                        new TextBlock
+                        {
+                            Text = "Версия 0.0.1",
+                            FontSize = 14,
+                            FontWeight = FontWeight.SemiBold,
+                            Foreground = (IBrush)this.FindResource("AccentPrimaryBrush")!,
+                            HorizontalAlignment = HorizontalAlignment.Center
+                        },
+                        new TextBlock
+                        {
+                            Text = "Современный и быстрый редактор пиксель-арта на .NET 8 и Avalonia UI с поддержкой SkiaSharp, слоев и симметрии.",
+                            FontSize = 12,
+                            Foreground = (IBrush)this.FindResource("TextSecondaryBrush")!,
+                            TextWrapping = TextWrapping.Wrap,
+                            TextAlignment = TextAlignment.Center
+                        },
+                        new TextBlock
+                        {
+                            Text = "Copyright © 2026 widlily-corp. Лицензия Apache-2.0.",
+                            FontSize = 11,
+                            Foreground = (IBrush)this.FindResource("TextMutedBrush")!,
+                            HorizontalAlignment = HorizontalAlignment.Center
+                        }
+                    }
+                }
+            }
+        };
+
+        await aboutWindow.ShowDialog(this);
+    }
+
+    private async void OnWindowKeyDown(object? sender, KeyEventArgs e)
+    {
+        // Don't trigger tool shortcuts if user is typing in a TextBox
+        var focused = TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement();
+        if (focused is TextBox)
+        {
+            return;
+        }
+
+        if (ViewModel == null)
+        {
+            return;
+        }
+
+        bool ctrl = e.KeyModifiers.HasFlag(KeyModifiers.Control);
+        bool shift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+
+        if (ctrl)
+        {
+            switch (e.Key)
+            {
+                case Key.N:
+                    e.Handled = true;
+                    OnNewProjectClick(this, new RoutedEventArgs());
+                    break;
+                case Key.O:
+                    e.Handled = true;
+                    await ViewModel.OpenProjectAsync();
+                    break;
+                case Key.S:
+                    e.Handled = true;
+                    if (shift)
+                    {
+                        await ViewModel.SaveProjectAsAsync();
+                    }
+                    else
+                    {
+                        await ViewModel.SaveProjectAsync();
+                    }
+                    break;
+                case Key.Z:
+                    e.Handled = true;
+                    if (shift)
+                    {
+                        ViewModel.HistoryViewModel.Redo();
+                    }
+                    else
+                    {
+                        ViewModel.HistoryViewModel.Undo();
+                    }
+                    break;
+                case Key.Y:
+                    e.Handled = true;
+                    ViewModel.HistoryViewModel.Redo();
+                    break;
+                case Key.C:
+                    e.Handled = true;
+                    await ViewModel.CopyAsync();
+                    break;
+                case Key.X:
+                    e.Handled = true;
+                    await ViewModel.CutAsync();
+                    break;
+                case Key.V:
+                    e.Handled = true;
+                    await ViewModel.PasteAsync();
+                    break;
+                case Key.G:
+                    e.Handled = true;
+                    ViewModel.CanvasViewModel.ToggleGrid();
+                    break;
+                case Key.OemPlus:
+                case Key.Add:
+                    e.Handled = true;
+                    ViewModel.CanvasViewModel.ZoomIn();
+                    break;
+                case Key.OemMinus:
+                case Key.Subtract:
+                    e.Handled = true;
+                    ViewModel.CanvasViewModel.ZoomOut();
+                    break;
+            }
+        }
+        else
+        {
+            switch (e.Key)
+            {
+                case Key.B:
+                    e.Handled = true;
+                    SelectTool(CanvasToolType.Pencil);
+                    break;
+                case Key.E:
+                    e.Handled = true;
+                    SelectTool(CanvasToolType.Eraser);
+                    break;
+                case Key.G:
+                    e.Handled = true;
+                    SelectTool(CanvasToolType.Fill);
+                    break;
+                case Key.I:
+                    e.Handled = true;
+                    SelectTool(CanvasToolType.Eyedropper);
+                    break;
+                case Key.L:
+                    e.Handled = true;
+                    SelectTool(CanvasToolType.Line);
+                    break;
+                case Key.R:
+                case Key.U:
+                    e.Handled = true;
+                    SelectTool(CanvasToolType.Rectangle);
+                    break;
+                case Key.C:
+                    e.Handled = true;
+                    SelectTool(CanvasToolType.Ellipse);
+                    break;
+                case Key.S:
+                case Key.M:
+                    e.Handled = true;
+                    SelectTool(CanvasToolType.Selection);
+                    break;
+                case Key.X:
+                    e.Handled = true;
+                    ViewModel.PaletteViewModel.SwapColors();
+                    break;
+            }
+        }
+    }
+}
