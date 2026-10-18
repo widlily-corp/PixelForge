@@ -34,23 +34,27 @@ jobs:
       - name: Run Unit Tests
         run: dotnet test tests/PixelForge.Core.Tests/PixelForge.Core.Tests.csproj -c Release --no-build --verbosity normal
 
-      - name: Publish Self-Contained Win-x64 Executable
-        run: >
-          dotnet publish src/PixelForge.App/PixelForge.App.csproj
-          -c Release
-          -r win-x64
-          --self-contained
-          -p:PublishSingleFile=true
-          -p:IncludeNativeLibrariesForSelfExtract=true
-          -o publish/win-x64
-
       - name: Prepare Release Artifacts (WiScripts Standard)
+        id: prep_release
         shell: pwsh
         run: |
           $tag = "${{ github.ref_name }}"
           $version = if ($tag -and $tag.StartsWith("v")) { $tag.Substring(1) } else { "0.0.1" }
-          
-          # Copy to canonical installer and portable names
+          Write-Host "Publishing PixelForge for version: $version"
+
+          # Publish with dynamic version stamping
+          dotnet publish src/PixelForge.App/PixelForge.App.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:Version=$version `
+            -p:AssemblyVersion=$version `
+            -p:FileVersion=$version `
+            -o publish/win-x64
+
+          # Canonical installer and portable executables
           Copy-Item "publish/win-x64/PixelForge.App.exe" -Destination "publish/win-x64/PixelForge_${version}_x64-setup.exe" -Force
           Copy-Item "publish/win-x64/PixelForge.App.exe" -Destination "publish/win-x64/PixelForge.exe" -Force
 
@@ -87,6 +91,12 @@ jobs:
           Set-Content -Path "publish/win-x64/latest.json" -Value $manifest -Encoding UTF8
           Write-Host "Generated WiScripts-compliant latest.json manifest."
 
+          # Output body to GitHub step output
+          $delimiter = [System.Guid]::NewGuid().ToString()
+          "body<<$delimiter" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          $notes | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "$delimiter" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
       - name: Upload Published Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -102,6 +112,7 @@ jobs:
             publish/win-x64/PixelForge.exe
             publish/win-x64/latest.json
           name: PixelForge ${{ github.ref_name }}
-          body_path: RELEASE_NOTES_${{ github.ref_name }}.md
+          body: ${{ steps.prep_release.outputs.body }}
+          generate_release_notes: true
           draft: false
           prerelease: false
