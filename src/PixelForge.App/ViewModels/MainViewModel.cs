@@ -564,6 +564,64 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    public void SelectAll()
+    {
+        var layer = CanvasViewModel.Canvas.ActiveLayer;
+        if (layer == null) return;
+        CanvasViewModel.Selection.Select(new SkiaSharp.SKRectI(0, 0, layer.Width, layer.Height));
+        StatusMessage = "Выделен весь холст (Ctrl+A)";
+    }
+
+    [RelayCommand]
+    public void Deselect()
+    {
+        CanvasViewModel.Selection.Clear();
+        StatusMessage = "Выделение снято (Ctrl+D)";
+    }
+
+    [RelayCommand]
+    public void DeleteSelectionOrClearLayer()
+    {
+        var selection = CanvasViewModel.Selection;
+        var layer = CanvasViewModel.Canvas.ActiveLayer;
+        if (layer == null) return;
+
+        if (selection.IsActive && selection.Bounds.Width > 0 && selection.Bounds.Height > 0)
+        {
+            int w = selection.Bounds.Width;
+            int h = selection.Bounds.Height;
+            var deltas = new List<PixelDelta>(w * h);
+
+            for (int y = 0; y < h; y++)
+            {
+                for (int x = 0; x < w; x++)
+                {
+                    int px = selection.Bounds.Left + x;
+                    int py = selection.Bounds.Top + y;
+                    var oldColor = layer.GetPixel(px, py);
+                    if (oldColor.A > 0)
+                    {
+                        deltas.Add(new PixelDelta(px, py, oldColor, PixelColor.Transparent));
+                    }
+                }
+            }
+
+            if (deltas.Count > 0)
+            {
+                var command = new DrawPixelsCommand(layer, deltas.ToArray(), "Delete Selection");
+                _undoRedoService.ExecuteCommand(command);
+            }
+
+            selection.Clear();
+            StatusMessage = "Выделенная область удалена";
+        }
+        else
+        {
+            ClearActiveLayer();
+        }
+    }
+
+    [RelayCommand]
     public async Task CheckForUpdatesAsync()
     {
         StatusMessage = "Проверка наличия обновлений...";

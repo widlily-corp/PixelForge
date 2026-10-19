@@ -15,11 +15,13 @@
         Width="1280" Height="800"
         MinWidth="1024" MinHeight="680"
         WindowStartupLocation="CenterScreen"
+        Focusable="True"
         Background="{DynamicResource SurfaceBaseBrush}">
 
     <Window.Styles>
         <!-- Toolbar Tool Button Style -->
         <Style Selector="Button.tool-btn">
+            <Setter Property="Focusable" Value="False" />
             <Setter Property="Width" Value="42" />
             <Setter Property="Height" Value="42" />
             <Setter Property="Padding" Value="0" />
@@ -53,6 +55,7 @@
 
         <!-- Stepper Size Buttons -->
         <Style Selector="Button.size-btn">
+            <Setter Property="Focusable" Value="False" />
             <Setter Property="Width" Value="20" />
             <Setter Property="Height" Value="20" />
             <Setter Property="Padding" Value="0" />
@@ -72,6 +75,7 @@
 
         <!-- Quick Size Preset Button Style -->
         <Style Selector="Button.size-preset-btn">
+            <Setter Property="Focusable" Value="False" />
             <Setter Property="Width" Value="26" />
             <Setter Property="Height" Value="22" />
             <Setter Property="Padding" Value="0" />
@@ -93,6 +97,7 @@
 
         <!-- Quick Action Icon Button Style -->
         <Style Selector="Button.action-btn">
+            <Setter Property="Focusable" Value="False" />
             <Setter Property="Height" Value="30" />
             <Setter Property="Padding" Value="8,4" />
             <Setter Property="CornerRadius" Value="4" />
@@ -115,34 +120,38 @@
             <Menu Height="28">
                 <!-- File Menu -->
                 <MenuItem Header="Файл">
-                    <MenuItem Name="MenuNew" Header="Новый холст..." InputGesture="Ctrl+N" />
-                    <MenuItem Header="Открыть проект..." InputGesture="Ctrl+O" Command="{Binding OpenProjectCommand}" />
-                    <MenuItem Header="Сохранить" InputGesture="Ctrl+S" Command="{Binding SaveProjectCommand}" />
-                    <MenuItem Header="Сохранить как..." InputGesture="Ctrl+Shift+S" Command="{Binding SaveProjectAsCommand}" />
+                    <MenuItem Name="MenuNew" Header="Новый холст..." HotKey="Ctrl+N" />
+                    <MenuItem Header="Открыть проект..." HotKey="Ctrl+O" Command="{Binding OpenProjectCommand}" />
+                    <MenuItem Header="Сохранить" HotKey="Ctrl+S" Command="{Binding SaveProjectCommand}" />
+                    <MenuItem Header="Сохранить как..." HotKey="Ctrl+Shift+S" Command="{Binding SaveProjectAsCommand}" />
                     <Separator />
                     <MenuItem Header="Экспорт в PNG..." Command="{Binding ExportPngCommand}" />
                     <MenuItem Header="Экспорт в BMP..." Command="{Binding ExportBmpCommand}" />
                     <Separator />
-                    <MenuItem Name="MenuExit" Header="Выход" InputGesture="Alt+F4" />
+                    <MenuItem Name="MenuExit" Header="Выход" HotKey="Alt+F4" />
                 </MenuItem>
 
                 <!-- Edit Menu -->
                 <MenuItem Header="Правка">
-                    <MenuItem Header="Отменить" InputGesture="Ctrl+Z" Command="{Binding HistoryViewModel.UndoCommand}" />
-                    <MenuItem Header="Повторить" InputGesture="Ctrl+Y" Command="{Binding HistoryViewModel.RedoCommand}" />
+                    <MenuItem Header="Отменить" HotKey="Ctrl+Z" Command="{Binding HistoryViewModel.UndoCommand}" />
+                    <MenuItem Header="Повторить" HotKey="Ctrl+Y" Command="{Binding HistoryViewModel.RedoCommand}" />
                     <Separator />
-                    <MenuItem Header="Вырезать" InputGesture="Ctrl+X" Command="{Binding CutCommand}" />
-                    <MenuItem Header="Копировать" InputGesture="Ctrl+C" Command="{Binding CopyCommand}" />
-                    <MenuItem Header="Вставить" InputGesture="Ctrl+V" Command="{Binding PasteCommand}" />
+                    <MenuItem Header="Вырезать" HotKey="Ctrl+X" Command="{Binding CutCommand}" />
+                    <MenuItem Header="Копировать" HotKey="Ctrl+C" Command="{Binding CopyCommand}" />
+                    <MenuItem Header="Вставить" HotKey="Ctrl+V" Command="{Binding PasteCommand}" />
+                    <Separator />
+                    <MenuItem Header="Выделить всё" HotKey="Ctrl+A" Command="{Binding SelectAllCommand}" />
+                    <MenuItem Header="Снять выделение" HotKey="Ctrl+D" Command="{Binding DeselectCommand}" />
+                    <MenuItem Header="Удалить выделение" HotKey="Delete" Command="{Binding DeleteSelectionOrClearLayerCommand}" />
                 </MenuItem>
 
                 <!-- Canvas Menu -->
                 <MenuItem Header="Холст">
-                    <MenuItem Name="MenuResizeCanvas" Header="Размер холста..." InputGesture="Ctrl+Alt+C" />
+                    <MenuItem Name="MenuResizeCanvas" Header="Размер холста..." HotKey="Ctrl+Alt+C" />
                     <Separator />
                     <MenuItem Header="Трансформация слоя">
-                        <MenuItem Header="Отразить по горизонтали" Command="{Binding FlipActiveLayerHorizontalCommand}" />
-                        <MenuItem Header="Отразить по вертикали" Command="{Binding FlipActiveLayerVerticalCommand}" />
+                        <MenuItem Header="Отразить по горизонтали (H)" Command="{Binding FlipActiveLayerHorizontalCommand}" />
+                        <MenuItem Header="Отразить по вертикали (V)" Command="{Binding FlipActiveLayerVerticalCommand}" />
                         <Separator />
                         <MenuItem Header="Повернуть на 90° по часовой" Command="{Binding RotateActiveLayerCWCommand}" />
                         <MenuItem Header="Повернуть на 90° против часовой" Command="{Binding RotateActiveLayerCCWCommand}" />
@@ -162,13 +171,13 @@
 
                 <!-- View Menu -->
                 <MenuItem Header="Вид">
-                    <MenuItem Header="Пиксельная сетка" InputGesture="Ctrl+G" Command="{Binding CanvasViewModel.ToggleGridCommand}" />
+                    <MenuItem Header="Пиксельная сетка" HotKey="Ctrl+G" Command="{Binding CanvasViewModel.ToggleGridCommand}" />
                     <MenuItem Header="Симметрия по горизонтали (X)" Command="{Binding CanvasViewModel.ToggleSymmetryXCommand}" />
                     <MenuItem Header="Симметрия по вертикали (Y)" Command="{Binding CanvasViewModel.ToggleSymmetryYCommand}" />
                     <Separator />
-                    <MenuItem Header="Приблизить" InputGesture="Ctrl++" Command="{Binding CanvasViewModel.ZoomInCommand}" />
-                    <MenuItem Header="Отдалить" InputGesture="Ctrl+-" Command="{Binding CanvasViewModel.ZoomOutCommand}" />
-                    <MenuItem Header="Сбросить масштаб (100%)" Command="{Binding CanvasViewModel.ResetZoomCommand}" />
+                    <MenuItem Header="Приблизить" HotKey="Ctrl+Add" Command="{Binding CanvasViewModel.ZoomInCommand}" />
+                    <MenuItem Header="Отдалить" HotKey="Ctrl+Subtract" Command="{Binding CanvasViewModel.ZoomOutCommand}" />
+                    <MenuItem Header="Сбросить масштаб (100%)" HotKey="Ctrl+D0" Command="{Binding CanvasViewModel.ResetZoomCommand}" />
                     <Separator />
                     <MenuItem Name="MenuToggleTheme" Header="Переключить тему (Тёмная/Светлая)" />
                 </MenuItem>

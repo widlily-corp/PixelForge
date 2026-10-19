@@ -118,4 +118,47 @@ public class MainViewModelTests
         vm.HistoryViewModel.Undo();
         layer.GetPixel(5, 5).Should().Be(color);
     }
+
+    [Fact]
+    public void SelectAll_And_Deselect_ShouldManageSelectionState()
+    {
+        // Arrange
+        var vm = CreateMainViewModel();
+        var selection = vm.CanvasViewModel.Selection;
+
+        // Act - Select All
+        vm.SelectAll();
+        selection.IsActive.Should().BeTrue();
+        selection.Bounds.Width.Should().Be(vm.CanvasViewModel.CanvasWidth);
+        selection.Bounds.Height.Should().Be(vm.CanvasViewModel.CanvasHeight);
+
+        // Act - Deselect
+        vm.Deselect();
+        selection.IsActive.Should().BeFalse();
+    }
+
+    [Fact]
+    public void DeleteSelectionOrClearLayer_WithActiveSelection_DeletesOnlySelectedPixels()
+    {
+        // Arrange
+        var vm = CreateMainViewModel();
+        var layer = vm.CanvasViewModel.Canvas.ActiveLayer!;
+        var color = new PixelColor(255, 0, 0, 255);
+        layer.SetPixel(2, 2, color);
+        layer.SetPixel(10, 10, color);
+
+        vm.CanvasViewModel.Selection.Select(new SkiaSharp.SKRectI(0, 0, 5, 5));
+
+        // Act
+        vm.DeleteSelectionOrClearLayer();
+
+        // Assert: pixel inside selection deleted, pixel outside preserved
+        layer.GetPixel(2, 2).Should().Be(PixelColor.Transparent);
+        layer.GetPixel(10, 10).Should().Be(color);
+        vm.CanvasViewModel.Selection.IsActive.Should().BeFalse();
+
+        // Undo should restore deleted pixels
+        vm.HistoryViewModel.Undo();
+        layer.GetPixel(2, 2).Should().Be(color);
+    }
 }

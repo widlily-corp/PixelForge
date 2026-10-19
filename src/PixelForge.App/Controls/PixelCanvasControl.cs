@@ -566,6 +566,7 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
+        Focus();
         var point = e.GetCurrentPoint(this);
         _lastPanPointerPos = point.Position;
 
@@ -674,7 +675,7 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
-        if (e.Key == Key.Space)
+        if (e.Key == Key.Space || e.PhysicalKey == PhysicalKey.Space)
         {
             _isSpacePressed = true;
             if (!_isDrawing)
@@ -687,7 +688,7 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
     protected override void OnKeyUp(KeyEventArgs e)
     {
         base.OnKeyUp(e);
-        if (e.Key == Key.Space)
+        if (e.Key == Key.Space || e.PhysicalKey == PhysicalKey.Space)
         {
             _isSpacePressed = false;
             if (!_isPanning)

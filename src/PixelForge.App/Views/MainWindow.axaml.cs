@@ -19,7 +19,7 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         Loaded += OnWindowLoaded;
-        KeyDown += OnWindowKeyDown;
+        AddHandler(InputElement.KeyDownEvent, OnWindowKeyDown, RoutingStrategies.Tunnel, handledEventsToo: true);
 
         // Menu handlers
         MenuNew.Click += OnNewProjectClick;
@@ -53,6 +53,7 @@ public partial class MainWindow : Window
             ViewModel.ToolViewModel.PropertyChanged += OnToolViewModelPropertyChanged;
             UpdateActiveToolHighlight();
         }
+        MainCanvasControl.Focus();
     }
 
     protected override void OnDataContextChanged(EventArgs e)
@@ -235,11 +236,16 @@ public partial class MainWindow : Window
         await aboutWindow.ShowDialog(this);
     }
 
+    private static bool MatchesKey(KeyEventArgs e, Key key, PhysicalKey physicalKey)
+    {
+        return e.Key == key || e.PhysicalKey == physicalKey;
+    }
+
     private async void OnWindowKeyDown(object? sender, KeyEventArgs e)
     {
-        // Don't trigger tool shortcuts if user is typing in a TextBox
-        var focused = TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement();
-        if (focused is TextBox)
+        // Don't trigger shortcuts if user is typing in a TextBox or editable text element
+        var focused = FocusManager?.GetFocusedElement();
+        if (focused is TextBox or AutoCompleteBox)
         {
             return;
         }
@@ -253,7 +259,14 @@ public partial class MainWindow : Window
         bool shift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
         bool alt = e.KeyModifiers.HasFlag(KeyModifiers.Alt);
 
-        if ((ctrl && alt && e.Key == Key.C) || (ctrl && e.Key == Key.R))
+        // Do not intercept Space key so canvas panning can handle it cleanly
+        if (!ctrl && !alt && !shift && (e.Key == Key.Space || e.PhysicalKey == PhysicalKey.Space))
+        {
+            return;
+        }
+
+        // Ctrl + Alt combinations (Canvas Resize)
+        if (ctrl && alt && (MatchesKey(e, Key.C, PhysicalKey.C) || MatchesKey(e, Key.R, PhysicalKey.R)))
         {
             e.Handled = true;
             OnResizeCanvasClick(this, new RoutedEventArgs());
@@ -262,128 +275,172 @@ public partial class MainWindow : Window
 
         if (ctrl)
         {
-            switch (e.Key)
+            if (MatchesKey(e, Key.N, PhysicalKey.N))
             {
-                case Key.N:
-                    e.Handled = true;
-                    OnNewProjectClick(this, new RoutedEventArgs());
-                    break;
-                case Key.O:
-                    e.Handled = true;
-                    await ViewModel.OpenProjectAsync();
-                    break;
-                case Key.S:
-                    e.Handled = true;
-                    if (shift)
-                    {
-                        await ViewModel.SaveProjectAsAsync();
-                    }
-                    else
-                    {
-                        await ViewModel.SaveProjectAsync();
-                    }
-                    break;
-                case Key.Z:
-                    e.Handled = true;
-                    if (shift)
-                    {
-                        ViewModel.HistoryViewModel.Redo();
-                    }
-                    else
-                    {
-                        ViewModel.HistoryViewModel.Undo();
-                    }
-                    break;
-                case Key.Y:
-                    e.Handled = true;
+                e.Handled = true;
+                OnNewProjectClick(this, new RoutedEventArgs());
+            }
+            else if (MatchesKey(e, Key.O, PhysicalKey.O))
+            {
+                e.Handled = true;
+                await ViewModel.OpenProjectAsync();
+            }
+            else if (MatchesKey(e, Key.S, PhysicalKey.S))
+            {
+                e.Handled = true;
+                if (shift)
+                {
+                    await ViewModel.SaveProjectAsAsync();
+                }
+                else
+                {
+                    await ViewModel.SaveProjectAsync();
+                }
+            }
+            else if (MatchesKey(e, Key.Z, PhysicalKey.Z))
+            {
+                e.Handled = true;
+                if (shift)
+                {
                     ViewModel.HistoryViewModel.Redo();
-                    break;
-                case Key.C:
-                    e.Handled = true;
-                    await ViewModel.CopyAsync();
-                    break;
-                case Key.X:
-                    e.Handled = true;
-                    await ViewModel.CutAsync();
-                    break;
-                case Key.V:
-                    e.Handled = true;
-                    await ViewModel.PasteAsync();
-                    break;
-                case Key.G:
-                    e.Handled = true;
-                    ViewModel.CanvasViewModel.ToggleGrid();
-                    break;
-                case Key.OemPlus:
-                case Key.Add:
-                    e.Handled = true;
-                    ViewModel.CanvasViewModel.ZoomIn();
-                    break;
-                case Key.OemMinus:
-                case Key.Subtract:
-                    e.Handled = true;
-                    ViewModel.CanvasViewModel.ZoomOut();
-                    break;
+                }
+                else
+                {
+                    ViewModel.HistoryViewModel.Undo();
+                }
+            }
+            else if (MatchesKey(e, Key.Y, PhysicalKey.Y))
+            {
+                e.Handled = true;
+                ViewModel.HistoryViewModel.Redo();
+            }
+            else if (MatchesKey(e, Key.C, PhysicalKey.C))
+            {
+                e.Handled = true;
+                await ViewModel.CopyAsync();
+            }
+            else if (MatchesKey(e, Key.X, PhysicalKey.X))
+            {
+                e.Handled = true;
+                await ViewModel.CutAsync();
+            }
+            else if (MatchesKey(e, Key.V, PhysicalKey.V))
+            {
+                e.Handled = true;
+                await ViewModel.PasteAsync();
+            }
+            else if (MatchesKey(e, Key.A, PhysicalKey.A))
+            {
+                e.Handled = true;
+                ViewModel.SelectAll();
+            }
+            else if (MatchesKey(e, Key.D, PhysicalKey.D))
+            {
+                e.Handled = true;
+                ViewModel.Deselect();
+            }
+            else if (MatchesKey(e, Key.G, PhysicalKey.G))
+            {
+                e.Handled = true;
+                ViewModel.CanvasViewModel.ToggleGrid();
+            }
+            else if (MatchesKey(e, Key.OemPlus, PhysicalKey.Equal) || e.Key == Key.Add || e.PhysicalKey == PhysicalKey.NumPadAdd || e.KeySymbol == "+")
+            {
+                e.Handled = true;
+                ViewModel.CanvasViewModel.ZoomIn();
+            }
+            else if (MatchesKey(e, Key.OemMinus, PhysicalKey.Minus) || e.Key == Key.Subtract || e.PhysicalKey == PhysicalKey.NumPadSubtract || e.KeySymbol == "-")
+            {
+                e.Handled = true;
+                ViewModel.CanvasViewModel.ZoomOut();
+            }
+            else if (MatchesKey(e, Key.D0, PhysicalKey.Digit0) || e.Key == Key.NumPad0 || e.PhysicalKey == PhysicalKey.NumPad0)
+            {
+                e.Handled = true;
+                ViewModel.CanvasViewModel.ResetZoom();
             }
         }
-        else
+        else if (!alt)
         {
-            switch (e.Key)
+            if (MatchesKey(e, Key.B, PhysicalKey.B))
             {
-                case Key.B:
-                    e.Handled = true;
-                    SelectTool(CanvasToolType.Pencil);
-                    break;
-                case Key.E:
-                    e.Handled = true;
-                    SelectTool(CanvasToolType.Eraser);
-                    break;
-                case Key.D:
-                    e.Handled = true;
-                    SelectTool(CanvasToolType.DitherBrush);
-                    break;
-                case Key.G:
-                    e.Handled = true;
-                    SelectTool(CanvasToolType.Fill);
-                    break;
-                case Key.T:
-                    e.Handled = true;
-                    SelectTool(CanvasToolType.Gradient);
-                    break;
-                case Key.I:
-                    e.Handled = true;
-                    SelectTool(CanvasToolType.Eyedropper);
-                    break;
-                case Key.L:
-                    e.Handled = true;
-                    SelectTool(CanvasToolType.Line);
-                    break;
-                case Key.R:
-                case Key.U:
-                    e.Handled = true;
-                    SelectTool(CanvasToolType.Rectangle);
-                    break;
-                case Key.C:
-                    e.Handled = true;
-                    SelectTool(CanvasToolType.Ellipse);
-                    break;
-                case Key.S:
-                case Key.M:
-                    e.Handled = true;
-                    SelectTool(CanvasToolType.Selection);
-                    break;
-                case Key.X:
-                    e.Handled = true;
-                    ViewModel.PaletteViewModel.SwapColors();
-                    break;
-                case Key.OemOpenBrackets:
-                    e.Handled = true;
-                    ViewModel.ToolViewModel.DecreaseBrushSize();
-                    break;
-                case Key.OemCloseBrackets:
-                    e.Handled = true;
-                    ViewModel.ToolViewModel.IncreaseBrushSize();
-                    break;
+                e.Handled = true;
+                SelectTool(CanvasToolType.Pencil);
+            }
+            else if (MatchesKey(e, Key.E, PhysicalKey.E))
+            {
+                e.Handled = true;
+                SelectTool(CanvasToolType.Eraser);
+            }
+            else if (MatchesKey(e, Key.D, PhysicalKey.D))
+            {
+                e.Handled = true;
+                SelectTool(CanvasToolType.DitherBrush);
+            }
+            else if (MatchesKey(e, Key.F, PhysicalKey.F) || MatchesKey(e, Key.G, PhysicalKey.G))
+            {
+                e.Handled = true;
+                SelectTool(CanvasToolType.Fill);
+            }
+            else if (MatchesKey(e, Key.T, PhysicalKey.T))
+            {
+                e.Handled = true;
+                SelectTool(CanvasToolType.Gradient);
+            }
+            else if (MatchesKey(e, Key.I, PhysicalKey.I))
+            {
+                e.Handled = true;
+                SelectTool(CanvasToolType.Eyedropper);
+            }
+            else if (MatchesKey(e, Key.L, PhysicalKey.L))
+            {
+                e.Handled = true;
+                SelectTool(CanvasToolType.Line);
+            }
+            else if (MatchesKey(e, Key.R, PhysicalKey.R) || MatchesKey(e, Key.U, PhysicalKey.U))
+            {
+                e.Handled = true;
+                SelectTool(CanvasToolType.Rectangle);
+            }
+            else if (MatchesKey(e, Key.C, PhysicalKey.C))
+            {
+                e.Handled = true;
+                SelectTool(CanvasToolType.Ellipse);
+            }
+            else if (MatchesKey(e, Key.S, PhysicalKey.S) || MatchesKey(e, Key.M, PhysicalKey.M))
+            {
+                e.Handled = true;
+                SelectTool(CanvasToolType.Selection);
+            }
+            else if (MatchesKey(e, Key.X, PhysicalKey.X))
+            {
+                e.Handled = true;
+                ViewModel.PaletteViewModel.SwapColors();
+            }
+            else if (MatchesKey(e, Key.H, PhysicalKey.H))
+            {
+                e.Handled = true;
+                ViewModel.FlipActiveLayerHorizontal();
+            }
+            else if (MatchesKey(e, Key.V, PhysicalKey.V))
+            {
+                e.Handled = true;
+                ViewModel.FlipActiveLayerVertical();
+            }
+            else if (MatchesKey(e, Key.OemOpenBrackets, PhysicalKey.BracketLeft))
+            {
+                e.Handled = true;
+                ViewModel.ToolViewModel.DecreaseBrushSize();
+            }
+            else if (MatchesKey(e, Key.OemCloseBrackets, PhysicalKey.BracketRight))
+            {
+                e.Handled = true;
+                ViewModel.ToolViewModel.IncreaseBrushSize();
+            }
+            else if (e.Key == Key.Delete || e.PhysicalKey == PhysicalKey.Delete || e.Key == Key.Back || e.PhysicalKey == PhysicalKey.Backspace)
+            {
+                e.Handled = true;
+                ViewModel.DeleteSelectionOrClearLayer();
             }
         }
     }
