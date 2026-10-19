@@ -21,7 +21,7 @@ public class FlipLayerCommand : IUndoableCommand
 
     public string Description => $"Flip {_layer.Name} {(_direction == FlipDirection.Horizontal ? "Horizontal" : "Vertical")}";
 
-    public FlipLayerCommand(Layer layer, FlipDirection direction, Action? onFlipped = null)
+    public FlipLayerCommand(Layer layer, FlipDirection direction, Action? onFlipped = null, SkiaSharp.SKRectI? selectionRect = null)
     {
         _layer = layer ?? throw new ArgumentNullException(nameof(layer));
         _direction = direction;
@@ -33,14 +33,41 @@ public class FlipLayerCommand : IUndoableCommand
         Array.Copy(layer.Pixels, _oldPixels, layer.Pixels.Length);
 
         _newPixels = new PixelColor[layer.Pixels.Length];
+        Array.Copy(_oldPixels, _newPixels, _oldPixels.Length);
 
-        for (int y = 0; y < h; y++)
+        if (selectionRect.HasValue && !selectionRect.Value.IsEmpty)
         {
-            for (int x = 0; x < w; x++)
+            var rect = selectionRect.Value;
+            int rx0 = Math.Clamp(rect.Left, 0, w);
+            int ry0 = Math.Clamp(rect.Top, 0, h);
+            int rx1 = Math.Clamp(rect.Right, 0, w);
+            int ry1 = Math.Clamp(rect.Bottom, 0, h);
+            int rw = rx1 - rx0;
+            int rh = ry1 - ry0;
+
+            if (rw > 0 && rh > 0)
             {
-                int srcX = direction == FlipDirection.Horizontal ? (w - 1 - x) : x;
-                int srcY = direction == FlipDirection.Vertical ? (h - 1 - y) : y;
-                _newPixels[y * w + x] = _oldPixels[srcY * w + srcX];
+                for (int y = ry0; y < ry1; y++)
+                {
+                    for (int x = rx0; x < rx1; x++)
+                    {
+                        int srcX = direction == FlipDirection.Horizontal ? (rx0 + rw - 1 - (x - rx0)) : x;
+                        int srcY = direction == FlipDirection.Vertical ? (ry0 + rh - 1 - (y - ry0)) : y;
+                        _newPixels[y * w + x] = _oldPixels[srcY * w + srcX];
+                    }
+                }
+            }
+        }
+        else
+        {
+            for (int y = 0; y < h; y++)
+            {
+                for (int x = 0; x < w; x++)
+                {
+                    int srcX = direction == FlipDirection.Horizontal ? (w - 1 - x) : x;
+                    int srcY = direction == FlipDirection.Vertical ? (h - 1 - y) : y;
+                    _newPixels[y * w + x] = _oldPixels[srcY * w + srcX];
+                }
             }
         }
     }

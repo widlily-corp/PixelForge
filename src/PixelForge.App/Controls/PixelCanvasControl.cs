@@ -10,6 +10,7 @@ using PixelForge.App.Services;
 using PixelForge.App.ViewModels;
 using PixelForge.Core.History;
 using PixelForge.Core.Models;
+using PixelForge.Core.Tools;
 using SkiaSharp;
 
 namespace PixelForge.App.Controls;
@@ -502,6 +503,20 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
                 canvas.DrawOval(oval, _previewStrokePaint);
                 break;
 
+            case CanvasToolType.Gradient:
+                float gx1 = destRect.Left + ((_strokeStartPixelX + 0.5f) * zoom);
+                float gy1 = destRect.Top + ((_strokeStartPixelY + 0.5f) * zoom);
+                float gx2 = destRect.Left + ((_currentHoverPixelX + 0.5f) * zoom);
+                float gy2 = destRect.Top + ((_currentHoverPixelY + 0.5f) * zoom);
+                _previewStrokePaint.StrokeWidth = 2f;
+                canvas.DrawLine(gx1, gy1, gx2, gy2, _previewStrokePaint);
+                if (ToolViewModel.GradientType == GradientType.Radial)
+                {
+                    float rad = MathF.Sqrt((gx2 - gx1) * (gx2 - gx1) + (gy2 - gy1) * (gy2 - gy1));
+                    canvas.DrawCircle(gx1, gy1, rad, _previewStrokePaint);
+                }
+                break;
+
             case CanvasToolType.Selection:
                 int sx0 = Math.Min(_strokeStartPixelX, _currentHoverPixelX);
                 int sy0 = Math.Min(_strokeStartPixelY, _currentHoverPixelY);
@@ -694,6 +709,7 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         switch (ToolViewModel.ActiveTool)
         {
             case CanvasToolType.Pencil:
+            case CanvasToolType.DitherBrush:
                 PlotBrushWithSymmetry(layer, px, py, drawColor);
                 MarkCompositeDirty();
                 break;
@@ -708,7 +724,8 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
                 FloodFill(layer, px, py, targetColor, drawColor);
                 if (_activeStrokeDeltas.Count > 0 && HistoryViewModel != null)
                 {
-                    var cmd = new DrawPixelsCommand(layer, _activeStrokeDeltas.ToArray(), "Flood Fill");
+                    string desc = ToolViewModel.FillContiguous ? "Flood Fill" : "Replace Color";
+                    var cmd = new DrawPixelsCommand(layer, _activeStrokeDeltas.ToArray(), desc);
                     HistoryViewModel.Service.ExecuteCommand(cmd);
                     _activeStrokeDeltas.Clear();
                 }
@@ -740,6 +757,7 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         switch (ToolViewModel.ActiveTool)
         {
             case CanvasToolType.Pencil:
+            case CanvasToolType.DitherBrush:
                 BresenhamLine(_lastDrawnPixelX, _lastDrawnPixelY, px, py, (x, y) =>
                 {
                     PlotBrushWithSymmetry(layer, x, y, drawColor);
@@ -771,9 +789,16 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         {
             case CanvasToolType.Pencil:
             case CanvasToolType.Eraser:
+            case CanvasToolType.DitherBrush:
                 if (_activeStrokeDeltas.Count > 0 && HistoryViewModel != null)
                 {
-                    string desc = ToolViewModel.ActiveTool == CanvasToolType.Pencil ? "Pencil Stroke" : "Eraser Stroke";
+                    string desc = ToolViewModel.ActiveTool switch
+                    {
+                        CanvasToolType.Pencil => "Pencil Stroke",
+                        CanvasToolType.Eraser => "Eraser Stroke",
+                        CanvasToolType.DitherBrush => "Dither Stroke",
+                        _ => "Stroke"
+                    };
                     var cmd = new DrawPixelsCommand(layer, _activeStrokeDeltas.ToArray(), desc);
                     HistoryViewModel.Service.ExecuteCommand(cmd);
                     _activeStrokeDeltas.Clear();
@@ -797,6 +822,11 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
             case CanvasToolType.Ellipse:
                 PlotEllipse(layer, _strokeStartPixelX, _strokeStartPixelY, px, py, drawColor, ToolViewModel.IsShapeFilled);
                 CommitActiveDeltas(layer, "Draw Ellipse");
+                break;
+
+            case CanvasToolType.Gradient:
+                ApplyInteractiveGradient(layer, _strokeStartPixelX, _strokeStartPixelY, px, py);
+                CommitActiveDeltas(layer, "Gradient Fill");
                 break;
 
             case CanvasToolType.Selection:
@@ -830,6 +860,8 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         bool symY = CanvasViewModel?.ShowSymmetryY ?? false;
         int w = layer.Width;
         int h = layer.Height;
+        var pattern = ToolViewModel?.SelectedDitherPattern ?? DitherPattern.None;
+        var secondaryColor = PaletteViewModel?.SecondaryColor ?? PixelColor.White;
 
         for (int dy = -half; dy < brushSize - half; dy++)
         {
@@ -837,28 +869,50 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
             {
                 int px = cx + dx;
                 int py = cy + dy;
-                ApplyPixel(layer, px, py, color);
+
+                PlotSinglePixel(layer, px, py, color, secondaryColor, pattern);
 
                 if (symX)
                 {
                     int mx = (w - 1) - px;
-                    ApplyPixel(layer, mx, py, color);
+                    PlotSinglePixel(layer, mx, py, color, secondaryColor, pattern);
                 }
 
                 if (symY)
                 {
                     int my = (h - 1) - py;
-                    ApplyPixel(layer, px, my, color);
+                    PlotSinglePixel(layer, px, my, color, secondaryColor, pattern);
                 }
 
                 if (symX && symY)
                 {
                     int mx = (w - 1) - px;
                     int my = (h - 1) - py;
-                    ApplyPixel(layer, mx, my, color);
+                    PlotSinglePixel(layer, mx, my, color, secondaryColor, pattern);
                 }
             }
         }
+    }
+
+    private void PlotSinglePixel(Layer layer, int x, int y, PixelColor primaryColor, PixelColor secondaryColor, DitherPattern pattern)
+    {
+        var selection = CanvasViewModel?.Selection;
+        if (selection != null && selection.IsActive && !selection.Contains(x, y))
+        {
+            return;
+        }
+
+        PixelColor finalColor = primaryColor;
+        if (ToolViewModel?.ActiveTool == CanvasToolType.Eraser)
+        {
+            finalColor = PixelColor.Transparent;
+        }
+        else if (pattern != DitherPattern.None)
+        {
+            finalColor = DitherHelper.EvaluateDitherColor(x, y, primaryColor, secondaryColor, pattern);
+        }
+
+        ApplyPixel(layer, x, y, finalColor);
     }
 
     private void ApplyPixel(Layer layer, int x, int y, PixelColor newColor)
@@ -878,10 +932,48 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
 
     private void FloodFill(Layer layer, int startX, int startY, PixelColor targetColor, PixelColor replacementColor)
     {
-        if (targetColor == replacementColor) return;
+        int tolerance = ToolViewModel != null ? (int)(ToolViewModel.FillTolerance * 2.55f) : 0;
+        bool contiguous = ToolViewModel?.FillContiguous ?? true;
+        var pattern = ToolViewModel?.SelectedDitherPattern ?? DitherPattern.None;
+        var secondaryColor = PaletteViewModel?.SecondaryColor ?? PixelColor.White;
+        var selection = CanvasViewModel?.Selection;
+
+        if (tolerance == 0 && targetColor == replacementColor && pattern == DitherPattern.None) return;
         int w = layer.Width;
         int h = layer.Height;
         if ((uint)startX >= (uint)w || (uint)startY >= (uint)h) return;
+
+        bool Matches(PixelColor c) => tolerance == 0 ? c == targetColor : PixelColor.Distance(c, targetColor) <= tolerance;
+
+        if (!contiguous)
+        {
+            int minX = selection != null && selection.IsActive ? Math.Max(0, selection.Bounds.Left) : 0;
+            int maxX = selection != null && selection.IsActive ? Math.Min(w, selection.Bounds.Right) : w;
+            int minY = selection != null && selection.IsActive ? Math.Max(0, selection.Bounds.Top) : 0;
+            int maxY = selection != null && selection.IsActive ? Math.Min(h, selection.Bounds.Bottom) : h;
+
+            for (int y = minY; y < maxY; y++)
+            {
+                for (int x = minX; x < maxX; x++)
+                {
+                    if (selection != null && selection.IsActive && !selection.Contains(x, y)) continue;
+
+                    var current = layer.GetPixel(x, y);
+                    if (Matches(current))
+                    {
+                        var finalColor = pattern != DitherPattern.None
+                            ? DitherHelper.EvaluateDitherColor(x, y, replacementColor, secondaryColor, pattern)
+                            : replacementColor;
+
+                        if (current != finalColor)
+                        {
+                            ApplyPixel(layer, x, y, finalColor);
+                        }
+                    }
+                }
+            }
+            return;
+        }
 
         var visited = new bool[w * h];
         var queue = new Queue<(int X, int Y)>(128);
@@ -892,29 +984,110 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         {
             var (x, y) = queue.Dequeue();
             var current = layer.GetPixel(x, y);
-            if (current != targetColor) continue;
+            if (!Matches(current)) continue;
 
-            ApplyPixel(layer, x, y, replacementColor);
+            var finalColor = pattern != DitherPattern.None
+                ? DitherHelper.EvaluateDitherColor(x, y, replacementColor, secondaryColor, pattern)
+                : replacementColor;
 
-            if (x > 0 && !visited[y * w + (x - 1)] && layer.GetPixel(x - 1, y) == targetColor)
+            if (current != finalColor)
             {
-                visited[y * w + (x - 1)] = true;
-                queue.Enqueue((x - 1, y));
+                ApplyPixel(layer, x, y, finalColor);
             }
-            if (x + 1 < w && !visited[y * w + (x + 1)] && layer.GetPixel(x + 1, y) == targetColor)
+
+            if (x > 0 && !visited[y * w + (x - 1)] && Matches(layer.GetPixel(x - 1, y)))
             {
-                visited[y * w + (x + 1)] = true;
-                queue.Enqueue((x + 1, y));
+                if (selection == null || !selection.IsActive || selection.Contains(x - 1, y))
+                {
+                    visited[y * w + (x - 1)] = true;
+                    queue.Enqueue((x - 1, y));
+                }
             }
-            if (y > 0 && !visited[(y - 1) * w + x] && layer.GetPixel(x, y - 1) == targetColor)
+            if (x + 1 < w && !visited[y * w + (x + 1)] && Matches(layer.GetPixel(x + 1, y)))
             {
-                visited[(y - 1) * w + x] = true;
-                queue.Enqueue((x, y - 1));
+                if (selection == null || !selection.IsActive || selection.Contains(x + 1, y))
+                {
+                    visited[y * w + (x + 1)] = true;
+                    queue.Enqueue((x + 1, y));
+                }
             }
-            if (y + 1 < h && !visited[(y + 1) * w + x] && layer.GetPixel(x, y + 1) == targetColor)
+            if (y > 0 && !visited[(y - 1) * w + x] && Matches(layer.GetPixel(x, y - 1)))
             {
-                visited[(y + 1) * w + x] = true;
-                queue.Enqueue((x, y + 1));
+                if (selection == null || !selection.IsActive || selection.Contains(x, y - 1))
+                {
+                    visited[(y - 1) * w + x] = true;
+                    queue.Enqueue((x, y - 1));
+                }
+            }
+            if (y + 1 < h && !visited[(y + 1) * w + x] && Matches(layer.GetPixel(x, y + 1)))
+            {
+                if (selection == null || !selection.IsActive || selection.Contains(x, y + 1))
+                {
+                    visited[(y + 1) * w + x] = true;
+                    queue.Enqueue((x, y + 1));
+                }
+            }
+        }
+    }
+
+    private void ApplyInteractiveGradient(Layer layer, int x0, int y0, int x1, int y1)
+    {
+        int w = layer.Width;
+        int h = layer.Height;
+        var selection = CanvasViewModel?.Selection;
+        int minX = selection != null && selection.IsActive ? Math.Max(0, selection.Bounds.Left) : 0;
+        int maxX = selection != null && selection.IsActive ? Math.Min(w, selection.Bounds.Right) : w;
+        int minY = selection != null && selection.IsActive ? Math.Max(0, selection.Bounds.Top) : 0;
+        int maxY = selection != null && selection.IsActive ? Math.Min(h, selection.Bounds.Bottom) : h;
+
+        float dx = x1 - x0;
+        float dy = y1 - y0;
+        float lengthSq = dx * dx + dy * dy;
+        float radius = MathF.Sqrt(lengthSq);
+        bool isRadial = ToolViewModel?.GradientType == GradientType.Radial;
+        var pattern = ToolViewModel?.SelectedDitherPattern ?? DitherPattern.None;
+        var primary = PaletteViewModel?.PrimaryColor ?? PixelColor.Black;
+        var secondary = PaletteViewModel?.SecondaryColor ?? PixelColor.White;
+
+        for (int y = minY; y < maxY; y++)
+        {
+            for (int x = minX; x < maxX; x++)
+            {
+                if (selection != null && selection.IsActive && !selection.Contains(x, y)) continue;
+
+                float t;
+                if (!isRadial)
+                {
+                    if (lengthSq <= 0.0001f) t = 0f;
+                    else
+                    {
+                        float ux = x - x0;
+                        float uy = y - y0;
+                        t = Math.Clamp((ux * dx + uy * dy) / lengthSq, 0f, 1f);
+                    }
+                }
+                else
+                {
+                    if (radius <= 0.0001f) t = 0f;
+                    else
+                    {
+                        float dist = MathF.Sqrt((x - x0) * (x - x0) + (y - y0) * (y - y0));
+                        t = Math.Clamp(dist / radius, 0f, 1f);
+                    }
+                }
+
+                PixelColor newColor;
+                if (pattern == DitherPattern.None)
+                {
+                    newColor = PixelColor.Lerp(primary, secondary, t);
+                }
+                else
+                {
+                    bool useSec = DitherHelper.ShouldPlot(x, y, pattern, t);
+                    newColor = useSec ? secondary : primary;
+                }
+
+                ApplyPixel(layer, x, y, newColor);
             }
         }
     }

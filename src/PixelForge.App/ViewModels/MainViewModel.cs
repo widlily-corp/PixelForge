@@ -213,8 +213,71 @@ public partial class MainViewModel : ViewModelBase
         var activeLayer = CanvasViewModel.Canvas.ActiveLayer;
         if (activeLayer == null) return;
 
+        var selectionRect = CanvasViewModel.Selection.IsActive ? CanvasViewModel.Selection.Bounds : (SkiaSharp.SKRectI?)null;
+
         var cmd = new FlipLayerCommand(
             activeLayer,
+            direction,
+            () =>
+            {
+                IsDirty = true;
+                OnPropertyChanged(nameof(Title));
+            },
+            selectionRect);
+
+        _undoRedoService.ExecuteCommand(cmd);
+        string target = selectionRect.HasValue ? "Выделение" : $"Слой '{activeLayer.Name}'";
+        StatusMessage = $"{target} отражён {(direction == FlipDirection.Horizontal ? "по горизонтали" : "по вертикали")}";
+    }
+
+    [RelayCommand]
+    public void RotateActiveLayerCW() => RotateActiveLayer(RotationAngle.Rotate90CW);
+
+    [RelayCommand]
+    public void RotateActiveLayerCCW() => RotateActiveLayer(RotationAngle.Rotate90CCW);
+
+    [RelayCommand]
+    public void RotateActiveLayer180() => RotateActiveLayer(RotationAngle.Rotate180);
+
+    public void RotateActiveLayer(RotationAngle angle)
+    {
+        var activeLayer = CanvasViewModel.Canvas.ActiveLayer;
+        if (activeLayer == null) return;
+
+        var selectionRect = CanvasViewModel.Selection.IsActive ? CanvasViewModel.Selection.Bounds : (SkiaSharp.SKRectI?)null;
+
+        var cmd = new RotateLayerCommand(
+            activeLayer,
+            angle,
+            () =>
+            {
+                IsDirty = true;
+                OnPropertyChanged(nameof(Title));
+            },
+            selectionRect);
+
+        _undoRedoService.ExecuteCommand(cmd);
+        string angleStr = angle switch
+        {
+            RotationAngle.Rotate90CW => "на 90° по часовой",
+            RotationAngle.Rotate90CCW => "на 90° против часовой",
+            RotationAngle.Rotate180 => "на 180°",
+            _ => ""
+        };
+        string target = selectionRect.HasValue ? "Выделение" : $"Слой '{activeLayer.Name}'";
+        StatusMessage = $"{target} повёрнут {angleStr}";
+    }
+
+    [RelayCommand]
+    public void FlipCanvasHorizontal() => FlipCanvas(FlipDirection.Horizontal);
+
+    [RelayCommand]
+    public void FlipCanvasVertical() => FlipCanvas(FlipDirection.Vertical);
+
+    public void FlipCanvas(FlipDirection direction)
+    {
+        var cmd = new FlipCanvasCommand(
+            CanvasViewModel.Canvas,
             direction,
             () =>
             {
@@ -223,7 +286,38 @@ public partial class MainViewModel : ViewModelBase
             });
 
         _undoRedoService.ExecuteCommand(cmd);
-        StatusMessage = $"Слой '{activeLayer.Name}' отражён {(direction == FlipDirection.Horizontal ? "по горизонтали" : "по вертикали")}";
+        StatusMessage = $"Холст отражён {(direction == FlipDirection.Horizontal ? "по горизонтали" : "по вертикали")}";
+    }
+
+    [RelayCommand]
+    public void RotateCanvasCW() => RotateCanvas(RotationAngle.Rotate90CW);
+
+    [RelayCommand]
+    public void RotateCanvasCCW() => RotateCanvas(RotationAngle.Rotate90CCW);
+
+    [RelayCommand]
+    public void RotateCanvas180() => RotateCanvas(RotationAngle.Rotate180);
+
+    public void RotateCanvas(RotationAngle angle)
+    {
+        var cmd = new RotateCanvasCommand(
+            CanvasViewModel.Canvas,
+            angle,
+            () =>
+            {
+                IsDirty = true;
+                OnPropertyChanged(nameof(Title));
+            });
+
+        _undoRedoService.ExecuteCommand(cmd);
+        string angleStr = angle switch
+        {
+            RotationAngle.Rotate90CW => "на 90° по часовой",
+            RotationAngle.Rotate90CCW => "на 90° против часовой",
+            RotationAngle.Rotate180 => "на 180°",
+            _ => ""
+        };
+        StatusMessage = $"Холст повёрнут {angleStr}";
     }
 
     [RelayCommand]

@@ -1,7 +1,7 @@
 {
-    "version":  "0.1.0",
-    "releaseNotes":  "PixelForge v0.1.0: Real-time RAM preloading, high-performance splash screen, 60+ FPS hardware acceleration, and compact Inno Setup installer.",
-    "downloadUrl":  "https://github.com/widlily-corp/PixelForge/releases/download/v0.1.0/PixelForge_0.1.0_x64-setup.exe",
-    "installerSizeMb":  35.1,
-    "pub_date":  "2026-10-19T00:13:59Z"
+    "version":  "0.1.1",
+    "releaseNotes":  "PixelForge v0.1.1: Dither brush with patterns, Pixel gradients, Tolerance flood fill, and Canvas/Layer flips and 90/180 rotations.",
+    "downloadUrl":  "https://github.com/widlily-corp/PixelForge/releases/download/v0.1.1/PixelForge_0.1.1_x64-setup.exe",
+    "installerSizeMb":  35.13,
+    "pub_date":  "2026-10-19T10:23:15Z"
 }

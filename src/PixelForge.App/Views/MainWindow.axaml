@@ -10,7 +10,7 @@
         x:Class="PixelForge.App.Views.MainWindow"
         x:Name="RootWindow"
         x:DataType="vm:MainViewModel"
-        Title="{Binding Title, FallbackValue='PixelForge v0.1.0'}"
+        Title="{Binding Title, FallbackValue='PixelForge v0.1.1'}"
         Icon="/Assets/icon.ico"
         Width="1280" Height="800"
         MinWidth="1024" MinHeight="680"
@@ -140,8 +140,22 @@
                 <MenuItem Header="Холст">
                     <MenuItem Name="MenuResizeCanvas" Header="Размер холста..." InputGesture="Ctrl+Alt+C" />
                     <Separator />
-                    <MenuItem Header="Отразить слой по горизонтали" Command="{Binding FlipActiveLayerHorizontalCommand}" />
-                    <MenuItem Header="Отразить слой по вертикали" Command="{Binding FlipActiveLayerVerticalCommand}" />
+                    <MenuItem Header="Трансформация слоя">
+                        <MenuItem Header="Отразить по горизонтали" Command="{Binding FlipActiveLayerHorizontalCommand}" />
+                        <MenuItem Header="Отразить по вертикали" Command="{Binding FlipActiveLayerVerticalCommand}" />
+                        <Separator />
+                        <MenuItem Header="Повернуть на 90° по часовой" Command="{Binding RotateActiveLayerCWCommand}" />
+                        <MenuItem Header="Повернуть на 90° против часовой" Command="{Binding RotateActiveLayerCCWCommand}" />
+                        <MenuItem Header="Повернуть на 180°" Command="{Binding RotateActiveLayer180Command}" />
+                    </MenuItem>
+                    <MenuItem Header="Трансформация холста">
+                        <MenuItem Header="Отразить холст по горизонтали" Command="{Binding FlipCanvasHorizontalCommand}" />
+                        <MenuItem Header="Отразить холст по вертикали" Command="{Binding FlipCanvasVerticalCommand}" />
+                        <Separator />
+                        <MenuItem Header="Повернуть холст на 90° по часовой" Command="{Binding RotateCanvasCWCommand}" />
+                        <MenuItem Header="Повернуть холст на 90° против часовой" Command="{Binding RotateCanvasCCWCommand}" />
+                        <MenuItem Header="Повернуть холст на 180°" Command="{Binding RotateCanvas180Command}" />
+                    </MenuItem>
                     <Separator />
                     <MenuItem Header="Очистить активный слой" Command="{Binding ClearActiveLayerCommand}" />
                 </MenuItem>
@@ -290,12 +304,22 @@
                             <PathIcon Data="{DynamicResource IconEraser}" Width="18" Height="18" />
                         </Button>
 
+                        <Button Name="ToolDitherButton" Classes="tool-btn"
+                                ToolTip.Tip="Паттерн кисть (D)" ToolTip.Placement="Right" ToolTip.HorizontalOffset="10">
+                            <PathIcon Data="{DynamicResource IconDither}" Width="18" Height="18" />
+                        </Button>
+
                         <Separator Height="1" Margin="4,3" Background="{DynamicResource BorderSubtleBrush}" />
 
                         <!-- Fill & Pick -->
                         <Button Name="ToolFillButton" Classes="tool-btn"
                                 ToolTip.Tip="Заливка (G)" ToolTip.Placement="Right" ToolTip.HorizontalOffset="10">
                             <PathIcon Data="{DynamicResource IconFill}" Width="18" Height="18" />
+                        </Button>
+
+                        <Button Name="ToolGradientButton" Classes="tool-btn"
+                                ToolTip.Tip="Градиент (T)" ToolTip.Placement="Right" ToolTip.HorizontalOffset="10">
+                            <PathIcon Data="{DynamicResource IconGradient}" Width="18" Height="18" />
                         </Button>
 
                         <Button Name="ToolEyedropperButton" Classes="tool-btn"
@@ -383,7 +407,7 @@
                     <Border Grid.Row="0" Background="{DynamicResource SurfacePanelBrush}"
                             BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,0,0,1"
                             Padding="12,5" Height="34">
-                        <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto">
+                        <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,*,Auto">
                             <!-- Active Tool Name Badge -->
                             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                 <TextBlock Text="Инструмент:" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
@@ -396,7 +420,7 @@
                                 </Border>
                             </StackPanel>
 
-                            <Separator Grid.Column="1" Width="1" Height="16" Margin="12,0"
+                            <Separator Grid.Column="1" Width="1" Height="16" Margin="10,0"
                                        Background="{DynamicResource BorderSubtleBrush}"
                                        IsVisible="{Binding ToolViewModel.SupportsBrushSize}" />
 
@@ -427,8 +451,43 @@
                                 </Button>
                             </StackPanel>
 
+                            <!-- Dither Pattern Selector (Pencil, DitherBrush, Fill, Gradient, Shapes) -->
+                            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+                                        Margin="10,0,0,0"
+                                        IsVisible="{Binding ToolViewModel.SupportsDitherPattern}">
+                                <TextBlock Text="Паттерн:" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                <ComboBox ItemsSource="{Binding ToolViewModel.AvailablePatterns}"
+                                          SelectedItem="{Binding ToolViewModel.SelectedDitherPattern, Mode=TwoWay}"
+                                          Height="26" FontSize="11" VerticalContentAlignment="Center" MinWidth="110" />
+                            </StackPanel>
+
+                            <!-- Flood Fill Settings: Tolerance & Contiguous -->
+                            <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                                        Margin="10,0,0,0"
+                                        IsVisible="{Binding ToolViewModel.SupportsFillSettings}">
+                                <TextBlock Text="Порог:" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                <NumericUpDown Value="{Binding ToolViewModel.FillTolerance, Mode=TwoWay}"
+                                               Minimum="0" Maximum="100" Increment="5" FormatString="{}{0}%"
+                                               Height="26" Width="80" FontSize="11" VerticalContentAlignment="Center" />
+                                <CheckBox IsChecked="{Binding ToolViewModel.FillContiguous, Mode=TwoWay}"
+                                          Content="Смежные" FontSize="11"
+                                          Foreground="{DynamicResource TextPrimaryBrush}"
+                                          ToolTip.Tip="Заливать только соединённую область или все схожие цвета на слое" />
+                            </StackPanel>
+
+                            <!-- Gradient Settings: Type (Linear / Radial) -->
+                            <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+                                        Margin="10,0,0,0"
+                                        IsVisible="{Binding ToolViewModel.SupportsGradientSettings}">
+                                <TextBlock Text="Тип:" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                <ComboBox ItemsSource="{Binding ToolViewModel.AvailableGradientTypes}"
+                                          SelectedItem="{Binding ToolViewModel.GradientType, Mode=TwoWay}"
+                                          Height="26" FontSize="11" VerticalContentAlignment="Center" MinWidth="85" />
+                            </StackPanel>
+
                             <!-- Shape Fill Option (when Rectangle or Ellipse is active) -->
-                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+                            <StackPanel Grid.Column="6" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+                                        Margin="10,0,0,0"
                                         IsVisible="{Binding ToolViewModel.SupportsShapeFill}">
                                 <CheckBox IsChecked="{Binding ToolViewModel.IsShapeFilled, Mode=TwoWay}"
                                           Content="Заливка фигуры (Сплошная)" FontSize="11"
@@ -436,7 +495,7 @@
                             </StackPanel>
 
                             <!-- Right: Quick Zoom Presets in Context Bar -->
-                            <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <StackPanel Grid.Column="8" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                 <TextBlock Text="Масштаб:" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                                 <TextBlock Text="{Binding CanvasViewModel.ZoomText}" FontSize="11" FontWeight="SemiBold"
                                            Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />

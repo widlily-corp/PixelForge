@@ -155,6 +155,25 @@ public readonly struct PixelColor : IEquatable<PixelColor>
         }
     }
 
+    public static int Distance(PixelColor a, PixelColor b)
+    {
+        int dr = a.R - b.R;
+        int dg = a.G - b.G;
+        int db = a.B - b.B;
+        int da = a.A - b.A;
+        return (int)Math.Sqrt(dr * dr + dg * dg + db * db + da * da);
+    }
+
+    public static PixelColor Lerp(PixelColor a, PixelColor b, float t)
+    {
+        float clampedT = Math.Clamp(t, 0f, 1f);
+        byte r = (byte)Math.Round(a.R + (b.R - a.R) * clampedT);
+        byte g = (byte)Math.Round(a.G + (b.G - a.G) * clampedT);
+        byte bVal = (byte)Math.Round(a.B + (b.B - a.B) * clampedT);
+        byte alpha = (byte)Math.Round(a.A + (b.A - a.A) * clampedT);
+        return new PixelColor(r, g, bVal, alpha);
+    }
+
     public bool Equals(PixelColor other) => R == other.R && G == other.G && B == other.B && A == other.A;
 
     public override bool Equals(object? obj) => obj is PixelColor other && Equals(other);

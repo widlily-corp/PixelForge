@@ -78,6 +78,26 @@ public class ToolContext
     public SelectionModel Selection { get; set; }
 
     /// <summary>
+    /// Gets or sets the active dithering pattern for brushes and gradients.
+    /// </summary>
+    public DitherPattern ActiveDitherPattern { get; set; } = DitherPattern.None;
+
+    /// <summary>
+    /// Gets or sets the dithering threshold/intensity (0.0 to 1.0).
+    /// </summary>
+    public float DitherIntensity { get; set; } = 0.5f;
+
+    /// <summary>
+    /// Gets or sets color difference threshold for flood fill (0 to 255).
+    /// </summary>
+    public int FillTolerance { get; set; } = 0;
+
+    /// <summary>
+    /// Gets or sets whether flood fill operates contiguously (BFS) or globally replaces color across the layer.
+    /// </summary>
+    public bool FillContiguous { get; set; } = true;
+
+    /// <summary>
     /// Event triggered when the primary color is modified by a tool (e.g., eyedropper).
     /// </summary>
     public event Action<PixelColor>? PrimaryColorChanged;

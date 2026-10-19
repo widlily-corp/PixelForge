@@ -36,7 +36,9 @@ public partial class MainWindow : Window
         // Tool buttons setup
         ToolPencilButton.Click += (_, _) => SelectTool(CanvasToolType.Pencil);
         ToolEraserButton.Click += (_, _) => SelectTool(CanvasToolType.Eraser);
+        ToolDitherButton.Click += (_, _) => SelectTool(CanvasToolType.DitherBrush);
         ToolFillButton.Click += (_, _) => SelectTool(CanvasToolType.Fill);
+        ToolGradientButton.Click += (_, _) => SelectTool(CanvasToolType.Gradient);
         ToolEyedropperButton.Click += (_, _) => SelectTool(CanvasToolType.Eyedropper);
         ToolLineButton.Click += (_, _) => SelectTool(CanvasToolType.Line);
         ToolRectangleButton.Click += (_, _) => SelectTool(CanvasToolType.Rectangle);
@@ -108,7 +110,9 @@ public partial class MainWindow : Window
 
         SetToolButtonVisuals(ToolPencilButton, activeTool == CanvasToolType.Pencil, accentBrush, activeBackground, mutedTextBrush);
         SetToolButtonVisuals(ToolEraserButton, activeTool == CanvasToolType.Eraser, accentBrush, activeBackground, mutedTextBrush);
+        SetToolButtonVisuals(ToolDitherButton, activeTool == CanvasToolType.DitherBrush, accentBrush, activeBackground, mutedTextBrush);
         SetToolButtonVisuals(ToolFillButton, activeTool == CanvasToolType.Fill, accentBrush, activeBackground, mutedTextBrush);
+        SetToolButtonVisuals(ToolGradientButton, activeTool == CanvasToolType.Gradient, accentBrush, activeBackground, mutedTextBrush);
         SetToolButtonVisuals(ToolEyedropperButton, activeTool == CanvasToolType.Eyedropper, accentBrush, activeBackground, mutedTextBrush);
         SetToolButtonVisuals(ToolLineButton, activeTool == CanvasToolType.Line, accentBrush, activeBackground, mutedTextBrush);
         SetToolButtonVisuals(ToolRectangleButton, activeTool == CanvasToolType.Rectangle, accentBrush, activeBackground, mutedTextBrush);
@@ -173,7 +177,7 @@ public partial class MainWindow : Window
 
     private async void OnAboutClick(object? sender, RoutedEventArgs e)
     {
-        var version = ViewModel != null ? "0.1.0" : "0.1.0";
+        var version = "0.1.1";
         var aboutWindow = new Window
         {
             Title = $"О программе — PixelForge v{version}",
@@ -334,9 +338,17 @@ public partial class MainWindow : Window
                     e.Handled = true;
                     SelectTool(CanvasToolType.Eraser);
                     break;
+                case Key.D:
+                    e.Handled = true;
+                    SelectTool(CanvasToolType.DitherBrush);
+                    break;
                 case Key.G:
                     e.Handled = true;
                     SelectTool(CanvasToolType.Fill);
+                    break;
+                case Key.T:
+                    e.Handled = true;
+                    SelectTool(CanvasToolType.Gradient);
                     break;
                 case Key.I:
                     e.Handled = true;
