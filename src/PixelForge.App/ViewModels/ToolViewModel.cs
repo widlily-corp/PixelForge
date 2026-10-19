@@ -51,15 +51,49 @@ public partial class ToolViewModel : ViewModelBase
 
     public ToolItem ActiveToolItem => AvailableTools.First(t => t.Type == ActiveTool);
 
+    public string ActiveToolDisplayName => ActiveTool switch
+    {
+        CanvasToolType.Pencil => "Карандаш",
+        CanvasToolType.Eraser => "Ластик",
+        CanvasToolType.Fill => "Заливка",
+        CanvasToolType.Eyedropper => "Пипетка",
+        CanvasToolType.Line => "Линия",
+        CanvasToolType.Rectangle => "Прямоугольник",
+        CanvasToolType.Ellipse => "Эллипс",
+        CanvasToolType.Selection => "Выделение",
+        _ => "Инструмент"
+    };
+
+    public bool SupportsBrushSize => ActiveTool switch
+    {
+        CanvasToolType.Pencil or CanvasToolType.Eraser or CanvasToolType.Line => true,
+        _ => false
+    };
+
+    public bool SupportsShapeFill => ActiveTool switch
+    {
+        CanvasToolType.Rectangle or CanvasToolType.Ellipse => true,
+        _ => false
+    };
+
     partial void OnActiveToolChanged(CanvasToolType value)
     {
         OnPropertyChanged(nameof(ActiveToolItem));
+        OnPropertyChanged(nameof(ActiveToolDisplayName));
+        OnPropertyChanged(nameof(SupportsBrushSize));
+        OnPropertyChanged(nameof(SupportsShapeFill));
     }
 
     [RelayCommand]
     public void SelectTool(CanvasToolType tool)
     {
         ActiveTool = tool;
+    }
+
+    [RelayCommand]
+    public void SetBrushSize(int size)
+    {
+        BrushSize = Math.Clamp(size, 1, 32);
     }
 
     [RelayCommand]

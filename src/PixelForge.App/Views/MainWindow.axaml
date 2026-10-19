@@ -20,19 +20,75 @@
     <Window.Styles>
         <!-- Toolbar Tool Button Style -->
         <Style Selector="Button.tool-btn">
-            <Setter Property="Width" Value="38" />
-            <Setter Property="Height" Value="38" />
+            <Setter Property="Width" Value="42" />
+            <Setter Property="Height" Value="42" />
             <Setter Property="Padding" Value="0" />
-            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="CornerRadius" Value="8" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderThickness" Value="1.5" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="ToolTip.Placement" Value="Right" />
+            <Setter Property="ToolTip.HorizontalOffset" Value="10" />
+            <Setter Property="ToolTip.ShowDelay" Value="200" />
         </Style>
         <Style Selector="Button.tool-btn:pointerover">
             <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+        </Style>
+        <Style Selector="Button.tool-btn.active">
+            <Setter Property="Background" Value="#2500D2FF" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+        </Style>
+        <Style Selector="Button.tool-btn.active PathIcon">
+            <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+        </Style>
+        <Style Selector="Button.tool-btn:not(.active) PathIcon">
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+        </Style>
+        <Style Selector="Button.tool-btn:not(.active):pointerover PathIcon">
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        </Style>
+
+        <!-- Stepper Size Buttons -->
+        <Style Selector="Button.size-btn">
+            <Setter Property="Width" Value="20" />
+            <Setter Property="Height" Value="20" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Background" Value="{DynamicResource SurfacePanelBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.size-btn:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+        </Style>
+
+        <!-- Quick Size Preset Button Style -->
+        <Style Selector="Button.size-preset-btn">
+            <Setter Property="Width" Value="26" />
+            <Setter Property="Height" Value="22" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.size-preset-btn:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
         </Style>
 
         <!-- Quick Action Icon Button Style -->
@@ -215,91 +271,188 @@
         </Border>
 
         <!-- 4. Three-Column Workspace Area -->
-        <Grid Grid.Row="3" ColumnDefinitions="52,*,300">
+        <Grid Grid.Row="3" ColumnDefinitions="58,*,310">
             <!-- Left: Tools Palette Column -->
             <Border Grid.Column="0" Background="{DynamicResource SurfacePanelBrush}"
                     BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,0,1,0"
-                    Padding="6,10">
+                    Padding="7,10">
                 <Grid RowDefinitions="*,Auto">
                     <!-- Tools List -->
-                    <StackPanel Grid.Row="0" Spacing="6" HorizontalAlignment="Center">
-                        <!-- Pencil -->
-                        <Button Name="ToolPencilButton" Classes="tool-btn" ToolTip.Tip="Карандаш (B)">
-                            <PathIcon Data="{DynamicResource IconPencil}" Width="18" Height="18"
-                                      Foreground="{DynamicResource TextPrimaryBrush}" />
+                    <StackPanel Grid.Row="0" Spacing="4" HorizontalAlignment="Center">
+                        <!-- Freehand Drawing -->
+                        <Button Name="ToolPencilButton" Classes="tool-btn"
+                                ToolTip.Tip="Карандаш (B)" ToolTip.Placement="Right" ToolTip.HorizontalOffset="10">
+                            <PathIcon Data="{DynamicResource IconPencil}" Width="18" Height="18" />
                         </Button>
 
-                        <!-- Eraser -->
-                        <Button Name="ToolEraserButton" Classes="tool-btn" ToolTip.Tip="Ластик (E)">
-                            <PathIcon Data="{DynamicResource IconEraser}" Width="18" Height="18"
-                                      Foreground="{DynamicResource TextPrimaryBrush}" />
+                        <Button Name="ToolEraserButton" Classes="tool-btn"
+                                ToolTip.Tip="Ластик (E)" ToolTip.Placement="Right" ToolTip.HorizontalOffset="10">
+                            <PathIcon Data="{DynamicResource IconEraser}" Width="18" Height="18" />
                         </Button>
 
-                        <!-- Fill Bucket -->
-                        <Button Name="ToolFillButton" Classes="tool-btn" ToolTip.Tip="Заливка (G)">
-                            <PathIcon Data="{DynamicResource IconFill}" Width="18" Height="18"
-                                      Foreground="{DynamicResource TextPrimaryBrush}" />
+                        <Separator Height="1" Margin="4,3" Background="{DynamicResource BorderSubtleBrush}" />
+
+                        <!-- Fill & Pick -->
+                        <Button Name="ToolFillButton" Classes="tool-btn"
+                                ToolTip.Tip="Заливка (G)" ToolTip.Placement="Right" ToolTip.HorizontalOffset="10">
+                            <PathIcon Data="{DynamicResource IconFill}" Width="18" Height="18" />
                         </Button>
 
-                        <!-- Eyedropper -->
-                        <Button Name="ToolEyedropperButton" Classes="tool-btn" ToolTip.Tip="Пипетка (I)">
-                            <PathIcon Data="{DynamicResource IconEyedropper}" Width="18" Height="18"
-                                      Foreground="{DynamicResource TextPrimaryBrush}" />
+                        <Button Name="ToolEyedropperButton" Classes="tool-btn"
+                                ToolTip.Tip="Пипетка (I)" ToolTip.Placement="Right" ToolTip.HorizontalOffset="10">
+                            <PathIcon Data="{DynamicResource IconEyedropper}" Width="18" Height="18" />
                         </Button>
 
-                        <!-- Line -->
-                        <Button Name="ToolLineButton" Classes="tool-btn" ToolTip.Tip="Линия (L)">
-                            <PathIcon Data="{DynamicResource IconLine}" Width="18" Height="18"
-                                      Foreground="{DynamicResource TextPrimaryBrush}" />
+                        <Separator Height="1" Margin="4,3" Background="{DynamicResource BorderSubtleBrush}" />
+
+                        <!-- Geometric Shapes -->
+                        <Button Name="ToolLineButton" Classes="tool-btn"
+                                ToolTip.Tip="Линия (L)" ToolTip.Placement="Right" ToolTip.HorizontalOffset="10">
+                            <PathIcon Data="{DynamicResource IconLine}" Width="18" Height="18" />
                         </Button>
 
-                        <!-- Rectangle -->
-                        <Button Name="ToolRectangleButton" Classes="tool-btn" ToolTip.Tip="Прямоугольник (R)">
-                            <PathIcon Data="{DynamicResource IconRectangle}" Width="18" Height="18"
-                                      Foreground="{DynamicResource TextPrimaryBrush}" />
+                        <Button Name="ToolRectangleButton" Classes="tool-btn"
+                                ToolTip.Tip="Прямоугольник (R / U)" ToolTip.Placement="Right" ToolTip.HorizontalOffset="10">
+                            <PathIcon Data="{DynamicResource IconRectangle}" Width="18" Height="18" />
                         </Button>
 
-                        <!-- Ellipse -->
-                        <Button Name="ToolEllipseButton" Classes="tool-btn" ToolTip.Tip="Эллипс (C)">
-                            <PathIcon Data="{DynamicResource IconEllipse}" Width="18" Height="18"
-                                      Foreground="{DynamicResource TextPrimaryBrush}" />
+                        <Button Name="ToolEllipseButton" Classes="tool-btn"
+                                ToolTip.Tip="Эллипс (C)" ToolTip.Placement="Right" ToolTip.HorizontalOffset="10">
+                            <PathIcon Data="{DynamicResource IconEllipse}" Width="18" Height="18" />
                         </Button>
+
+                        <Separator Height="1" Margin="4,3" Background="{DynamicResource BorderSubtleBrush}" />
 
                         <!-- Selection -->
-                        <Button Name="ToolSelectionButton" Classes="tool-btn" ToolTip.Tip="Выделение (S)">
-                            <PathIcon Data="{DynamicResource IconSelection}" Width="18" Height="18"
-                                      Foreground="{DynamicResource TextPrimaryBrush}" />
+                        <Button Name="ToolSelectionButton" Classes="tool-btn"
+                                ToolTip.Tip="Выделение (S / M)" ToolTip.Placement="Right" ToolTip.HorizontalOffset="10">
+                            <PathIcon Data="{DynamicResource IconSelection}" Width="18" Height="18" />
                         </Button>
                     </StackPanel>
 
-                    <!-- Brush Size Indicator at Bottom -->
-                    <StackPanel Grid.Row="1" Spacing="4" HorizontalAlignment="Center">
-                        <TextBlock Text="Размер" FontSize="9" HorizontalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" />
-                        <Grid ColumnDefinitions="Auto,Auto">
-                            <Button Classes="action-btn" Padding="2" Width="18" Height="18"
-                                    Command="{Binding ToolViewModel.DecreaseBrushSizeCommand}" ToolTip.Tip="Уменьшить кисть">
-                                <TextBlock Text="-" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Button>
-                            <TextBlock Text="{Binding ToolViewModel.BrushSize}" Margin="4,0" FontSize="11" FontWeight="Bold"
-                                       VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource TextPrimaryBrush}" />
-                            <Button Classes="action-btn" Padding="2" Width="18" Height="18"
-                                    Command="{Binding ToolViewModel.IncreaseBrushSizeCommand}" ToolTip.Tip="Увеличить кисть">
-                                <TextBlock Text="+" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Button>
-                        </Grid>
-                    </StackPanel>
+                    <!-- Brush Size Widget at Bottom -->
+                    <Border Grid.Row="1"
+                            Background="{DynamicResource SurfaceCardBrush}"
+                            BorderBrush="{DynamicResource BorderSubtleBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="4,6"
+                            Margin="0,8,0,0">
+                        <StackPanel Spacing="4" HorizontalAlignment="Center">
+                            <TextBlock Text="КИСТЬ" FontSize="9" FontWeight="Bold"
+                                       HorizontalAlignment="Center"
+                                       Foreground="{DynamicResource TextMutedBrush}"
+                                       LetterSpacing="0.8" />
+
+                            <!-- Current Size Badge -->
+                            <Border Background="{DynamicResource SurfacePanelBrush}"
+                                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="4"
+                                    Padding="6,2"
+                                    HorizontalAlignment="Center"
+                                    ToolTip.Tip="Текущий размер кисти (1–32 px)">
+                                <TextBlock Text="{Binding ToolViewModel.BrushSize, StringFormat='{}{0} px'}"
+                                           FontSize="11" FontWeight="Bold"
+                                           Foreground="{DynamicResource AccentPrimaryBrush}"
+                                           HorizontalAlignment="Center" />
+                            </Border>
+
+                            <!-- Clean Stepper Grid: - / + -->
+                            <Grid ColumnDefinitions="*,4,*" HorizontalAlignment="Center" Width="44">
+                                <Button Grid.Column="0" Classes="size-btn"
+                                        Command="{Binding ToolViewModel.DecreaseBrushSizeCommand}"
+                                        ToolTip.Tip="Уменьшить кисть ([)">
+                                    <TextBlock Text="−" FontSize="13" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Button>
+                                <Button Grid.Column="2" Classes="size-btn"
+                                        Command="{Binding ToolViewModel.IncreaseBrushSizeCommand}"
+                                        ToolTip.Tip="Увеличить кисть (])">
+                                    <TextBlock Text="+" FontSize="13" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
                 </Grid>
             </Border>
 
-            <!-- Center: Interactive SkiaSharp Canvas Control -->
+            <!-- Center: Interactive SkiaSharp Canvas Control with Tool Context Bar -->
             <Border Grid.Column="1" Background="{DynamicResource SurfaceBaseBrush}" ClipToBounds="True">
-                <controls:PixelCanvasControl Name="MainCanvasControl"
-                                            CanvasViewModel="{Binding CanvasViewModel}"
-                                            ToolViewModel="{Binding ToolViewModel}"
-                                            PaletteViewModel="{Binding PaletteViewModel}"
-                                            HistoryViewModel="{Binding HistoryViewModel}"
-                                            HorizontalAlignment="Stretch"
-                                            VerticalAlignment="Stretch" />
+                <Grid RowDefinitions="Auto,*">
+                    <!-- Tool Context Bar -->
+                    <Border Grid.Row="0" Background="{DynamicResource SurfacePanelBrush}"
+                            BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,0,0,1"
+                            Padding="12,5" Height="34">
+                        <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto">
+                            <!-- Active Tool Name Badge -->
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <TextBlock Text="Инструмент:" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                                <Border Background="{DynamicResource SurfaceCardBrush}"
+                                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                        BorderThickness="1" CornerRadius="4" Padding="6,2">
+                                    <TextBlock Text="{Binding ToolViewModel.ActiveToolDisplayName}"
+                                               FontSize="11" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource AccentPrimaryBrush}" />
+                                </Border>
+                            </StackPanel>
+
+                            <Separator Grid.Column="1" Width="1" Height="16" Margin="12,0"
+                                       Background="{DynamicResource BorderSubtleBrush}"
+                                       IsVisible="{Binding ToolViewModel.SupportsBrushSize}" />
+
+                            <!-- Quick Brush Size Presets: 1, 2, 3, 4, 8 px -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center"
+                                        IsVisible="{Binding ToolViewModel.SupportsBrushSize}">
+                                <TextBlock Text="Размер:" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"
+                                           VerticalAlignment="Center" Margin="0,0,4,0" />
+                                <Button Classes="size-preset-btn" Content="1" ToolTip.Tip="Кисть 1 px"
+                                        Command="{Binding ToolViewModel.SetBrushSizeCommand}">
+                                    <Button.CommandParameter><x:Int32>1</x:Int32></Button.CommandParameter>
+                                </Button>
+                                <Button Classes="size-preset-btn" Content="2" ToolTip.Tip="Кисть 2 px"
+                                        Command="{Binding ToolViewModel.SetBrushSizeCommand}">
+                                    <Button.CommandParameter><x:Int32>2</x:Int32></Button.CommandParameter>
+                                </Button>
+                                <Button Classes="size-preset-btn" Content="3" ToolTip.Tip="Кисть 3 px"
+                                        Command="{Binding ToolViewModel.SetBrushSizeCommand}">
+                                    <Button.CommandParameter><x:Int32>3</x:Int32></Button.CommandParameter>
+                                </Button>
+                                <Button Classes="size-preset-btn" Content="4" ToolTip.Tip="Кисть 4 px"
+                                        Command="{Binding ToolViewModel.SetBrushSizeCommand}">
+                                    <Button.CommandParameter><x:Int32>4</x:Int32></Button.CommandParameter>
+                                </Button>
+                                <Button Classes="size-preset-btn" Content="8" ToolTip.Tip="Кисть 8 px"
+                                        Command="{Binding ToolViewModel.SetBrushSizeCommand}">
+                                    <Button.CommandParameter><x:Int32>8</x:Int32></Button.CommandParameter>
+                                </Button>
+                            </StackPanel>
+
+                            <!-- Shape Fill Option (when Rectangle or Ellipse is active) -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+                                        IsVisible="{Binding ToolViewModel.SupportsShapeFill}">
+                                <CheckBox IsChecked="{Binding ToolViewModel.IsShapeFilled, Mode=TwoWay}"
+                                          Content="Заливка фигуры (Сплошная)" FontSize="11"
+                                          Foreground="{DynamicResource TextPrimaryBrush}" />
+                            </StackPanel>
+
+                            <!-- Right: Quick Zoom Presets in Context Bar -->
+                            <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <TextBlock Text="Масштаб:" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding CanvasViewModel.ZoomText}" FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Center: Interactive SkiaSharp Canvas Control -->
+                    <controls:PixelCanvasControl Grid.Row="1" Name="MainCanvasControl"
+                                                CanvasViewModel="{Binding CanvasViewModel}"
+                                                ToolViewModel="{Binding ToolViewModel}"
+                                                PaletteViewModel="{Binding PaletteViewModel}"
+                                                HistoryViewModel="{Binding HistoryViewModel}"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Stretch" />
+                </Grid>
             </Border>
 
             <!-- Right: Inspector Column (Live Preview 1x, ColorPicker, Layer Manager) -->

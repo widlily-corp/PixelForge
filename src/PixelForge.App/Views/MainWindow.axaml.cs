@@ -102,31 +102,39 @@ public partial class MainWindow : Window
         }
 
         var activeTool = ViewModel.ToolViewModel.ActiveTool;
-        var highlightBrush = GetBrush("AccentPrimaryBrush", Brushes.DodgerBlue);
-        var subtleBorderBrush = GetBrush("BorderSubtleBrush", Brushes.DimGray);
+        var accentBrush = GetBrush("AccentPrimaryBrush", Brushes.DodgerBlue);
+        var mutedTextBrush = GetBrush("TextSecondaryBrush", Brushes.SlateGray);
+        var activeBackground = new SolidColorBrush(Color.FromArgb(40, 0, 210, 255));
 
-        SetButtonHighlight(ToolPencilButton, activeTool == CanvasToolType.Pencil, highlightBrush, subtleBorderBrush);
-        SetButtonHighlight(ToolEraserButton, activeTool == CanvasToolType.Eraser, highlightBrush, subtleBorderBrush);
-        SetButtonHighlight(ToolFillButton, activeTool == CanvasToolType.Fill, highlightBrush, subtleBorderBrush);
-        SetButtonHighlight(ToolEyedropperButton, activeTool == CanvasToolType.Eyedropper, highlightBrush, subtleBorderBrush);
-        SetButtonHighlight(ToolLineButton, activeTool == CanvasToolType.Line, highlightBrush, subtleBorderBrush);
-        SetButtonHighlight(ToolRectangleButton, activeTool == CanvasToolType.Rectangle, highlightBrush, subtleBorderBrush);
-        SetButtonHighlight(ToolEllipseButton, activeTool == CanvasToolType.Ellipse, highlightBrush, subtleBorderBrush);
-        SetButtonHighlight(ToolSelectionButton, activeTool == CanvasToolType.Selection, highlightBrush, subtleBorderBrush);
+        SetToolButtonVisuals(ToolPencilButton, activeTool == CanvasToolType.Pencil, accentBrush, activeBackground, mutedTextBrush);
+        SetToolButtonVisuals(ToolEraserButton, activeTool == CanvasToolType.Eraser, accentBrush, activeBackground, mutedTextBrush);
+        SetToolButtonVisuals(ToolFillButton, activeTool == CanvasToolType.Fill, accentBrush, activeBackground, mutedTextBrush);
+        SetToolButtonVisuals(ToolEyedropperButton, activeTool == CanvasToolType.Eyedropper, accentBrush, activeBackground, mutedTextBrush);
+        SetToolButtonVisuals(ToolLineButton, activeTool == CanvasToolType.Line, accentBrush, activeBackground, mutedTextBrush);
+        SetToolButtonVisuals(ToolRectangleButton, activeTool == CanvasToolType.Rectangle, accentBrush, activeBackground, mutedTextBrush);
+        SetToolButtonVisuals(ToolEllipseButton, activeTool == CanvasToolType.Ellipse, accentBrush, activeBackground, mutedTextBrush);
+        SetToolButtonVisuals(ToolSelectionButton, activeTool == CanvasToolType.Selection, accentBrush, activeBackground, mutedTextBrush);
     }
 
-    private static void SetButtonHighlight(Button btn, bool isActive, IBrush activeBrush, IBrush subtleBrush)
+    private static void SetToolButtonVisuals(Button btn, bool isActive, IBrush accentBrush, IBrush activeBackground, IBrush mutedBrush)
     {
+        btn.Classes.Set("active", isActive);
+
+        if (btn.Content is PathIcon icon)
+        {
+            icon.Foreground = isActive ? accentBrush : mutedBrush;
+        }
+
         if (isActive)
         {
-            btn.BorderBrush = activeBrush;
-            btn.BorderThickness = new Thickness(2);
-            btn.Background = new SolidColorBrush(Color.FromArgb(30, 0, 210, 255));
+            btn.BorderBrush = accentBrush;
+            btn.BorderThickness = new Thickness(1.5);
+            btn.Background = activeBackground;
         }
         else
         {
             btn.BorderBrush = Brushes.Transparent;
-            btn.BorderThickness = new Thickness(1);
+            btn.BorderThickness = new Thickness(1.5);
             btn.Background = Brushes.Transparent;
         }
     }
@@ -355,6 +363,14 @@ public partial class MainWindow : Window
                 case Key.X:
                     e.Handled = true;
                     ViewModel.PaletteViewModel.SwapColors();
+                    break;
+                case Key.OemOpenBrackets:
+                    e.Handled = true;
+                    ViewModel.ToolViewModel.DecreaseBrushSize();
+                    break;
+                case Key.OemCloseBrackets:
+                    e.Handled = true;
+                    ViewModel.ToolViewModel.IncreaseBrushSize();
                     break;
             }
         }
