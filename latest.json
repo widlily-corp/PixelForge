@@ -1,7 +1,7 @@
 {
     "version":  "0.1.1",
-    "releaseNotes":  "PixelForge v0.1.1: Pixel Studio features, pattern/dither brushes, gradients, tolerance fill, and full layout-independent keyboard shortcuts.",
+    "releaseNotes":  "PixelForge v0.1.1: Real-time RAM preloading, high-performance splash screen, 60+ FPS hardware acceleration, and compact Inno Setup installer.",
     "downloadUrl":  "https://github.com/widlily-corp/PixelForge/releases/download/v0.1.1/PixelForge_0.1.1_x64-setup.exe",
     "installerSizeMb":  35.13,
-    "pub_date":  "2026-10-19T10:46:05Z"
+    "pub_date":  "2026-10-21T05:33:54Z"
 }
