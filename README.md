@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/Avalonia-11.1.3-informational.svg" alt="Avalonia 11" />
   <img src="https://img.shields.io/badge/Rendering-SkiaSharp-orange.svg" alt="SkiaSharp" />
   <img src="https://img.shields.io/badge/Installer-Inno%20Setup%20LZMA2-brightgreen.svg" alt="Inno Setup LZMA2" />
-  <img src="https://img.shields.io/badge/Tests-218%20passed-success.svg" alt="Tests 218 passed" />
+  <img src="https://img.shields.io/badge/Tests-225%20passed-success.svg" alt="Tests 225 passed" />
   <img src="https://img.shields.io/badge/License-Apache--2.0-green.svg" alt="Apache 2.0 License" />
   <img src="https://img.shields.io/badge/Platform-Windows%20x64-lightgrey.svg" alt="Windows x64" />
 </p>
@@ -222,7 +222,7 @@ graph TD
 # Сборка Release с проверкой на 0 предупреждений
 dotnet build PixelForge.sln -c Release /warnaserror
 
-# Запуск всех 218 тестов (xUnit + FluentAssertions)
+# Запуск всех 225 тестов (xUnit + FluentAssertions)
 dotnet test PixelForge.sln -c Release --no-build
 ```
 
