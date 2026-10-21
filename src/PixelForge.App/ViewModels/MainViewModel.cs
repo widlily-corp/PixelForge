@@ -794,6 +794,20 @@ public partial class MainViewModel : ViewModelBase
         ShowHotkeysRequested?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <summary>
+    /// Event triggered when opening the color ramp generator dialog is requested.
+    /// </summary>
+    public event EventHandler? ShowColorRampRequested;
+
+    /// <summary>
+    /// Requests display of the color ramp generator dialog.
+    /// </summary>
+    [RelayCommand]
+    public void OpenColorRampDialog()
+    {
+        ShowColorRampRequested?.Invoke(this, EventArgs.Empty);
+    }
+
     private async Task RunInitialUpdateCheckAsync()
     {
         try

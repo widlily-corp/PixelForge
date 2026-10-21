@@ -255,6 +255,8 @@
                         <MenuItem Header="Добавить тень (Shadow)..." Command="{Binding AddShadowCommand}" />
                         <MenuItem Header="Заменить цвет (Replace Color)..." Command="{Binding ReplaceColorCommand}" />
                         <Separator />
+                        <MenuItem Header="Генератор цветовой рампы (Color Ramp)..." Command="{Binding OpenColorRampDialogCommand}" />
+                        <Separator />
                         <MenuItem Header="Бесшовный режим (Tiled Mode)" HotKey="F10" Command="{Binding ToggleTiledModeCommand}" />
                     </MenuItem>
                 </MenuItem>
@@ -696,13 +698,30 @@
                                         </StackPanel>
                                     </Border>
 
-                                    <!-- 7. Gradient Settings Capsule: Linear / Radial -->
+                                    <!-- 7. Gradient Settings Capsule: Linear / Radial & Multi-stop Presets -->
                                     <Border Classes="context-chip" IsVisible="{Binding ToolViewModel.SupportsGradientSettings}">
                                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                             <TextBlock Text="Градиент:" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
                                             <ComboBox ItemsSource="{Binding ToolViewModel.AvailableGradientTypes}"
                                                       SelectedItem="{Binding ToolViewModel.GradientType, Mode=TwoWay}"
                                                       Height="26" FontSize="11" VerticalContentAlignment="Center" MinWidth="85" />
+                                            <TextBlock Text="Пресет:" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                            <ComboBox ItemsSource="{Binding ToolViewModel.AvailableGradientPresets}"
+                                                      SelectedItem="{Binding ToolViewModel.SelectedGradientPreset, Mode=TwoWay}"
+                                                      Height="26" FontSize="11" VerticalContentAlignment="Center" MinWidth="130"
+                                                      ToolTip.Tip="Многоточечные градиентные пресеты и палитровые рампы">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Name}" FontSize="11" />
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                            <Button Content="Рампа..." Command="{Binding OpenColorRampDialogCommand}"
+                                                    Height="26" Padding="8,2" FontSize="11"
+                                                    Background="{DynamicResource SurfaceCardHoverBrush}"
+                                                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                                    BorderThickness="1" CornerRadius="4"
+                                                    ToolTip.Tip="Генератор палитровых рамп с Hue Shifting (от тени к свету)" />
                                         </StackPanel>
                                     </Border>
 

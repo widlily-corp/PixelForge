@@ -59,6 +59,19 @@ public partial class ToolViewModel : ViewModelBase
     private GradientType _gradientType = GradientType.Linear;
 
     [ObservableProperty]
+    private GradientPreset _selectedGradientPreset = GradientPresets.TwoTone;
+
+    /// <summary>
+    /// Gets all predefined multi-stop gradient presets.
+    /// </summary>
+    public IReadOnlyList<GradientPreset> AvailableGradientPresets { get; } = GradientPresets.AllPresets;
+
+    /// <summary>
+    /// Gets the registered Gradient tool instance.
+    /// </summary>
+    public GradientTool GradientTool { get; } = new();
+
+    [ObservableProperty]
     private bool _isPixelPerfect = false;
 
     [ObservableProperty]
@@ -164,7 +177,7 @@ public partial class ToolViewModel : ViewModelBase
             [CanvasToolType.PatternBrush] = PatternBrushTool,
             [CanvasToolType.Fill] = new FillTool(),
             [CanvasToolType.MagicWand] = MagicWandTool,
-            [CanvasToolType.Gradient] = new GradientTool(),
+            [CanvasToolType.Gradient] = GradientTool,
             [CanvasToolType.Eyedropper] = new EyedropperTool(),
             [CanvasToolType.Line] = new LineTool(),
             [CanvasToolType.Rectangle] = new RectangleTool(),
@@ -201,6 +214,31 @@ public partial class ToolViewModel : ViewModelBase
     partial void OnFillContiguousChanged(bool value)
     {
         MagicWandTool.Contiguous = value;
+    }
+
+    partial void OnGradientTypeChanged(GradientType value)
+    {
+        GradientTool.Type = value;
+    }
+
+    partial void OnSelectedGradientPresetChanged(GradientPreset value)
+    {
+        if (value != null)
+        {
+            GradientTool.Stops = value.Stops;
+        }
+    }
+
+    /// <summary>
+    /// Applies the specified color ramp as a multi-stop gradient and activates the Gradient tool.
+    /// </summary>
+    public void ApplyRampAsGradient(PixelColor[] rampColors, string name = "Пользовательская рампа")
+    {
+        if (rampColors == null || rampColors.Length == 0) return;
+        var preset = GradientPreset.FromColors(name, rampColors);
+        GradientTool.Stops = preset.Stops;
+        SelectedGradientPreset = preset;
+        ActiveTool = CanvasToolType.Gradient;
     }
 
     partial void OnActiveToolChanged(CanvasToolType value)

@@ -57,6 +57,7 @@ public partial class MainWindow : Window
         {
             _subscribedMainVm.ToolViewModel.PropertyChanged -= OnToolViewModelPropertyChanged;
             _subscribedMainVm.ShowHotkeysRequested -= OnShowHotkeysRequested;
+            _subscribedMainVm.ShowColorRampRequested -= OnShowColorRampRequested;
             _subscribedMainVm = null;
         }
 
@@ -65,6 +66,7 @@ public partial class MainWindow : Window
             _subscribedMainVm = vm;
             _subscribedMainVm.ToolViewModel.PropertyChanged += OnToolViewModelPropertyChanged;
             _subscribedMainVm.ShowHotkeysRequested += OnShowHotkeysRequested;
+            _subscribedMainVm.ShowColorRampRequested += OnShowColorRampRequested;
             UpdateActiveToolHighlight();
         }
     }
@@ -72,6 +74,11 @@ public partial class MainWindow : Window
     private void OnShowHotkeysRequested(object? sender, EventArgs e)
     {
         OnHotkeysClick(this, new RoutedEventArgs());
+    }
+
+    private void OnShowColorRampRequested(object? sender, EventArgs e)
+    {
+        OnColorRampClick(this, new RoutedEventArgs());
     }
 
     private void OnWindowLoaded(object? sender, RoutedEventArgs e)
@@ -275,6 +282,17 @@ public partial class MainWindow : Window
     private async void OnHotkeysClick(object? sender, RoutedEventArgs e)
     {
         var dialog = new HotkeysDialog();
+        await dialog.ShowDialog(this);
+    }
+
+    private async void OnColorRampClick(object? sender, RoutedEventArgs e)
+    {
+        if (ViewModel == null)
+        {
+            return;
+        }
+
+        var dialog = new ColorRampDialog(ViewModel.PaletteViewModel, ViewModel.ToolViewModel);
         await dialog.ShowDialog(this);
     }
 

@@ -448,4 +448,48 @@ public class MainViewModelTests
         pvm.Colors.Should().NotContain(customColor);
         pvm.CurrentPalette.Colors.Should().NotContain(customColor);
     }
+
+    [Fact]
+    public void OpenColorRampDialog_InvokesShowColorRampRequestedEvent()
+    {
+        // Arrange
+        var vm = CreateMainViewModel();
+        bool eventFired = false;
+        object? senderReceived = null;
+        vm.ShowColorRampRequested += (sender, _) =>
+        {
+            eventFired = true;
+            senderReceived = sender;
+        };
+
+        // Act
+        vm.OpenColorRampDialog();
+
+        // Assert
+        eventFired.Should().BeTrue();
+        senderReceived.Should().BeSameAs(vm);
+    }
+
+    [Fact]
+    public void PaletteViewModel_AddRampColors_AppendsMultipleColors()
+    {
+        // Arrange
+        var pvm = new PaletteViewModel();
+        int initialCount = pvm.Colors.Count;
+        var ramp = new[]
+        {
+            new PixelForge.Core.Models.PixelColor(10, 15, 20),
+            new PixelForge.Core.Models.PixelColor(40, 50, 60),
+            new PixelForge.Core.Models.PixelColor(100, 120, 140)
+        };
+
+        // Act
+        pvm.AddRampColors(ramp);
+
+        // Assert
+        pvm.Colors.Should().HaveCount(initialCount + 3);
+        pvm.Colors.Should().Contain(ramp[0]);
+        pvm.Colors.Should().Contain(ramp[1]);
+        pvm.Colors.Should().Contain(ramp[2]);
+    }
 }

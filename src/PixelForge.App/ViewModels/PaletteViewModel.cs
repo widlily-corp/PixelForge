@@ -80,6 +80,16 @@ public partial class PaletteViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    public void AddRampColors(IEnumerable<PixelColor> rampColors)
+    {
+        ArgumentNullException.ThrowIfNull(rampColors);
+        foreach (var color in rampColors)
+        {
+            AddColor(color);
+        }
+    }
+
+    [RelayCommand]
     public void RemoveColor(PixelColor color)
     {
         Colors.Remove(color);

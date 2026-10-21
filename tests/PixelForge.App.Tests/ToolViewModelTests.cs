@@ -173,4 +173,62 @@ public class ToolViewModelTests
         vm.MagicWandTool.Tolerance.Should().Be((int)(20 * 2.55f));
         vm.MagicWandTool.Contiguous.Should().BeFalse();
     }
+
+    [Fact]
+    public void SelectedGradientPreset_SyncsStopsToGradientTool()
+    {
+        // Arrange
+        var vm = new ToolViewModel();
+        vm.AvailableGradientPresets.Should().NotBeEmpty();
+        vm.SelectedGradientPreset.Should().Be(GradientPresets.TwoTone);
+        vm.GradientTool.Stops.Should().BeEmpty();
+
+        // Act
+        vm.SelectedGradientPreset = GradientPresets.Sunset;
+
+        // Assert
+        vm.GradientTool.Stops.Should().HaveCount(GradientPresets.Sunset.Stops.Count);
+        vm.GradientTool.Stops.Should().BeEquivalentTo(GradientPresets.Sunset.Stops);
+    }
+
+    [Fact]
+    public void GradientType_SyncsToGradientTool()
+    {
+        // Arrange
+        var vm = new ToolViewModel();
+        vm.GradientType.Should().Be(GradientType.Linear);
+        vm.GradientTool.Type.Should().Be(GradientType.Linear);
+
+        // Act
+        vm.GradientType = GradientType.Radial;
+
+        // Assert
+        vm.GradientTool.Type.Should().Be(GradientType.Radial);
+    }
+
+    [Fact]
+    public void ApplyRampAsGradient_SetsStopsAndActivatesGradientTool()
+    {
+        // Arrange
+        var vm = new ToolViewModel();
+        vm.ActiveTool = CanvasToolType.Pencil;
+        var rampColors = new[]
+        {
+            new PixelForge.Core.Models.PixelColor(10, 20, 30),
+            new PixelForge.Core.Models.PixelColor(50, 60, 70),
+            new PixelForge.Core.Models.PixelColor(200, 210, 220)
+        };
+
+        // Act
+        vm.ApplyRampAsGradient(rampColors, "Тестовая рампа");
+
+        // Assert
+        vm.ActiveTool.Should().Be(CanvasToolType.Gradient);
+        vm.SelectedGradientPreset.Name.Should().Be("Тестовая рампа");
+        vm.GradientTool.Stops.Should().HaveCount(3);
+        vm.GradientTool.Stops[0].Position.Should().Be(0f);
+        vm.GradientTool.Stops[0].Color.Should().Be(rampColors[0]);
+        vm.GradientTool.Stops[2].Position.Should().Be(1f);
+        vm.GradientTool.Stops[2].Color.Should().Be(rampColors[2]);
+    }
 }

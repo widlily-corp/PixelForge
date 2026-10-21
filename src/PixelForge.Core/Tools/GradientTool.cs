@@ -30,6 +30,11 @@ public class GradientTool : ITool
 
     public GradientType Type { get; set; } = GradientType.Linear;
 
+    /// <summary>
+    /// Optional sequence of color stops for multi-stop gradients. If empty, uses Primary and Secondary colors.
+    /// </summary>
+    public IReadOnlyList<GradientStop> Stops { get; set; } = Array.Empty<GradientStop>();
+
     public void OnPointerDown(ToolContext ctx, int x, int y)
     {
         ArgumentNullException.ThrowIfNull(ctx);
@@ -136,17 +141,7 @@ public class GradientTool : ITool
                     }
                 }
 
-                PixelColor newColor;
-                if (pattern == DitherPattern.None)
-                {
-                    newColor = PixelColor.Lerp(ctx.PrimaryColor, ctx.SecondaryColor, t);
-                }
-                else
-                {
-                    // Ordered dithering
-                    bool useSecondary = DitherHelper.ShouldPlot(px, py, pattern, t);
-                    newColor = useSecondary ? ctx.SecondaryColor : ctx.PrimaryColor;
-                }
+                PixelColor newColor = EvaluateColor(Stops, t, pattern, px, py, ctx.PrimaryColor, ctx.SecondaryColor);
 
                 var oldColor = ctx.ActiveLayer.GetPixel(px, py);
                 if (oldColor != newColor)
@@ -162,5 +157,71 @@ public class GradientTool : ITool
             var command = new DrawPixelsCommand(ctx.ActiveLayer, deltas.ToArray(), "Gradient Fill");
             ctx.History.ExecuteCommand(command);
         }
+    }
+
+    /// <summary>
+    /// Evaluates the color at position t along the gradient vector with optional dithering and multi-stop support.
+    /// </summary>
+    public static PixelColor EvaluateColor(
+        IReadOnlyList<GradientStop>? stops,
+        float t,
+        DitherPattern pattern,
+        int px,
+        int py,
+        PixelColor fallbackPrimary,
+        PixelColor fallbackSecondary)
+    {
+        t = Math.Clamp(t, 0f, 1f);
+
+        // If no stops configured, fallback to 2-stop Primary -> Secondary
+        if (stops == null || stops.Count == 0)
+        {
+            if (pattern == DitherPattern.None)
+            {
+                return PixelColor.Lerp(fallbackPrimary, fallbackSecondary, t);
+            }
+
+            bool useSecondary = DitherHelper.ShouldPlot(px, py, pattern, t);
+            return useSecondary ? fallbackSecondary : fallbackPrimary;
+        }
+
+        if (stops.Count == 1)
+        {
+            return stops[0].Color;
+        }
+
+        if (t <= stops[0].Position)
+        {
+            return stops[0].Color;
+        }
+
+        if (t >= stops[^1].Position)
+        {
+            return stops[^1].Color;
+        }
+
+        // Find surrounding interval [k, k+1]
+        int k = 0;
+        for (int i = 0; i < stops.Count - 1; i++)
+        {
+            if (t >= stops[i].Position && t <= stops[i + 1].Position)
+            {
+                k = i;
+                break;
+            }
+        }
+
+        var stopA = stops[k];
+        var stopB = stops[k + 1];
+        float span = stopB.Position - stopA.Position;
+        float localT = span > 0.0001f ? Math.Clamp((t - stopA.Position) / span, 0f, 1f) : 0f;
+
+        if (pattern == DitherPattern.None)
+        {
+            return PixelColor.Lerp(stopA.Color, stopB.Color, localT);
+        }
+
+        bool useSecond = DitherHelper.ShouldPlot(px, py, pattern, localT);
+        return useSecond ? stopB.Color : stopA.Color;
     }
 }
