@@ -161,6 +161,22 @@ public partial class LayerViewModel : ViewModelBase
         _undoRedoService.ExecuteCommand(command);
     }
 
+    /// <summary>
+    /// Toggles the alpha lock state of the specified layer or active layer.
+    /// </summary>
+    /// <param name="layer">The target layer, or null for active layer.</param>
+    [RelayCommand]
+    public void ToggleAlphaLock(Layer? layer = null)
+    {
+        var target = layer ?? ActiveLayer;
+        if (target == null)
+        {
+            return;
+        }
+
+        target.IsAlphaLocked = !target.IsAlphaLocked;
+    }
+
     [RelayCommand(CanExecute = nameof(CanMergeDown))]
     public void MergeDown()
     {

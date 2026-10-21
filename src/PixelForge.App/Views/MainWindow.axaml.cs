@@ -37,7 +37,9 @@ public partial class MainWindow : Window
         ToolPencilButton.Click += (_, _) => SelectTool(CanvasToolType.Pencil);
         ToolEraserButton.Click += (_, _) => SelectTool(CanvasToolType.Eraser);
         ToolDitherButton.Click += (_, _) => SelectTool(CanvasToolType.DitherBrush);
+        ToolPatternBrushButton.Click += (_, _) => SelectTool(CanvasToolType.PatternBrush);
         ToolFillButton.Click += (_, _) => SelectTool(CanvasToolType.Fill);
+        ToolMagicWandButton.Click += (_, _) => SelectTool(CanvasToolType.MagicWand);
         ToolGradientButton.Click += (_, _) => SelectTool(CanvasToolType.Gradient);
         ToolEyedropperButton.Click += (_, _) => SelectTool(CanvasToolType.Eyedropper);
         ToolLineButton.Click += (_, _) => SelectTool(CanvasToolType.Line);
@@ -112,7 +114,9 @@ public partial class MainWindow : Window
         SetToolButtonVisuals(ToolPencilButton, activeTool == CanvasToolType.Pencil, accentBrush, activeBackground, mutedTextBrush);
         SetToolButtonVisuals(ToolEraserButton, activeTool == CanvasToolType.Eraser, accentBrush, activeBackground, mutedTextBrush);
         SetToolButtonVisuals(ToolDitherButton, activeTool == CanvasToolType.DitherBrush, accentBrush, activeBackground, mutedTextBrush);
+        SetToolButtonVisuals(ToolPatternBrushButton, activeTool == CanvasToolType.PatternBrush, accentBrush, activeBackground, mutedTextBrush);
         SetToolButtonVisuals(ToolFillButton, activeTool == CanvasToolType.Fill, accentBrush, activeBackground, mutedTextBrush);
+        SetToolButtonVisuals(ToolMagicWandButton, activeTool == CanvasToolType.MagicWand, accentBrush, activeBackground, mutedTextBrush);
         SetToolButtonVisuals(ToolGradientButton, activeTool == CanvasToolType.Gradient, accentBrush, activeBackground, mutedTextBrush);
         SetToolButtonVisuals(ToolEyedropperButton, activeTool == CanvasToolType.Eyedropper, accentBrush, activeBackground, mutedTextBrush);
         SetToolButtonVisuals(ToolLineButton, activeTool == CanvasToolType.Line, accentBrush, activeBackground, mutedTextBrush);
@@ -272,6 +276,22 @@ public partial class MainWindow : Window
         bool shift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
         bool alt = e.KeyModifiers.HasFlag(KeyModifiers.Alt);
 
+        // F10: Seamless Tiled Mode toggle
+        if (!ctrl && !alt && !shift && (e.Key == Key.F10 || e.PhysicalKey == PhysicalKey.F10))
+        {
+            e.Handled = true;
+            ViewModel.ToggleTiledMode();
+            return;
+        }
+
+        // Shift + P: Toggle Pixel Perfect
+        if (!ctrl && !alt && shift && MatchesKey(e, Key.P, PhysicalKey.P, 'з'))
+        {
+            e.Handled = true;
+            ViewModel.ToolViewModel.TogglePixelPerfect();
+            return;
+        }
+
         // Do not intercept Space key so canvas panning can handle it cleanly
         if (!ctrl && !alt && !shift && (e.Key == Key.Space || e.PhysicalKey == PhysicalKey.Space))
         {
@@ -329,7 +349,6 @@ public partial class MainWindow : Window
                 ViewModel.HistoryViewModel.Redo();
                 MainCanvasControl?.MarkCompositeDirty();
             }
-
             else if (MatchesKey(e, Key.C, PhysicalKey.C, 'с'))
             {
                 e.Handled = true;
@@ -393,10 +412,20 @@ public partial class MainWindow : Window
                 e.Handled = true;
                 SelectTool(CanvasToolType.DitherBrush);
             }
+            else if (MatchesKey(e, Key.P, PhysicalKey.P, 'з'))
+            {
+                e.Handled = true;
+                SelectTool(CanvasToolType.PatternBrush);
+            }
             else if (MatchesKey(e, Key.F, PhysicalKey.F, 'а') || MatchesKey(e, Key.G, PhysicalKey.G, 'п'))
             {
                 e.Handled = true;
                 SelectTool(CanvasToolType.Fill);
+            }
+            else if (MatchesKey(e, Key.W, PhysicalKey.W, 'ц'))
+            {
+                e.Handled = true;
+                SelectTool(CanvasToolType.MagicWand);
             }
             else if (MatchesKey(e, Key.T, PhysicalKey.T, 'е'))
             {

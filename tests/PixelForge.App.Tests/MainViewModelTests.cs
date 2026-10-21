@@ -34,6 +34,7 @@ public class MainViewModelTests
             return Task.FromResult(new UpdateCheckResult { Success = true, CurrentVersion = "0.1.1" });
         }
         public void OpenDownloadPage(string url) { }
+        public Task<bool> DownloadAndInstallUpdateAsync(string downloadUrl, IProgress<double>? progress = null, CancellationToken cancellationToken = default) => Task.FromResult(true);
     }
 
     private static MainViewModel CreateMainViewModel()
@@ -197,5 +198,124 @@ public class MainViewModelTests
         // Undo
         vm.HistoryViewModel.Undo();
         vm.CanvasViewModel.Canvas.Layers[1].Should().BeSameAs(layer2);
+    }
+
+    [Fact]
+    public void ToggleTiledMode_TogglesStateAndUpdatesStatus()
+    {
+        // Arrange
+        var vm = CreateMainViewModel();
+        vm.IsTiledMode.Should().BeFalse();
+
+        // Act
+        vm.ToggleTiledMode();
+
+        // Assert
+        vm.IsTiledMode.Should().BeTrue();
+        vm.StatusMessage.Should().Contain("Tiled Mode");
+
+        // Act again
+        vm.ToggleTiledMode();
+        vm.IsTiledMode.Should().BeFalse();
+        vm.StatusMessage.Should().Contain("выключен");
+    }
+
+    [Fact]
+    public void AddOutlineCommand_CreatesOutlineOnActiveLayer_AndSupportsUndoRedo()
+    {
+        // Arrange
+        var vm = CreateMainViewModel();
+        var layer = vm.CanvasViewModel.Canvas.ActiveLayer!;
+        var shapeColor = new PixelColor(255, 255, 255, 255);
+        layer.SetPixel(10, 10, shapeColor);
+
+        var outlineColor = new PixelColor(255, 0, 0, 255);
+        vm.PaletteViewModel.PrimaryColor = outlineColor;
+        vm.ToolViewModel.SetBrushSize(1);
+
+        // Act
+        vm.AddOutline();
+
+        // Assert: 4-way neighbors around (10, 10) are now outlineColor
+        layer.GetPixel(10, 9).Should().Be(outlineColor);
+        layer.GetPixel(10, 11).Should().Be(outlineColor);
+        layer.GetPixel(9, 10).Should().Be(outlineColor);
+        layer.GetPixel(11, 10).Should().Be(outlineColor);
+        layer.GetPixel(10, 10).Should().Be(shapeColor); // Shape preserved
+        vm.IsDirty.Should().BeTrue();
+
+        // Undo
+        vm.HistoryViewModel.Undo();
+        layer.GetPixel(10, 9).Should().Be(PixelColor.Transparent);
+        layer.GetPixel(10, 10).Should().Be(shapeColor);
+    }
+
+    [Fact]
+    public void AddShadowCommand_CreatesShadow_AndSupportsUndoRedo()
+    {
+        // Arrange
+        var vm = CreateMainViewModel();
+        var layer = vm.CanvasViewModel.Canvas.ActiveLayer!;
+        var shapeColor = new PixelColor(200, 200, 200, 255);
+        layer.SetPixel(15, 15, shapeColor);
+
+        // Act
+        vm.AddShadow();
+
+        // Assert: offset pixel at (16, 16) has shadow applied
+        var shadowPixel = layer.GetPixel(16, 16);
+        shadowPixel.A.Should().BeGreaterThan(0);
+        layer.GetPixel(15, 15).Should().Be(shapeColor);
+
+        // Undo
+        vm.HistoryViewModel.Undo();
+        layer.GetPixel(16, 16).Should().Be(PixelColor.Transparent);
+    }
+
+    [Fact]
+    public void ReplaceColorCommand_ReplacesTargetColorWithPrimaryColor_AndSupportsUndoRedo()
+    {
+        // Arrange
+        var vm = CreateMainViewModel();
+        var layer = vm.CanvasViewModel.Canvas.ActiveLayer!;
+        var oldColor = new PixelColor(0, 0, 255, 255);
+        var newColor = new PixelColor(255, 255, 0, 255);
+        layer.SetPixel(5, 5, oldColor);
+        layer.SetPixel(6, 6, oldColor);
+
+        vm.PaletteViewModel.SecondaryColor = oldColor;
+        vm.PaletteViewModel.PrimaryColor = newColor;
+        vm.ToolViewModel.FillTolerance = 0;
+
+        // Act
+        vm.ReplaceColor();
+
+        // Assert
+        layer.GetPixel(5, 5).Should().Be(newColor);
+        layer.GetPixel(6, 6).Should().Be(newColor);
+
+        // Undo
+        vm.HistoryViewModel.Undo();
+        layer.GetPixel(5, 5).Should().Be(oldColor);
+        layer.GetPixel(6, 6).Should().Be(oldColor);
+    }
+
+    [Fact]
+    public void LayerViewModel_ToggleAlphaLock_TogglesIsAlphaLocked()
+    {
+        // Arrange
+        var vm = CreateMainViewModel();
+        var layer = vm.CanvasViewModel.Canvas.ActiveLayer!;
+        layer.IsAlphaLocked.Should().BeFalse();
+
+        // Act
+        vm.LayerViewModel.ToggleAlphaLock(layer);
+
+        // Assert
+        layer.IsAlphaLocked.Should().BeTrue();
+
+        // Act again without argument (defaults to ActiveLayer)
+        vm.LayerViewModel.ToggleAlphaLock();
+        layer.IsAlphaLocked.Should().BeFalse();
     }
 }

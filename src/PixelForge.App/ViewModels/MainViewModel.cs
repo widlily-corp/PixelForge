@@ -4,6 +4,7 @@ using PixelForge.App.Services;
 using PixelForge.Core.History;
 using PixelForge.Core.Models;
 using PixelForge.Core.Services;
+using PixelForge.Core.Tools;
 
 namespace PixelForge.App.ViewModels;
 
@@ -55,6 +56,18 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty]
     private string? _updateDownloadUrl;
+
+    [ObservableProperty]
+    private bool _isUpdating = false;
+
+    [ObservableProperty]
+    private double _updateProgress = 0.0;
+
+    [ObservableProperty]
+    private string _updateStatusText = string.Empty;
+
+    [ObservableProperty]
+    private bool _isTiledMode = false;
 
     public string Title
     {
@@ -647,6 +660,32 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    public async Task ApplyUpdateAsync()
+    {
+        if (string.IsNullOrEmpty(UpdateDownloadUrl))
+        {
+            return;
+        }
+
+        IsUpdating = true;
+        UpdateProgress = 0.0;
+        UpdateStatusText = "Подготовка к автоматической установке...";
+
+        var progress = new Progress<double>(p =>
+        {
+            UpdateProgress = p * 100.0;
+            UpdateStatusText = $"Загрузка обновления: {(int)(p * 100)}%";
+        });
+
+        bool success = await _updateService.DownloadAndInstallUpdateAsync(UpdateDownloadUrl, progress).ConfigureAwait(false);
+        if (!success)
+        {
+            IsUpdating = false;
+            StatusMessage = "Не удалось автоматически установить обновление. Попробуйте скачать вручную.";
+        }
+    }
+
+    [RelayCommand]
     public void OpenUpdateDownloadPage()
     {
         if (!string.IsNullOrEmpty(UpdateDownloadUrl))
@@ -660,6 +699,85 @@ public partial class MainViewModel : ViewModelBase
     public void DismissUpdateBanner()
     {
         IsUpdateBannerVisible = false;
+    }
+
+    /// <summary>
+    /// Toggles the seamless 3x3 tiled mode.
+    /// </summary>
+    [RelayCommand]
+    public void ToggleTiledMode()
+    {
+        IsTiledMode = !IsTiledMode;
+        StatusMessage = IsTiledMode ? "Бесшовный режим (Tiled Mode) включен" : "Бесшовный режим выключен";
+    }
+
+    /// <summary>
+    /// Generates an outline around non-transparent pixels on the active layer or selection.
+    /// </summary>
+    [RelayCommand]
+    public void AddOutline()
+    {
+        var layer = CanvasViewModel.Canvas.ActiveLayer;
+        if (layer == null)
+        {
+            return;
+        }
+
+        var selection = CanvasViewModel.Selection.IsActive ? CanvasViewModel.Selection : null;
+        var color = PaletteViewModel.PrimaryColor;
+        int thickness = Math.Max(1, ToolViewModel.BrushSize);
+
+        var cmd = new OutlineCommand(layer, color, is8Way: false, thickness: thickness, selection: selection);
+        _undoRedoService.ExecuteCommand(cmd);
+        IsDirty = true;
+        OnPropertyChanged(nameof(Title));
+        StatusMessage = $"Добавлен контур толщиной {thickness} px";
+    }
+
+    /// <summary>
+    /// Generates a drop shadow for non-transparent pixels on the active layer or selection.
+    /// </summary>
+    [RelayCommand]
+    public void AddShadow()
+    {
+        var layer = CanvasViewModel.Canvas.ActiveLayer;
+        if (layer == null)
+        {
+            return;
+        }
+
+        var selection = CanvasViewModel.Selection.IsActive ? CanvasViewModel.Selection : null;
+        var shadowColor = new PixelColor(0, 0, 0, 180);
+
+        var cmd = new ShadowCommand(layer, shadowColor, dx: 1, dy: 1, opacity: 0.5f, selection: selection);
+        _undoRedoService.ExecuteCommand(cmd);
+        IsDirty = true;
+        OnPropertyChanged(nameof(Title));
+        StatusMessage = "Добавлена тень (смещение 1, 1)";
+    }
+
+    /// <summary>
+    /// Replaces occurrences of the secondary color with the primary color on the active layer or selection.
+    /// </summary>
+    [RelayCommand]
+    public void ReplaceColor()
+    {
+        var layer = CanvasViewModel.Canvas.ActiveLayer;
+        if (layer == null)
+        {
+            return;
+        }
+
+        var selection = CanvasViewModel.Selection.IsActive ? CanvasViewModel.Selection : null;
+        var targetColor = PaletteViewModel.SecondaryColor;
+        var replacementColor = PaletteViewModel.PrimaryColor;
+        int tolerance = (int)(ToolViewModel.FillTolerance * 2.55f);
+
+        var cmd = new ReplaceColorCommand(layer, targetColor, replacementColor, tolerance, selection);
+        _undoRedoService.ExecuteCommand(cmd);
+        IsDirty = true;
+        OnPropertyChanged(nameof(Title));
+        StatusMessage = $"Заменен цвет на слое '{layer.Name}'";
     }
 
     private async Task RunInitialUpdateCheckAsync()

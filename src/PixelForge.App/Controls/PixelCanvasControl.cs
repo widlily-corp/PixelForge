@@ -8,8 +8,10 @@ using Avalonia.Skia;
 using Avalonia.Threading;
 using PixelForge.App.Services;
 using PixelForge.App.ViewModels;
+using PixelForge.Core.Algorithms;
 using PixelForge.Core.History;
 using PixelForge.Core.Models;
+using PixelForge.Core.Patterns;
 using PixelForge.Core.Tools;
 using SkiaSharp;
 
@@ -17,7 +19,8 @@ namespace PixelForge.App.Controls;
 
 /// <summary>
 /// Hardware-accelerated SkiaSharp canvas control for pixel art creation with 60+ FPS rendering,
-/// zero-allocation draw cycles, nearest-neighbor scaling, adaptive pixel grid, symmetry axes, and tool overlays.
+/// zero-allocation draw cycles, nearest-neighbor scaling, adaptive pixel grid, symmetry axes, tool overlays,
+/// and seamless 3x3 tiled mode.
 /// </summary>
 public class PixelCanvasControl : Control, ICustomDrawOperation
 {
@@ -49,6 +52,30 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
             nameof(HistoryViewModel),
             o => o.HistoryViewModel,
             (o, v) => o.HistoryViewModel = v);
+
+    public static readonly DirectProperty<PixelCanvasControl, bool> IsTiledModeProperty =
+        AvaloniaProperty.RegisterDirect<PixelCanvasControl, bool>(
+            nameof(IsTiledMode),
+            o => o.IsTiledMode,
+            (o, v) => o.IsTiledMode = v);
+
+    private bool _isTiledMode;
+
+    /// <summary>
+    /// Gets or sets whether seamless 3x3 tiled view mode is enabled.
+    /// When active, 3x3 repetitions of the composite are rendered and draw operations wrap periodically.
+    /// </summary>
+    public bool IsTiledMode
+    {
+        get => _isTiledMode;
+        set
+        {
+            if (SetAndRaise(IsTiledModeProperty, ref _isTiledMode, value))
+            {
+                InvalidateVisual();
+            }
+        }
+    }
 
     public CanvasViewModel? CanvasViewModel
     {
@@ -118,9 +145,26 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
     private readonly List<PixelDelta> _activeStrokeDeltas = new(512);
     private readonly HashSet<long> _touchedPixelKeys = new(512);
 
+    // Stroke stabilizer & Pixel-Perfect line smoothing
+    private readonly StrokeStabilizer _strokeStabilizer = new();
+    private readonly List<StrokeStep> _strokeSteps = new(512);
+
     // Pre-allocated Skia resources for Zero-Allocation rendering
     private readonly SKPaint _checkerboardPaint = new() { IsAntialias = false };
     private readonly SKPaint _bitmapPaint = new() { FilterQuality = SKFilterQuality.None, IsAntialias = false };
+    private readonly SKPaint _tiledNeighborPaint = new()
+    {
+        FilterQuality = SKFilterQuality.None,
+        IsAntialias = false,
+        Color = new SKColor(255, 255, 255, 102) // ~40% opacity
+    };
+    private readonly SKPaint _tiledBorderPaint = new()
+    {
+        Color = new SKColor(0, 210, 255, 75), // subtle cyan border between tiles
+        StrokeWidth = 1f,
+        IsAntialias = false,
+        Style = SKPaintStyle.Stroke
+    };
     private readonly SKPaint _gridPaint = new()
     {
         Color = new SKColor(255, 255, 255, 40),
@@ -216,6 +260,14 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
             ToolViewModel = mainVm.ToolViewModel;
             PaletteViewModel = mainVm.PaletteViewModel;
             HistoryViewModel = mainVm.HistoryViewModel;
+            IsTiledMode = mainVm.IsTiledMode;
+            mainVm.PropertyChanged += (s, args) =>
+            {
+                if (args.PropertyName == nameof(MainViewModel.IsTiledMode))
+                {
+                    IsTiledMode = mainVm.IsTiledMode;
+                }
+            };
         }
     }
 
@@ -256,18 +308,6 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         {
             Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Render);
         }
-    }
-
-    private void CleanupCanvasSubscription()
-    {
-        if (_subscribedCanvas != null)
-        {
-            _subscribedCanvas.PixelsChanged -= MarkCompositeDirty;
-            _subscribedCanvas = null;
-        }
-
-        _isDirtyComposite = true;
-        Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Render);
     }
 
     protected override void OnSizeChanged(SizeChangedEventArgs e)
@@ -314,6 +354,8 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         _compositeBitmap = null;
         _checkerboardPaint.Dispose();
         _bitmapPaint.Dispose();
+        _tiledNeighborPaint.Dispose();
+        _tiledBorderPaint.Dispose();
         _gridPaint.Dispose();
         _gridDarkPaint.Dispose();
         _symmetryPaint.Dispose();
@@ -343,14 +385,51 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         int saveCount = canvas.Save();
         try
         {
-            // 1. Checkerboard transparency background
-            canvas.DrawRect(destRect, _checkerboardPaint);
-
-            // 2. Offscreen composite of layers with SKFilterQuality.None (Nearest Neighbor)
             EnsureCompositeUpdated(vm.Canvas);
-            if (_compositeBitmap != null)
+
+            // 1 & 2. Background and Composite Layers (Seamless 3x3 Tiled Mode or Single View)
+            if (IsTiledMode)
             {
-                canvas.DrawBitmap(_compositeBitmap, destRect, _bitmapPaint);
+                // 3x3 repetition of composite
+                // Central tile (tx=0, ty=0) at 100%, 8 neighboring tiles at ~40% opacity with subtle separator border
+                for (int ty = -1; ty <= 1; ty++)
+                {
+                    for (int tx = -1; tx <= 1; tx++)
+                    {
+                        float offsetX = _panX + (tx * destW);
+                        float offsetY = _panY + (ty * destH);
+                        var tileRect = new SKRect(offsetX, offsetY, offsetX + destW, offsetY + destH);
+
+                        // Checkerboard
+                        canvas.DrawRect(tileRect, _checkerboardPaint);
+
+                        if (_compositeBitmap != null)
+                        {
+                            if (tx == 0 && ty == 0)
+                            {
+                                canvas.DrawBitmap(_compositeBitmap, tileRect, _bitmapPaint);
+                            }
+                            else
+                            {
+                                canvas.DrawBitmap(_compositeBitmap, tileRect, _tiledNeighborPaint);
+                            }
+                        }
+
+                        // Boundary separator grid between tiles
+                        canvas.DrawRect(tileRect, _tiledBorderPaint);
+                    }
+                }
+            }
+            else
+            {
+                // 1. Checkerboard transparency background
+                canvas.DrawRect(destRect, _checkerboardPaint);
+
+                // 2. Offscreen composite of layers with SKFilterQuality.None (Nearest Neighbor)
+                if (_compositeBitmap != null)
+                {
+                    canvas.DrawBitmap(_compositeBitmap, destRect, _bitmapPaint);
+                }
             }
 
             // 3. Tool live preview overlay (e.g. current shape, line, selection)
@@ -404,7 +483,7 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
             _compositeBitmap = new SKBitmap(w, h, SKColorType.Rgba8888, SKAlphaType.Unpremul);
             _compositePixels = new PixelColor[total];
 
-        _isDirtyComposite = true;
+            _isDirtyComposite = true;
         }
 
         if (_isDirtyComposite && _compositePixels != null)
@@ -635,6 +714,22 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
 
             e.Pointer.Capture(this);
             _isDrawing = true;
+            _strokeSteps.Clear();
+
+            _strokeStabilizer.Strength = ToolViewModel.StabilizerStrength;
+            _strokeStabilizer.Reset();
+            if (_strokeStabilizer.Strength > 0)
+            {
+                (px, py) = _strokeStabilizer.Process(px, py);
+                if (IsTiledMode)
+                {
+                    int cw = CanvasViewModel.CanvasWidth;
+                    int ch = CanvasViewModel.CanvasHeight;
+                    px = (px % cw + cw) % cw;
+                    py = (py % ch + ch) % ch;
+                }
+            }
+
             _strokeStartPixelX = px;
             _strokeStartPixelY = py;
             _lastDrawnPixelX = px;
@@ -678,6 +773,18 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
 
         if (_isDrawing && isInside && ToolViewModel != null && PaletteViewModel != null)
         {
+            if (_strokeStabilizer.Strength > 0)
+            {
+                (px, py) = _strokeStabilizer.Process(px, py);
+                if (IsTiledMode && CanvasViewModel != null)
+                {
+                    int cw = CanvasViewModel.CanvasWidth;
+                    int ch = CanvasViewModel.CanvasHeight;
+                    px = (px % cw + cw) % cw;
+                    py = (py % ch + ch) % ch;
+                }
+            }
+
             var pointerProps = e.GetCurrentPoint(this).Properties;
             var drawColor = pointerProps.IsRightButtonPressed
                 ? PaletteViewModel.SecondaryColor
@@ -711,7 +818,20 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
             e.Pointer.Capture(null);
 
             var (px, py, _) = ScreenToCanvasPixel(e.GetPosition(this));
+            if (_strokeStabilizer.Strength > 0)
+            {
+                (px, py) = _strokeStabilizer.Process(px, py);
+                if (IsTiledMode && CanvasViewModel != null)
+                {
+                    int cw = CanvasViewModel.CanvasWidth;
+                    int ch = CanvasViewModel.CanvasHeight;
+                    px = (px % cw + cw) % cw;
+                    py = (py % ch + ch) % ch;
+                }
+            }
+
             ExecuteToolPointerUp(px, py);
+            _strokeSteps.Clear();
             InvalidateVisual();
             e.Handled = true;
         }
@@ -756,12 +876,13 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         {
             case CanvasToolType.Pencil:
             case CanvasToolType.DitherBrush:
-                PlotBrushWithSymmetry(layer, px, py, drawColor);
+            case CanvasToolType.PatternBrush:
+                DrawFreehandStep(layer, px, py, drawColor);
                 MarkCompositeDirty();
                 break;
 
             case CanvasToolType.Eraser:
-                PlotBrushWithSymmetry(layer, px, py, PixelColor.Transparent);
+                DrawFreehandStep(layer, px, py, PixelColor.Transparent);
                 MarkCompositeDirty();
                 break;
 
@@ -775,6 +896,11 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
                     HistoryViewModel.Service.ExecuteCommand(cmd);
                     _activeStrokeDeltas.Clear();
                 }
+                MarkCompositeDirty();
+                break;
+
+            case CanvasToolType.MagicWand:
+                ExecuteMagicWand(layer, px, py);
                 MarkCompositeDirty();
                 break;
 
@@ -804,20 +930,15 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         {
             case CanvasToolType.Pencil:
             case CanvasToolType.DitherBrush:
-                BresenhamLine(_lastDrawnPixelX, _lastDrawnPixelY, px, py, (x, y) =>
-                {
-                    PlotBrushWithSymmetry(layer, x, y, drawColor);
-                });
+            case CanvasToolType.PatternBrush:
+                DrawFreehandLine(layer, _lastDrawnPixelX, _lastDrawnPixelY, px, py, drawColor);
                 _lastDrawnPixelX = px;
                 _lastDrawnPixelY = py;
                 MarkCompositeDirty();
                 break;
 
             case CanvasToolType.Eraser:
-                BresenhamLine(_lastDrawnPixelX, _lastDrawnPixelY, px, py, (x, y) =>
-                {
-                    PlotBrushWithSymmetry(layer, x, y, PixelColor.Transparent);
-                });
+                DrawFreehandLine(layer, _lastDrawnPixelX, _lastDrawnPixelY, px, py, PixelColor.Transparent);
                 _lastDrawnPixelX = px;
                 _lastDrawnPixelY = py;
                 MarkCompositeDirty();
@@ -836,6 +957,7 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
             case CanvasToolType.Pencil:
             case CanvasToolType.Eraser:
             case CanvasToolType.DitherBrush:
+            case CanvasToolType.PatternBrush:
                 if (_activeStrokeDeltas.Count > 0 && HistoryViewModel != null)
                 {
                     string desc = ToolViewModel.ActiveTool switch
@@ -843,12 +965,14 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
                         CanvasToolType.Pencil => "Pencil Stroke",
                         CanvasToolType.Eraser => "Eraser Stroke",
                         CanvasToolType.DitherBrush => "Dither Stroke",
+                        CanvasToolType.PatternBrush => "Pattern Brush Stroke",
                         _ => "Stroke"
                     };
                     var cmd = new DrawPixelsCommand(layer, _activeStrokeDeltas.ToArray(), desc);
                     HistoryViewModel.Service.ExecuteCommand(cmd);
                     _activeStrokeDeltas.Clear();
                     _touchedPixelKeys.Clear();
+                    _strokeSteps.Clear();
                 }
                 break;
 
@@ -887,6 +1011,71 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         MarkCompositeDirty();
     }
 
+    private void DrawFreehandLine(Layer layer, int x0, int y0, int x1, int y1, PixelColor color)
+    {
+        int dx = Math.Abs(x1 - x0);
+        int dy = Math.Abs(y1 - y0);
+        int sx = x0 < x1 ? 1 : -1;
+        int sy = y0 < y1 ? 1 : -1;
+        int err = dx - dy;
+
+        while (true)
+        {
+            DrawFreehandStep(layer, x0, y0, color);
+            if (x0 == x1 && y0 == y1) break;
+            int e2 = 2 * err;
+            if (e2 > -dy)
+            {
+                err -= dy;
+                x0 += sx;
+            }
+            if (e2 < dx)
+            {
+                err += dx;
+                y0 += sy;
+            }
+        }
+    }
+
+    private void DrawFreehandStep(Layer layer, int x, int y, PixelColor color)
+    {
+        bool pixelPerfect = (ToolViewModel?.IsPixelPerfect ?? false) && (ToolViewModel?.BrushSize == 1);
+        if (pixelPerfect)
+        {
+            if (_strokeSteps.Count >= 2)
+            {
+                var p0 = _strokeSteps[^2];
+                var p1 = _strokeSteps[^1];
+
+                if (PixelPerfectAlgorithm.IsCornerJaggie(p0.X, p0.Y, p1.X, p1.Y, x, y))
+                {
+                    RollbackStep(layer, p1);
+                    _strokeSteps.RemoveAt(_strokeSteps.Count - 1);
+                }
+            }
+        }
+
+        int deltaStart = _activeStrokeDeltas.Count;
+        PlotBrushWithSymmetry(layer, x, y, color);
+
+        if (pixelPerfect)
+        {
+            _strokeSteps.Add(new StrokeStep(x, y, deltaStart));
+        }
+    }
+
+    private void RollbackStep(Layer layer, StrokeStep step)
+    {
+        for (int i = _activeStrokeDeltas.Count - 1; i >= step.DeltaStartIndex; i--)
+        {
+            var delta = _activeStrokeDeltas[i];
+            layer.SetPixel(delta.X, delta.Y, delta.OldColor);
+            long key = ((long)delta.Y << 32) | (uint)delta.X;
+            _touchedPixelKeys.Remove(key);
+            _activeStrokeDeltas.RemoveAt(i);
+        }
+    }
+
     private void CommitActiveDeltas(Layer layer, string description)
     {
         if (_activeStrokeDeltas.Count > 0 && HistoryViewModel != null)
@@ -895,6 +1084,7 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
             HistoryViewModel.Service.ExecuteCommand(cmd);
             _activeStrokeDeltas.Clear();
             _touchedPixelKeys.Clear();
+            _strokeSteps.Clear();
         }
     }
 
@@ -915,6 +1105,12 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
             {
                 int px = cx + dx;
                 int py = cy + dy;
+
+                if (IsTiledMode)
+                {
+                    px = (px % w + w) % w;
+                    py = (py % h + h) % h;
+                }
 
                 PlotSinglePixel(layer, px, py, color, secondaryColor, pattern);
 
@@ -942,6 +1138,12 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
 
     private void PlotSinglePixel(Layer layer, int x, int y, PixelColor primaryColor, PixelColor secondaryColor, DitherPattern pattern)
     {
+        if (IsTiledMode)
+        {
+            x = (x % layer.Width + layer.Width) % layer.Width;
+            y = (y % layer.Height + layer.Height) % layer.Height;
+        }
+
         var selection = CanvasViewModel?.Selection;
         if (selection != null && selection.IsActive && !selection.Contains(x, y))
         {
@@ -953,6 +1155,15 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         {
             finalColor = PixelColor.Transparent;
         }
+        else if (ToolViewModel?.ActiveTool == CanvasToolType.PatternBrush)
+        {
+            var patternPreset = ToolViewModel.SelectedPatternPreset;
+            if (!patternPreset.IsPixelSet(x, y))
+            {
+                return;
+            }
+            finalColor = primaryColor;
+        }
         else if (pattern != DitherPattern.None)
         {
             finalColor = DitherHelper.EvaluateDitherColor(x, y, primaryColor, secondaryColor, pattern);
@@ -963,17 +1174,54 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
 
     private void ApplyPixel(Layer layer, int x, int y, PixelColor newColor)
     {
-        if ((uint)x >= (uint)layer.Width || (uint)y >= (uint)layer.Height) return;
+        int targetX = x;
+        int targetY = y;
+        if (IsTiledMode)
+        {
+            targetX = (x % layer.Width + layer.Width) % layer.Width;
+            targetY = (y % layer.Height + layer.Height) % layer.Height;
+        }
+        else if ((uint)x >= (uint)layer.Width || (uint)y >= (uint)layer.Height)
+        {
+            return;
+        }
 
-        long key = ((long)y << 32) | (uint)x;
-        var oldColor = layer.GetPixel(x, y);
+        long key = ((long)targetY << 32) | (uint)targetX;
+        var oldColor = layer.GetPixel(targetX, targetY);
 
         if (_touchedPixelKeys.Add(key))
         {
-            _activeStrokeDeltas.Add(new PixelDelta(x, y, oldColor, newColor));
+            _activeStrokeDeltas.Add(new PixelDelta(targetX, targetY, oldColor, newColor));
         }
 
-        layer.SetPixel(x, y, newColor);
+        layer.SetPixel(targetX, targetY, newColor);
+    }
+
+    private void ExecuteMagicWand(Layer layer, int px, int py)
+    {
+        if (CanvasViewModel == null || ToolViewModel == null) return;
+
+        int tolerance = (int)(ToolViewModel.FillTolerance * 2.55f);
+        bool contiguous = ToolViewModel.FillContiguous;
+        bool symX = CanvasViewModel.ShowSymmetryX;
+        bool symY = CanvasViewModel.ShowSymmetryY;
+
+        var seeds = new List<(int X, int Y)>(4) { (px, py) };
+        if (symX)
+        {
+            seeds.Add(((layer.Width - 1) - px, py));
+        }
+        if (symY)
+        {
+            seeds.Add((px, (layer.Height - 1) - py));
+        }
+        if (symX && symY)
+        {
+            seeds.Add(((layer.Width - 1) - px, (layer.Height - 1) - py));
+        }
+
+        var wand = ToolViewModel.MagicWandTool;
+        wand.Select(layer, seeds, tolerance, contiguous, CanvasViewModel.Selection);
     }
 
     private void FloodFill(Layer layer, int startX, int startY, PixelColor targetColor, PixelColor replacementColor)
@@ -1239,13 +1487,38 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         if (CanvasViewModel == null) return (-1, -1, false);
 
         float zoom = CanvasViewModel.Zoom;
-        int px = (int)Math.Floor((screenPos.X - _panX) / zoom);
-        int py = (int)Math.Floor((screenPos.Y - _panY) / zoom);
+        int rawX = (int)Math.Floor((screenPos.X - _panX) / zoom);
+        int rawY = (int)Math.Floor((screenPos.Y - _panY) / zoom);
 
-        bool isInside = px >= 0 && px < CanvasViewModel.CanvasWidth &&
-                        py >= 0 && py < CanvasViewModel.CanvasHeight;
+        int cw = CanvasViewModel.CanvasWidth;
+        int ch = CanvasViewModel.CanvasHeight;
 
-        return (px, py, isInside);
+        if (IsTiledMode)
+        {
+            bool isInside = rawX >= -cw && rawX < 2 * cw && rawY >= -ch && rawY < 2 * ch;
+            int wrappedX = (rawX % cw + cw) % cw;
+            int wrappedY = (rawY % ch + ch) % ch;
+            return (wrappedX, wrappedY, isInside);
+        }
+        else
+        {
+            bool isInside = rawX >= 0 && rawX < cw && rawY >= 0 && rawY < ch;
+            return (rawX, rawY, isInside);
+        }
+    }
+
+    private readonly struct StrokeStep
+    {
+        public int X { get; }
+        public int Y { get; }
+        public int DeltaStartIndex { get; }
+
+        public StrokeStep(int x, int y, int deltaStartIndex)
+        {
+            X = x;
+            Y = y;
+            DeltaStartIndex = deltaStartIndex;
+        }
     }
 
     #endregion

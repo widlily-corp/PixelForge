@@ -167,6 +167,14 @@
                     </MenuItem>
                     <Separator />
                     <MenuItem Header="Очистить активный слой" Command="{Binding ClearActiveLayerCommand}" />
+                    <Separator />
+                    <MenuItem Header="Смарт-инструменты">
+                        <MenuItem Header="Добавить контур (Outline)..." Command="{Binding AddOutlineCommand}" />
+                        <MenuItem Header="Добавить тень (Shadow)..." Command="{Binding AddShadowCommand}" />
+                        <MenuItem Header="Заменить цвет (Replace Color)..." Command="{Binding ReplaceColorCommand}" />
+                        <Separator />
+                        <MenuItem Header="Бесшовный режим (Tiled Mode)" HotKey="F10" Command="{Binding ToggleTiledModeCommand}" />
+                    </MenuItem>
                 </MenuItem>
 
                 <!-- View Menu -->
@@ -174,6 +182,7 @@
                     <MenuItem Header="Пиксельная сетка" HotKey="Ctrl+G" Command="{Binding CanvasViewModel.ToggleGridCommand}" />
                     <MenuItem Header="Симметрия по горизонтали (X)" Command="{Binding CanvasViewModel.ToggleSymmetryXCommand}" />
                     <MenuItem Header="Симметрия по вертикали (Y)" Command="{Binding CanvasViewModel.ToggleSymmetryYCommand}" />
+                    <MenuItem Header="Бесшовный режим (Tiled Mode)" HotKey="F10" Command="{Binding ToggleTiledModeCommand}" />
                     <Separator />
                     <MenuItem Header="Приблизить" HotKey="Ctrl+Add" Command="{Binding CanvasViewModel.ZoomInCommand}" />
                     <MenuItem Header="Отдалить" HotKey="Ctrl+Subtract" Command="{Binding CanvasViewModel.ZoomOutCommand}" />
@@ -224,7 +233,7 @@
 
                 <Separator Grid.Column="3" Width="1" Height="20" Margin="8,0" Background="{DynamicResource BorderSubtleBrush}" />
 
-                <!-- Overlays: Grid & Symmetry -->
+                <!-- Overlays: Grid & Symmetry & Tiled Mode -->
                 <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="4">
                     <ToggleButton Name="GridToggle" IsChecked="{Binding CanvasViewModel.ShowGrid, Mode=TwoWay}"
                                   Height="30" Padding="8,4" CornerRadius="4"
@@ -250,6 +259,15 @@
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <PathIcon Data="{DynamicResource IconSymmetryY}" Width="14" Height="14" />
                             <TextBlock Text="Симм. Y" FontSize="11" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ToggleButton>
+
+                    <ToggleButton Name="TiledToggle" IsChecked="{Binding IsTiledMode, Mode=TwoWay}"
+                                  Height="30" Padding="8,4" CornerRadius="4"
+                                  ToolTip.Tip="Бесшовный режим (Tiled Mode) (F10)">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{DynamicResource IconTiled}" Width="14" Height="14" />
+                            <TextBlock Text="Тайлы" FontSize="11" VerticalAlignment="Center" />
                         </StackPanel>
                     </ToggleButton>
                 </StackPanel>
@@ -281,15 +299,26 @@
         <!-- 3. Update Banner Notification (if update is available) -->
         <Border Grid.Row="2" Background="{DynamicResource AccentPrimaryBrush}" Padding="12,6"
                 IsVisible="{Binding IsUpdateBannerVisible}">
-            <Grid ColumnDefinitions="*,Auto,Auto">
-                <TextBlock Grid.Column="0" Text="{Binding UpdateBannerMessage}"
-                           VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold" Foreground="#0A0E17" />
-                <Button Grid.Column="1" Content="Скачать" Margin="8,0" Padding="12,4" CornerRadius="4"
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto">
+                <StackPanel Grid.Column="0" Orientation="Vertical" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{Binding UpdateBannerMessage}"
+                               VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold" Foreground="#0A0E17" />
+                    <ProgressBar Minimum="0" Maximum="100" Value="{Binding UpdateProgress}"
+                                 Height="4" Foreground="#0A0E17" Background="#400A0E17"
+                                 IsVisible="{Binding IsUpdating}" />
+                    <TextBlock Text="{Binding UpdateStatusText}" FontSize="10" Foreground="#0A0E17"
+                               IsVisible="{Binding IsUpdating}" />
+                </StackPanel>
+                <Button Grid.Column="1" Content="Обновить сейчас" Margin="8,0" Padding="12,4" CornerRadius="4"
                         Background="#0A0E17" Foreground="#FFFFFF" FontSize="11" FontWeight="Bold"
-                        Command="{Binding OpenUpdateDownloadPageCommand}" />
-                <Button Grid.Column="2" Content="✕" Padding="6,4" CornerRadius="4"
+                        Command="{Binding ApplyUpdateCommand}" IsEnabled="{Binding !IsUpdating}"
+                        ToolTip.Tip="Автоматически скачать, установить и перезапустить PixelForge" />
+                <Button Grid.Column="2" Content="Сайт" Margin="0,0,8,0" Padding="8,4" CornerRadius="4"
+                        Background="Transparent" BorderBrush="#0A0E17" BorderThickness="1" Foreground="#0A0E17" FontSize="11"
+                        Command="{Binding OpenUpdateDownloadPageCommand}" IsEnabled="{Binding !IsUpdating}" />
+                <Button Grid.Column="3" Content="✕" Padding="6,4" CornerRadius="4"
                         Background="Transparent" Foreground="#0A0E17" FontSize="12" FontWeight="Bold"
-                        Command="{Binding DismissUpdateBannerCommand}" />
+                        Command="{Binding DismissUpdateBannerCommand}" IsEnabled="{Binding !IsUpdating}" />
             </Grid>
         </Border>
 
@@ -314,8 +343,13 @@
                         </Button>
 
                         <Button Name="ToolDitherButton" Classes="tool-btn"
-                                ToolTip.Tip="Паттерн кисть (D)" ToolTip.Placement="Right" ToolTip.HorizontalOffset="10">
+                                ToolTip.Tip="Дизеринг кисть (D)" ToolTip.Placement="Right" ToolTip.HorizontalOffset="10">
                             <PathIcon Data="{DynamicResource IconDither}" Width="18" Height="18" />
+                        </Button>
+
+                        <Button Name="ToolPatternBrushButton" Classes="tool-btn"
+                                ToolTip.Tip="Текстурная кисть 8x8 (P)" ToolTip.Placement="Right" ToolTip.HorizontalOffset="10">
+                            <PathIcon Data="{DynamicResource IconPatternBrush}" Width="18" Height="18" />
                         </Button>
 
                         <Separator Height="1" Margin="4,3" Background="{DynamicResource BorderSubtleBrush}" />
@@ -324,6 +358,11 @@
                         <Button Name="ToolFillButton" Classes="tool-btn"
                                 ToolTip.Tip="Заливка (G)" ToolTip.Placement="Right" ToolTip.HorizontalOffset="10">
                             <PathIcon Data="{DynamicResource IconFill}" Width="18" Height="18" />
+                        </Button>
+
+                        <Button Name="ToolMagicWandButton" Classes="tool-btn"
+                                ToolTip.Tip="Волшебная палочка (W)" ToolTip.Placement="Right" ToolTip.HorizontalOffset="10">
+                            <PathIcon Data="{DynamicResource IconMagicWand}" Width="18" Height="18" />
                         </Button>
 
                         <Button Name="ToolGradientButton" Classes="tool-btn"
@@ -416,7 +455,7 @@
                     <Border Grid.Row="0" Background="{DynamicResource SurfacePanelBrush}"
                             BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,0,0,1"
                             Padding="12,5" Height="34">
-                        <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,*,Auto">
+                        <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,*,Auto">
                             <!-- Active Tool Name Badge -->
                             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                 <TextBlock Text="Инструмент:" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
@@ -470,8 +509,18 @@
                                           Height="26" FontSize="11" VerticalContentAlignment="Center" MinWidth="110" />
                             </StackPanel>
 
-                            <!-- Flood Fill Settings: Tolerance & Contiguous -->
-                            <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                            <!-- 8x8 Pattern Preset Selector (PatternBrush) -->
+                            <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+                                        Margin="10,0,0,0"
+                                        IsVisible="{Binding ToolViewModel.Supports8x8Pattern}">
+                                <TextBlock Text="Текстура 8x8:" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                <ComboBox ItemsSource="{Binding ToolViewModel.Available8x8Patterns}"
+                                          SelectedItem="{Binding ToolViewModel.SelectedPatternPreset, Mode=TwoWay}"
+                                          Height="26" FontSize="11" VerticalContentAlignment="Center" MinWidth="110" />
+                            </StackPanel>
+
+                            <!-- Flood Fill Settings: Tolerance & Contiguous (Fill, MagicWand) -->
+                            <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
                                         Margin="10,0,0,0"
                                         IsVisible="{Binding ToolViewModel.SupportsFillSettings}">
                                 <TextBlock Text="Порог:" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
@@ -485,7 +534,7 @@
                             </StackPanel>
 
                             <!-- Gradient Settings: Type (Linear / Radial) -->
-                            <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+                            <StackPanel Grid.Column="6" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
                                         Margin="10,0,0,0"
                                         IsVisible="{Binding ToolViewModel.SupportsGradientSettings}">
                                 <TextBlock Text="Тип:" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
@@ -495,7 +544,7 @@
                             </StackPanel>
 
                             <!-- Shape Fill Option (when Rectangle or Ellipse is active) -->
-                            <StackPanel Grid.Column="6" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+                            <StackPanel Grid.Column="7" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
                                         Margin="10,0,0,0"
                                         IsVisible="{Binding ToolViewModel.SupportsShapeFill}">
                                 <CheckBox IsChecked="{Binding ToolViewModel.IsShapeFilled, Mode=TwoWay}"
@@ -503,8 +552,30 @@
                                           Foreground="{DynamicResource TextPrimaryBrush}" />
                             </StackPanel>
 
+                            <!-- Pixel Perfect Toggle (Pencil, Eraser, DitherBrush, PatternBrush) (Shift+P) -->
+                            <ToggleButton Grid.Column="8" IsChecked="{Binding ToolViewModel.IsPixelPerfect, Mode=TwoWay}"
+                                          Height="26" Padding="6,2" CornerRadius="4"
+                                          Margin="10,0,0,0"
+                                          ToolTip.Tip="Pixel Perfect: устранение изломов в 1px линиях (Shift+P)"
+                                          IsVisible="{Binding ToolViewModel.SupportsPixelPerfect}">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="Pixel Perfect" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </ToggleButton>
+
+                            <!-- Stroke Stabilizer Slider (0..10) -->
+                            <StackPanel Grid.Column="9" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+                                        Margin="10,0,0,0"
+                                        IsVisible="{Binding ToolViewModel.SupportsStabilizer}">
+                                <TextBlock Text="Стабилизатор:" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                <Slider Minimum="0" Maximum="10" Value="{Binding ToolViewModel.StabilizerStrength, Mode=TwoWay}"
+                                        Width="65" VerticalAlignment="Center" SmallChange="1" LargeChange="1" />
+                                <TextBlock Text="{Binding ToolViewModel.StabilizerStrength}" FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" Width="14" />
+                            </StackPanel>
+
                             <!-- Right: Quick Zoom Presets in Context Bar -->
-                            <StackPanel Grid.Column="8" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <StackPanel Grid.Column="11" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                 <TextBlock Text="Масштаб:" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                                 <TextBlock Text="{Binding CanvasViewModel.ZoomText}" FontSize="11" FontWeight="SemiBold"
                                            Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
@@ -518,6 +589,7 @@
                                                 ToolViewModel="{Binding ToolViewModel}"
                                                 PaletteViewModel="{Binding PaletteViewModel}"
                                                 HistoryViewModel="{Binding HistoryViewModel}"
+                                                IsTiledMode="{Binding IsTiledMode, Mode=TwoWay}"
                                                 HorizontalAlignment="Stretch"
                                                 VerticalAlignment="Stretch" />
                 </Grid>
@@ -587,7 +659,7 @@
                                      Background="Transparent" BorderThickness="0">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate x:DataType="models:Layer">
-                                        <Grid ColumnDefinitions="Auto,*,Auto" Height="28">
+                                        <Grid ColumnDefinitions="Auto,Auto,*,Auto" Height="28">
                                             <!-- Visibility Toggle Button -->
                                             <Button Grid.Column="0" Classes="action-btn" Padding="4"
                                                     Command="{Binding #RootWindow.DataContext.LayerViewModel.ToggleVisibilityCommand}"
@@ -603,14 +675,30 @@
                                                 </Panel>
                                             </Button>
 
+                                            <!-- Alpha Lock Toggle Button -->
+                                            <Button Grid.Column="1" Classes="action-btn" Padding="4" Margin="2,0,0,0"
+                                                    Command="{Binding #RootWindow.DataContext.LayerViewModel.ToggleAlphaLockCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    ToolTip.Tip="Блокировка прозрачности (Alpha Lock)">
+                                                <Panel>
+                                                    <PathIcon Data="{DynamicResource IconLock}" Width="13" Height="13"
+                                                              IsVisible="{Binding IsAlphaLocked}"
+                                                              Foreground="{DynamicResource AccentPrimaryBrush}" />
+                                                    <PathIcon Data="{DynamicResource IconLock}" Width="13" Height="13"
+                                                              IsVisible="{Binding !IsAlphaLocked}"
+                                                              Foreground="{DynamicResource TextMutedBrush}"
+                                                              Opacity="0.4" />
+                                                </Panel>
+                                            </Button>
+
                                             <!-- Layer Name -->
-                                            <TextBlock Grid.Column="1" Text="{Binding Name}" Margin="8,0"
+                                            <TextBlock Grid.Column="2" Text="{Binding Name}" Margin="8,0"
                                                        VerticalAlignment="Center" FontSize="11"
                                                        Foreground="{DynamicResource TextPrimaryBrush}"
                                                        TextTrimming="CharacterEllipsis" />
 
                                             <!-- Opacity text -->
-                                            <TextBlock Grid.Column="2" Text="{Binding Opacity, StringFormat='{}{0:P0}'}"
+                                            <TextBlock Grid.Column="3" Text="{Binding Opacity, StringFormat='{}{0:P0}'}"
                                                        VerticalAlignment="Center" FontSize="10"
                                                        Foreground="{DynamicResource TextMutedBrush}" />
                                         </Grid>

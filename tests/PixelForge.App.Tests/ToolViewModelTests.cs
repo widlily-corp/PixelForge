@@ -1,5 +1,7 @@
 using FluentAssertions;
 using PixelForge.App.ViewModels;
+using PixelForge.Core.Patterns;
+using PixelForge.Core.Tools;
 using Xunit;
 
 namespace PixelForge.App.Tests;
@@ -54,6 +56,8 @@ public class ToolViewModelTests
     [InlineData(CanvasToolType.Rectangle, "Прямоугольник", false, true)]
     [InlineData(CanvasToolType.Ellipse, "Эллипс", false, true)]
     [InlineData(CanvasToolType.Selection, "Выделение", false, false)]
+    [InlineData(CanvasToolType.PatternBrush, "Текстурная кисть", true, false)]
+    [InlineData(CanvasToolType.MagicWand, "Волшебная палочка", false, false)]
     public void ToolSelection_UpdatesDisplayAndCapabilitiesCorrectly(
         CanvasToolType toolType,
         string expectedDisplayName,
@@ -71,5 +75,102 @@ public class ToolViewModelTests
         vm.ActiveToolDisplayName.Should().Be(expectedDisplayName);
         vm.SupportsBrushSize.Should().Be(expectedSupportsBrush);
         vm.SupportsShapeFill.Should().Be(expectedSupportsFill);
+    }
+
+    [Fact]
+    public void ToolViewModel_RegistersMagicWandAndPatternBrushTools()
+    {
+        // Arrange
+        var vm = new ToolViewModel();
+
+        // Assert
+        vm.MagicWandTool.Should().NotBeNull();
+        vm.PatternBrushTool.Should().NotBeNull();
+        vm.Tools.Should().ContainKey(CanvasToolType.MagicWand);
+        vm.Tools.Should().ContainKey(CanvasToolType.PatternBrush);
+        vm.Tools[CanvasToolType.MagicWand].Should().BeSameAs(vm.MagicWandTool);
+        vm.Tools[CanvasToolType.PatternBrush].Should().BeSameAs(vm.PatternBrushTool);
+
+        vm.AvailableTools.Should().Contain(t => t.Type == CanvasToolType.MagicWand && t.IconKey == "IconMagicWand");
+        vm.AvailableTools.Should().Contain(t => t.Type == CanvasToolType.PatternBrush && t.IconKey == "IconPatternBrush");
+    }
+
+    [Fact]
+    public void TogglePixelPerfect_TogglesFlagAndUpdatesPatternBrush()
+    {
+        // Arrange
+        var vm = new ToolViewModel();
+        vm.IsPixelPerfect.Should().BeFalse();
+        vm.PatternBrushTool.PixelPerfect.Should().BeFalse();
+
+        // Act
+        vm.TogglePixelPerfect();
+
+        // Assert
+        vm.IsPixelPerfect.Should().BeTrue();
+        vm.PatternBrushTool.PixelPerfect.Should().BeTrue();
+
+        // Act again
+        vm.TogglePixelPerfect();
+        vm.IsPixelPerfect.Should().BeFalse();
+        vm.PatternBrushTool.PixelPerfect.Should().BeFalse();
+    }
+
+    [Fact]
+    public void StabilizerStrength_SyncsAndClampsToPatternBrush()
+    {
+        // Arrange
+        var vm = new ToolViewModel();
+        vm.StabilizerStrength.Should().Be(0);
+
+        // Act
+        vm.StabilizerStrength = 7;
+
+        // Assert
+        vm.StabilizerStrength.Should().Be(7);
+        vm.PatternBrushTool.StabilizerStrength.Should().Be(7);
+    }
+
+    [Fact]
+    public void PatternPreset_ProvidesPresetsAndSyncsToTool()
+    {
+        // Arrange
+        var vm = new ToolViewModel();
+        vm.Available8x8Patterns.Should().NotBeEmpty();
+        vm.SelectedPatternPreset.Name.Should().Be(PatternPresets.Checkerboard.Name);
+
+        // Act
+        vm.SelectedPatternPreset = PatternPresets.Bricks;
+
+        // Assert
+        vm.PatternBrushTool.Pattern.Should().Be(PatternPresets.Bricks);
+    }
+
+    [Fact]
+    public void BrushSize_SyncsToPatternBrushTool()
+    {
+        // Arrange
+        var vm = new ToolViewModel();
+
+        // Act
+        vm.SetBrushSize(4);
+
+        // Assert
+        vm.PatternBrushTool.BrushSize.Should().Be(4);
+    }
+
+    [Fact]
+    public void FillToleranceAndContiguous_SyncToMagicWandTool()
+    {
+        // Arrange
+        var vm = new ToolViewModel();
+
+        // Act
+        vm.FillTolerance = 20;
+        vm.FillContiguous = false;
+
+        // Assert
+        vm.MagicWandTool.Tolerance.Should().Be((int)(20 * 2.55f));
+        vm.MagicWandTool.Contiguous.Should().BeFalse();
     }
 }
