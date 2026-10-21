@@ -216,6 +216,11 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         IsAntialias = false,
         Style = SKPaintStyle.Stroke
     };
+    private readonly SKPaint _referenceOverlayPaint = new()
+    {
+        IsAntialias = true,
+        FilterQuality = SKFilterQuality.Low
+    };
 
     // Offscreen layer composite buffer
     private SKBitmap? _compositeBitmap;
@@ -297,6 +302,11 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
             }
         }
 
+        if (CanvasViewModel?.ReferenceOverlay != null)
+        {
+            CanvasViewModel.ReferenceOverlay.PropertyChanged += (_, _) => InvalidateVisual();
+        }
+
         InvalidateVisual();
     }
 
@@ -366,6 +376,7 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         _previewFillPaint.Dispose();
         _selectionPaint.Dispose();
         _cursorHoverPaint.Dispose();
+        _referenceOverlayPaint.Dispose();
     }
 
     void ICustomDrawOperation.Render(ImmediateDrawingContext context)
@@ -434,6 +445,9 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
                     canvas.DrawBitmap(_compositeBitmap, destRect, _bitmapPaint);
                 }
             }
+
+            // 2.5. Reference Image Overlay
+            RenderReferenceOverlay(canvas, destRect, vm.ReferenceOverlay);
 
             // 3. Tool live preview overlay (e.g. current shape, line, selection)
             RenderToolPreview(canvas, destRect, zoom);
@@ -504,6 +518,17 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
 
             _isDirtyComposite = false;
         }
+    }
+
+    private void RenderReferenceOverlay(SKCanvas canvas, SKRect destRect, ReferenceImageOverlay? overlay)
+    {
+        if (overlay == null || !overlay.IsVisible || !overlay.HasImage || overlay.Bitmap == null) return;
+
+        byte alpha = (byte)Math.Clamp((int)(overlay.Opacity * 255f), 0, 255);
+        if (alpha == 0) return;
+
+        _referenceOverlayPaint.Color = new SKColor(255, 255, 255, alpha);
+        canvas.DrawBitmap(overlay.Bitmap, destRect, _referenceOverlayPaint);
     }
 
     private void RenderPixelGrid(SKCanvas canvas, SKRect destRect, int canvasW, int canvasH, float zoom)

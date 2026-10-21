@@ -9,12 +9,12 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.1.4-blue.svg" alt="Version 0.1.3" />
+  <img src="https://img.shields.io/badge/version-0.1.5-blue.svg" alt="Version 0.1.5" />
   <img src="https://img.shields.io/badge/.NET-8.0-purple.svg" alt=".NET 8.0" />
   <img src="https://img.shields.io/badge/Avalonia-11.1.3-informational.svg" alt="Avalonia 11" />
   <img src="https://img.shields.io/badge/Rendering-SkiaSharp-orange.svg" alt="SkiaSharp" />
   <img src="https://img.shields.io/badge/Installer-Inno%20Setup%20LZMA2-brightgreen.svg" alt="Inno Setup LZMA2" />
-  <img src="https://img.shields.io/badge/Tests-249%20passed-success.svg" alt="Tests 249 passed" />
+  <img src="https://img.shields.io/badge/Tests-264%20passed-success.svg" alt="Tests 264 passed" />
   <img src="https://img.shields.io/badge/License-Apache--2.0-green.svg" alt="Apache 2.0 License" />
   <img src="https://img.shields.io/badge/Platform-Windows%20x64-lightgrey.svg" alt="Windows x64" />
 </p>

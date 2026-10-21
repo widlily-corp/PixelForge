@@ -4,7 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="360"
         x:Class="PixelForge.App.Views.NewCanvasDialog"
-        Title="Новый холст — PixelForge"
+        Title="{Binding Loc[Dlg_NewCanvasTitle]}"
         Width="400" Height="360"
         CanResize="False"
         WindowStartupLocation="CenterOwner"
@@ -14,20 +14,20 @@
         <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
             <!-- Header -->
             <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,16">
-                <TextBlock Text="Новый холст" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
-                <TextBlock Text="Выберите предустановку или укажите произвольный размер" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
+                <TextBlock Text="{Binding Loc[Dlg_NewCanvasHeader]}" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                <TextBlock Text="{Binding Loc[Dlg_NewCanvasSubheader]}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
             </StackPanel>
 
             <!-- Presets Section -->
             <StackPanel Grid.Row="1" Spacing="8" Margin="0,0,0,16">
-                <TextBlock Text="БЫСТРЫЕ ПРЕСЕТЫ" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
+                <TextBlock Text="{Binding Loc[Dlg_NewCanvasQuickPresets]}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
                 <Grid ColumnDefinitions="*,*,*">
                     <Button Name="Preset32Button" Grid.Column="0" Margin="0,0,4,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                             Padding="8,10" Background="{DynamicResource SurfaceCardBrush}" Foreground="{DynamicResource TextPrimaryBrush}"
                             BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6">
                         <StackPanel Spacing="2" HorizontalAlignment="Center">
                             <TextBlock Text="32 × 32" FontWeight="SemiBold" HorizontalAlignment="Center" />
-                            <TextBlock Text="Иконка" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" />
+                            <TextBlock Text="{Binding Loc[Dlg_NewCanvasIcon]}" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" />
                         </StackPanel>
                     </Button>
 
@@ -36,7 +36,7 @@
                             BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6">
                         <StackPanel Spacing="2" HorizontalAlignment="Center">
                             <TextBlock Text="64 × 64" FontWeight="SemiBold" HorizontalAlignment="Center" />
-                            <TextBlock Text="Спрайт" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" />
+                            <TextBlock Text="{Binding Loc[Dlg_NewCanvasSprite]}" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" />
                         </StackPanel>
                     </Button>
 
@@ -45,7 +45,7 @@
                             BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6">
                         <StackPanel Spacing="2" HorizontalAlignment="Center">
                             <TextBlock Text="128 × 128" FontWeight="SemiBold" HorizontalAlignment="Center" />
-                            <TextBlock Text="Детальный арт" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" />
+                            <TextBlock Text="{Binding Loc[Dlg_NewCanvasDetailed]}" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" />
                         </StackPanel>
                     </Button>
                 </Grid>
@@ -53,10 +53,10 @@
 
             <!-- Custom Size Section -->
             <StackPanel Grid.Row="2" Spacing="10" Margin="0,0,0,16">
-                <TextBlock Text="ПРОИЗВОЛЬНЫЙ РАЗМЕР (16–256 px)" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
+                <TextBlock Text="{Binding Loc[Dlg_NewCanvasCustomSize]}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
                 <Grid ColumnDefinitions="*,16,*">
                     <StackPanel Grid.Column="0" Spacing="4">
-                        <TextBlock Text="Ширина (px)" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
+                        <TextBlock Text="{Binding Loc[Dlg_NewCanvasWidth]}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
                         <NumericUpDown Name="WidthInput" Value="32" Minimum="16" Maximum="256" Increment="8"
                                        FormatString="0"
                                        Background="{DynamicResource SurfaceCardBrush}"
@@ -65,7 +65,7 @@
                     </StackPanel>
 
                     <StackPanel Grid.Column="2" Spacing="4">
-                        <TextBlock Text="Высота (px)" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
+                        <TextBlock Text="{Binding Loc[Dlg_NewCanvasHeight]}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
                         <NumericUpDown Name="HeightInput" Value="32" Minimum="16" Maximum="256" Increment="8"
                                        FormatString="0"
                                        Background="{DynamicResource SurfaceCardBrush}"
@@ -83,13 +83,13 @@
                 <TextBlock Name="ErrorText" Grid.Column="0" VerticalAlignment="Center"
                            Foreground="{DynamicResource AccentDangerBrush}" FontSize="12" TextWrapping="Wrap" />
 
-                <Button Name="CancelButton" Grid.Column="2" Content="Отмена"
+                <Button Name="CancelButton" Grid.Column="2" Content="{Binding Loc[Dlg_NewCanvasCancel]}"
                         Padding="16,8" CornerRadius="6"
                         Background="{DynamicResource SurfaceCardBrush}"
                         Foreground="{DynamicResource TextPrimaryBrush}"
                         BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" />
 
-                <Button Name="CreateButton" Grid.Column="4" Content="Создать холст"
+                <Button Name="CreateButton" Grid.Column="4" Content="{Binding Loc[Dlg_NewCanvasCreate]}"
                         Padding="16,8" CornerRadius="6"
                         Background="{DynamicResource AccentPrimaryBrush}"
                         Foreground="#0A0E17" FontWeight="SemiBold"

@@ -93,7 +93,7 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                     <PathIcon Data="{DynamicResource IconPalette}" Width="13" Height="13"
                               Foreground="{DynamicResource AccentPrimaryBrush}" />
-                    <TextBlock Text="ПАЛИТРА И ЦВЕТ" FontSize="11" FontWeight="Bold"
+                    <TextBlock Text="{Binding Loc[Panel_ColorPicker]}" FontSize="11" FontWeight="Bold"
                                Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                 </StackPanel>
                 <ComboBox Name="PresetComboBox" Grid.Column="1" Height="26" FontSize="11"
@@ -122,13 +122,13 @@
                             CornerRadius="6"
                             Padding="8,6"
                             Cursor="Hand"
-                            ToolTip.Tip="[ЛКМ] Основной цвет — нажмите для выбора">
+                            ToolTip.Tip="{Binding Loc[Color_PrimaryTip]}">
                         <Grid RowDefinitions="Auto,Auto">
                             <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" Margin="0,0,0,6">
                                 <Border Background="{DynamicResource AccentGlowBrush}" CornerRadius="3" Padding="4,1">
-                                    <TextBlock Text="ЛКМ" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource AccentPrimaryBrush}" />
+                                    <TextBlock Text="{Binding Loc[Color_Lmb]}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource AccentPrimaryBrush}" />
                                 </Border>
-                                <TextBlock Text="Основной" FontSize="10" FontWeight="SemiBold"
+                                <TextBlock Text="{Binding Loc[Color_Primary]}" FontSize="10" FontWeight="SemiBold"
                                            Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
                             </StackPanel>
                             <Border Name="PrimaryColorBox" Grid.Row="1" Height="28" CornerRadius="4"
@@ -139,7 +139,7 @@
 
                     <!-- Swap Button -->
                     <Button Name="SwapColorsButton" Grid.Column="1" Classes="swap-btn" Margin="6,0"
-                            ToolTip.Tip="Поменять цвета местами (X)">
+                            ToolTip.Tip="{Binding Loc[Color_SwapTip]}">
                         <TextBlock Text="⇄" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"
                                    Foreground="{DynamicResource TextSecondaryBrush}" />
                     </Button>
@@ -152,13 +152,13 @@
                             CornerRadius="6"
                             Padding="8,6"
                             Cursor="Hand"
-                            ToolTip.Tip="[ПКМ] Вторичный цвет — нажмите для выбора">
+                            ToolTip.Tip="{Binding Loc[Color_SecondaryTip]}">
                         <Grid RowDefinitions="Auto,Auto">
                             <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" Margin="0,0,0,6">
                                 <Border Background="{DynamicResource SurfaceChipBrush}" CornerRadius="3" Padding="4,1">
-                                    <TextBlock Text="ПКМ" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource AccentSecondaryBrush}" />
+                                    <TextBlock Text="{Binding Loc[Color_Rmb]}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource AccentSecondaryBrush}" />
                                 </Border>
-                                <TextBlock Text="Вторичный" FontSize="10" FontWeight="SemiBold"
+                                <TextBlock Text="{Binding Loc[Color_Secondary]}" FontSize="10" FontWeight="SemiBold"
                                            Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
                             </StackPanel>
                             <Border Name="SecondaryColorBox" Grid.Row="1" Height="28" CornerRadius="4"
@@ -170,7 +170,7 @@
 
                 <!-- Hex & Add to Palette Row -->
                 <Grid ColumnDefinitions="Auto,*,Auto">
-                    <TextBlock Grid.Column="0" Text="HEX" FontSize="10" FontWeight="Bold"
+                    <TextBlock Grid.Column="0" Text="{Binding Loc[Color_Hex]}" FontSize="10" FontWeight="Bold"
                                Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
                     <TextBox Name="HexTextBox" Grid.Column="1" Text="#000000" Height="26" FontSize="11"
                              FontFamily="Consolas, monospace" VerticalContentAlignment="Center"
@@ -178,11 +178,11 @@
                              Foreground="{DynamicResource TextPrimaryBrush}"
                              BorderBrush="{DynamicResource BorderSubtleBrush}" CornerRadius="4,0,0,4" />
                     <Button Name="AddColorButton" Grid.Column="2" Content="+" Height="26" Width="26"
-                            Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                            Background="{DynamicResource SurfacePanelBrush}"
-                            Foreground="{DynamicResource AccentPrimaryBrush}" FontWeight="Bold" FontSize="14"
-                            BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,1,1,1"
-                            CornerRadius="0,4,4,0" ToolTip.Tip="Добавить цвет в палитру" />
+                             Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                             Background="{DynamicResource SurfacePanelBrush}"
+                             Foreground="{DynamicResource AccentPrimaryBrush}" FontWeight="Bold" FontSize="14"
+                             BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,1,1,1"
+                             CornerRadius="0,4,4,0" ToolTip.Tip="{Binding Loc[Color_AddTip]}" />
                 </Grid>
             </StackPanel>
 
@@ -194,9 +194,9 @@
                     Padding="2"
                     Margin="0,0,0,10">
                 <Grid ColumnDefinitions="*,*">
-                    <Button Name="PaletteTabButton" Grid.Column="0" Content="Палитра"
+                    <Button Name="PaletteTabButton" Grid.Column="0" Content="{Binding Loc[Color_TabPalette]}"
                             Classes="mode-tab-btn active" HorizontalAlignment="Stretch" />
-                    <Button Name="SlidersTabButton" Grid.Column="1" Content="RGB Слайдеры"
+                    <Button Name="SlidersTabButton" Grid.Column="1" Content="{Binding Loc[Color_TabSliders]}"
                             Classes="mode-tab-btn" HorizontalAlignment="Stretch" />
                 </Grid>
             </Border>
@@ -206,9 +206,9 @@
                 <!-- 4A. Palette Swatches Grid Container -->
                 <Grid Name="PaletteContainer" RowDefinitions="Auto,*" IsVisible="True">
                     <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,6">
-                        <TextBlock Grid.Column="0" Text="ОБРАЗЦЫ ПАЛИТРЫ" FontSize="10" FontWeight="Bold"
+                        <TextBlock Grid.Column="0" Text="{Binding Loc[Color_Swatches]}" FontSize="10" FontWeight="Bold"
                                    Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
-                        <TextBlock Name="ColorCountText" Grid.Column="1" Text="32 цвета" FontSize="10"
+                        <TextBlock Name="ColorCountText" Grid.Column="1" Text="32" FontSize="10"
                                    Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                     </Grid>
                     <ScrollViewer Grid.Row="1" MaxHeight="140" VerticalScrollBarVisibility="Auto">

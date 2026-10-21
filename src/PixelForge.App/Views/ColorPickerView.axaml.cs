@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using PixelForge.Core.Localization;
 using PixelForge.Core.Models;
 using PixelForge.Core.Palettes;
 
@@ -47,6 +48,8 @@ public enum ColorPickerViewMode
 /// </summary>
 public partial class ColorPickerView : UserControl
 {
+    public LocalizationService Loc => LocalizationService.Instance;
+
     private bool _isUpdating;
     private PixelColor _primaryColor = PixelColor.Black;
     private PixelColor _secondaryColor = PixelColor.White;
@@ -530,7 +533,7 @@ public partial class ColorPickerView : UserControl
     private void RebuildSwatches()
     {
         PaletteWrapPanel.Children.Clear();
-        ColorCountText.Text = $"{_currentPalette.Count} цветов";
+        ColorCountText.Text = Loc.Format("Color_Count", _currentPalette.Count);
 
         for (int i = 0; i < _currentPalette.Count; i++)
         {

@@ -13,6 +13,7 @@ public class MainViewModelTests
     private class DummyFileDialogService : IFileDialogService
     {
         public Task<string?> ShowOpenProjectDialogAsync() => Task.FromResult<string?>(null);
+        public Task<string?> ShowOpenImageDialogAsync() => Task.FromResult<string?>(null);
         public Task<string?> ShowSaveProjectDialogAsync(string? defaultFileName = null) => Task.FromResult<string?>(null);
         public Task<string?> ShowExportImageDialogAsync(string defaultExtension = "png", string? defaultFileName = null) => Task.FromResult<string?>(null);
     }

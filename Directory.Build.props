@@ -1,12 +1,12 @@
 <Project>
   <PropertyGroup>
     <!-- Central Solution Version (Single Source of Truth) -->
-    <Version>0.1.4</Version>
-    <AssemblyVersion>0.1.4.0</AssemblyVersion>
-    <FileVersion>0.1.4.0</FileVersion>
-    <InformationalVersion>0.1.4</InformationalVersion>
+    <Version>0.1.5</Version>
+    <AssemblyVersion>0.1.5.0</AssemblyVersion>
+    <FileVersion>0.1.5.0</FileVersion>
+    <InformationalVersion>0.1.5</InformationalVersion>
     <Company>widlily-corp</Company>
     <Product>PixelForge</Product>
-    <Copyright>Copyright Р’В© 2026 widlily-corp</Copyright>
+    <Copyright>Copyright © 2026 widlily-corp</Copyright>
   </PropertyGroup>
 </Project>

@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using PixelForge.Core.Localization;
 using PixelForge.Core.Models;
 using PixelForge.Core.Patterns;
 using PixelForge.Core.Tools;
@@ -122,22 +123,7 @@ public partial class ToolViewModel : ViewModelBase
 
     public ToolItem ActiveToolItem => AvailableTools.First(t => t.Type == ActiveTool);
 
-    public string ActiveToolDisplayName => ActiveTool switch
-    {
-        CanvasToolType.Pencil => "Карандаш",
-        CanvasToolType.Eraser => "Ластик",
-        CanvasToolType.DitherBrush => "Паттерн кисть",
-        CanvasToolType.PatternBrush => "Текстурная кисть",
-        CanvasToolType.Fill => "Заливка",
-        CanvasToolType.MagicWand => "Волшебная палочка",
-        CanvasToolType.Gradient => "Градиент",
-        CanvasToolType.Eyedropper => "Пипетка",
-        CanvasToolType.Line => "Линия",
-        CanvasToolType.Rectangle => "Прямоугольник",
-        CanvasToolType.Ellipse => "Эллипс",
-        CanvasToolType.Selection => "Выделение",
-        _ => "Инструмент"
-    };
+    public string ActiveToolDisplayName => LocalizationService.Instance.Get("Tool_" + ActiveTool.ToString());
 
     public bool SupportsBrushSize => ActiveTool switch
     {
@@ -169,6 +155,7 @@ public partial class ToolViewModel : ViewModelBase
 
     public ToolViewModel()
     {
+        LocalizationService.Instance.LanguageChanged += (_, _) => OnPropertyChanged(nameof(ActiveToolDisplayName));
         _tools = new Dictionary<CanvasToolType, ITool>
         {
             [CanvasToolType.Pencil] = new PencilTool(),

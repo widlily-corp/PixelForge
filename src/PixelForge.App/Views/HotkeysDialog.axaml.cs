@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using PixelForge.Core.Localization;
 
 namespace PixelForge.App.Views;
 
@@ -9,11 +10,14 @@ namespace PixelForge.App.Views;
 /// </summary>
 public partial class HotkeysDialog : Window
 {
+    public LocalizationService Loc => LocalizationService.Instance;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="HotkeysDialog"/> class.
     /// </summary>
     public HotkeysDialog()
     {
+        DataContext = this;
         InitializeComponent();
 
         CloseButton.Click += OnCloseClick;

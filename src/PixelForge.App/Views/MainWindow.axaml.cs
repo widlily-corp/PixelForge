@@ -1,12 +1,15 @@
 using System;
 using System.ComponentModel;
+using System.IO;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Platform.Storage;
 using PixelForge.App.ViewModels;
+using PixelForge.Core.Localization;
 
 namespace PixelForge.App.Views;
 
@@ -33,6 +36,15 @@ public partial class MainWindow : Window
 
         MenuToggleTheme.Click += OnToggleThemeClick;
         QuickThemeButton.Click += OnToggleThemeClick;
+
+        MenuLangRu.Click += (_, _) => ViewModel?.SetLanguage(AppLanguage.Russian);
+        MenuLangEn.Click += (_, _) => ViewModel?.SetLanguage(AppLanguage.English);
+        MenuRecentFiles.SubmenuOpened += (_, _) => RebuildRecentMenu();
+
+        // Drag & Drop
+        DragDrop.SetAllowDrop(this, true);
+        AddHandler(DragDrop.DragOverEvent, OnWindowDragOver);
+        AddHandler(DragDrop.DropEvent, OnWindowDrop);
 
         // Tool buttons setup
         ToolPencilButton.Click += (_, _) => SelectTool(CanvasToolType.Pencil);
@@ -219,14 +231,106 @@ public partial class MainWindow : Window
         UpdateActiveToolHighlight();
     }
 
+    private void RebuildRecentMenu()
+    {
+        if (ViewModel == null) return;
+        MenuRecentFiles.Items.Clear();
+
+        if (ViewModel.RecentProjects.Count == 0)
+        {
+            var emptyItem = new MenuItem
+            {
+                Header = ViewModel.Loc["Menu_NoRecentFiles"],
+                IsEnabled = false
+            };
+            MenuRecentFiles.Items.Add(emptyItem);
+            return;
+        }
+
+        foreach (var path in ViewModel.RecentProjects)
+        {
+            var item = new MenuItem
+            {
+                Header = Path.GetFileName(path)
+            };
+            ToolTip.SetTip(item, path);
+            var capturedPath = path;
+            item.Click += async (_, _) =>
+            {
+                if (ViewModel != null)
+                {
+                    await ViewModel.OpenRecentProjectAsync(capturedPath);
+                }
+            };
+            MenuRecentFiles.Items.Add(item);
+        }
+
+        MenuRecentFiles.Items.Add(new Separator());
+        var clearItem = new MenuItem
+        {
+            Header = ViewModel.Loc["Menu_ClearRecentFiles"]
+        };
+        clearItem.Click += (_, _) => ViewModel.ClearRecentProjects();
+        MenuRecentFiles.Items.Add(clearItem);
+    }
+
+    private void OnWindowDragOver(object? sender, DragEventArgs e)
+    {
+        if (e.Data.Contains(DataFormats.Files))
+        {
+            e.DragEffects = DragDropEffects.Copy;
+        }
+        else
+        {
+            e.DragEffects = DragDropEffects.None;
+        }
+    }
+
+    private async void OnWindowDrop(object? sender, DragEventArgs e)
+    {
+        if (!e.Data.Contains(DataFormats.Files) || ViewModel == null)
+        {
+            return;
+        }
+
+        var files = e.Data.GetFiles();
+        if (files == null)
+        {
+            return;
+        }
+
+        foreach (var file in files)
+        {
+            var path = file.Path?.LocalPath ?? file.TryGetLocalPath();
+            if (string.IsNullOrEmpty(path))
+            {
+                continue;
+            }
+
+            var ext = Path.GetExtension(path).ToLowerInvariant();
+            if (ext == ".pxproj")
+            {
+                await ViewModel.OpenProjectFromFileAsync(path);
+                break;
+            }
+            else if (ext is ".png" or ".jpg" or ".jpeg" or ".bmp" or ".webp")
+            {
+                ViewModel.CanvasViewModel.ReferenceOverlay.LoadFromFile(path);
+                ViewModel.StatusMessage = ViewModel.Loc.Format("Msg_ReferenceLoaded", Path.GetFileName(path));
+                break;
+            }
+        }
+    }
+
     private async void OnAboutClick(object? sender, RoutedEventArgs e)
     {
         var version = PixelForge.Core.AppVersionInfo.CurrentVersion;
+        var loc = ViewModel?.Loc ?? LocalizationService.Instance;
         var aboutWindow = new Window
         {
-            Title = $"О программе — PixelForge v{version}",
-            Width = 420,
-            Height = 290,
+            Title = string.Format(loc["Dlg_AboutTitle"], version),
+            Width = 440,
+            Height = 300,
             CanResize = false,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             Background = GetBrush("SurfaceBaseBrush", new SolidColorBrush(Color.Parse("#1A1D27"))),
@@ -243,14 +347,14 @@ public partial class MainWindow : Window
                         new TextBlock
                         {
                             Text = "PixelForge",
-                            FontSize = 24,
+                            FontSize = 26,
                             FontWeight = FontWeight.Bold,
                             HorizontalAlignment = HorizontalAlignment.Center,
                             Foreground = GetBrush("TextPrimaryBrush", Brushes.White)
                         },
                         new TextBlock
                         {
-                            Text = $"Версия {version}",
+                            Text = $"v{version}",
                             FontSize = 14,
                             FontWeight = FontWeight.SemiBold,
                             Foreground = GetBrush("AccentPrimaryBrush", Brushes.DodgerBlue),
@@ -258,7 +362,7 @@ public partial class MainWindow : Window
                         },
                         new TextBlock
                         {
-                            Text = "Современный и быстрый редактор пиксель-арта на .NET 8 и Avalonia UI с поддержкой SkiaSharp, слоев и симметрии.",
+                            Text = loc["Dlg_AboutDescription"],
                             FontSize = 12,
                             Foreground = GetBrush("TextSecondaryBrush", Brushes.LightGray),
                             TextWrapping = TextWrapping.Wrap,
@@ -266,7 +370,7 @@ public partial class MainWindow : Window
                         },
                         new TextBlock
                         {
-                            Text = "Copyright © 2026 widlily-corp. Лицензия Apache-2.0.",
+                            Text = loc["Dlg_AboutCopyright"],
                             FontSize = 11,
                             Foreground = GetBrush("TextMutedBrush", Brushes.Gray),
                             HorizontalAlignment = HorizontalAlignment.Center

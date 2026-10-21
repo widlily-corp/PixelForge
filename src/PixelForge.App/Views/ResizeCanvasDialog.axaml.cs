@@ -1,7 +1,9 @@
+using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using PixelForge.Core.Localization;
 using PixelForge.Core.Models;
 
 namespace PixelForge.App.Views;
@@ -17,6 +19,8 @@ public sealed record ResizeCanvasResult(int Width, int Height, CanvasAnchor Anch
 /// </summary>
 public partial class ResizeCanvasDialog : Window
 {
+    public LocalizationService Loc => LocalizationService.Instance;
+
     private readonly int _initialWidth;
     private readonly int _initialHeight;
     private CanvasAnchor _selectedAnchor = CanvasAnchor.Center;
@@ -30,12 +34,13 @@ public partial class ResizeCanvasDialog : Window
 
     public ResizeCanvasDialog(int initialWidth, int initialHeight)
     {
+        DataContext = this;
         _initialWidth = Math.Clamp(initialWidth, 8, 1024);
         _initialHeight = Math.Clamp(initialHeight, 8, 1024);
 
         InitializeComponent();
 
-        CurrentDimensionsText.Text = $"Текущий размер: {_initialWidth} × {_initialHeight} px";
+        CurrentDimensionsText.Text = string.Format(Loc["Dlg_ResizeCurrent"], _initialWidth, _initialHeight);
         WidthInput.Value = _initialWidth;
         HeightInput.Value = _initialHeight;
 
@@ -147,16 +152,16 @@ public partial class ResizeCanvasDialog : Window
     {
         AnchorDescriptionText.Text = _selectedAnchor switch
         {
-            CanvasAnchor.TopLeft => "Сверху-слева (расширение вправо и вниз)",
-            CanvasAnchor.TopCenter => "Сверху по центру (расширение по бокам и вниз)",
-            CanvasAnchor.TopRight => "Сверху-справа (расширение влево и вниз)",
-            CanvasAnchor.MiddleLeft => "По центру слева (расширение вправо)",
-            CanvasAnchor.Center => "По центру (равномерное расширение во все стороны)",
-            CanvasAnchor.MiddleRight => "По центру справа (расширение влево)",
-            CanvasAnchor.BottomLeft => "Снизу-слева (расширение вправо и вверх)",
-            CanvasAnchor.BottomCenter => "Снизу по центру (расширение по бокам и вверх)",
-            CanvasAnchor.BottomRight => "Снизу-справа (расширение влево и вверх)",
-            _ => "По центру"
+            CanvasAnchor.TopLeft => Loc["Dlg_ResizeAnchor_TopLeft"],
+            CanvasAnchor.TopCenter => Loc["Dlg_ResizeAnchor_TopCenter"],
+            CanvasAnchor.TopRight => Loc["Dlg_ResizeAnchor_TopRight"],
+            CanvasAnchor.MiddleLeft => Loc["Dlg_ResizeAnchor_MiddleLeft"],
+            CanvasAnchor.Center => Loc["Dlg_ResizeAnchor_Center"],
+            CanvasAnchor.MiddleRight => Loc["Dlg_ResizeAnchor_MiddleRight"],
+            CanvasAnchor.BottomLeft => Loc["Dlg_ResizeAnchor_BottomLeft"],
+            CanvasAnchor.BottomCenter => Loc["Dlg_ResizeAnchor_BottomCenter"],
+            CanvasAnchor.BottomRight => Loc["Dlg_ResizeAnchor_BottomRight"],
+            _ => Loc["Dlg_ResizeAnchor_Center"]
         };
 
         var highlightBrush = GetResourceBrush("AccentPrimaryBrush", Brushes.DodgerBlue);
@@ -215,7 +220,7 @@ public partial class ResizeCanvasDialog : Window
 
         if (width < 8 || width > 1024 || height < 8 || height > 1024)
         {
-            ErrorText.Text = "Размеры холста должны быть от 8 до 1024 пикселей.";
+            ErrorText.Text = Loc["Dlg_ResizeError"];
             return;
         }
 

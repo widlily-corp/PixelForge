@@ -14,6 +14,11 @@ public class FileDialogService : IFileDialogService
         Patterns = new[] { "*.pxproj" }
     };
 
+    private static readonly FilePickerFileType ImageFilesType = new("Image Files (*.png, *.jpg, *.jpeg, *.bmp, *.webp)")
+    {
+        Patterns = new[] { "*.png", "*.jpg", "*.jpeg", "*.bmp", "*.webp" }
+    };
+
     private static readonly FilePickerFileType PngFileType = new("PNG Image (*.png)")
     {
         Patterns = new[] { "*.png" }
@@ -47,6 +52,24 @@ public class FileDialogService : IFileDialogService
             Title = "Open PixelForge Project",
             AllowMultiple = false,
             FileTypeFilter = new[] { PxProjFileType, FilePickerFileTypes.All }
+        }).ConfigureAwait(false);
+
+        return files.Count > 0 ? files[0].Path.LocalPath : null;
+    }
+
+    public async Task<string?> ShowOpenImageDialogAsync()
+    {
+        var storage = GetStorageProvider();
+        if (storage == null)
+        {
+            return null;
+        }
+
+        var files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Open Reference Image",
+            AllowMultiple = false,
+            FileTypeFilter = new[] { ImageFilesType, FilePickerFileTypes.ImageAll, FilePickerFileTypes.All }
         }).ConfigureAwait(false);
 
         return files.Count > 0 ? files[0].Path.LocalPath : null;

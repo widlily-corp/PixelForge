@@ -5,6 +5,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using PixelForge.App.ViewModels;
+using PixelForge.Core.Localization;
 using PixelForge.Core.Models;
 using PixelForge.Core.Palettes;
 
@@ -15,6 +16,8 @@ namespace PixelForge.App.Views;
 /// </summary>
 public partial class ColorRampDialog : Window
 {
+    public LocalizationService Loc => LocalizationService.Instance;
+
     private readonly PaletteViewModel? _paletteViewModel;
     private readonly ToolViewModel? _toolViewModel;
     private PixelColor _baseColor = new(220, 80, 50);
@@ -23,6 +26,7 @@ public partial class ColorRampDialog : Window
 
     public ColorRampDialog()
     {
+        DataContext = this;
         InitializeComponent();
         AttachEvents();
         RegenerateRamp();
@@ -231,7 +235,7 @@ public partial class ColorRampDialog : Window
 
         if (RampStatusText != null)
         {
-            RampStatusText.Text = $"{count} цветов (Тень ➔ Свет)";
+            RampStatusText.Text = Loc.Format("Dlg_RampStatus", count);
         }
     }
 
@@ -242,7 +246,7 @@ public partial class ColorRampDialog : Window
             _paletteViewModel.AddRampColors(_currentRamp);
             if (RampStatusText != null)
             {
-                RampStatusText.Text = "Добавлено в палитру!";
+                RampStatusText.Text = Loc["Dlg_RampAdded"];
             }
         }
     }

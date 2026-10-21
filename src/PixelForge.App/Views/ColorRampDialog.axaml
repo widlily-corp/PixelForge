@@ -4,7 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="580" d:DesignHeight="520"
         x:Class="PixelForge.App.Views.ColorRampDialog"
-        Title="Генератор цветовой рампы — PixelForge"
+        Title="{Binding Loc[Dlg_RampTitle]}"
         Width="580" Height="520"
         MinWidth="520" MinHeight="480"
         WindowStartupLocation="CenterOwner"
@@ -24,9 +24,9 @@
                               HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Border>
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                    <TextBlock Text="ГЕНЕРАТОР ЦВЕТОВОЙ РАМПЫ" FontSize="14" FontWeight="Bold"
+                    <TextBlock Text="{Binding Loc[Dlg_RampHeader]}" FontSize="14" FontWeight="Bold"
                                Foreground="{DynamicResource TextPrimaryBrush}" LetterSpacing="0.5" />
-                    <TextBlock Text="Художественное построение градиентов со сдвигом оттенка (Hue Shifting)"
+                    <TextBlock Text="{Binding Loc[Dlg_RampSubheader]}"
                                FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
                 </StackPanel>
             </Grid>
@@ -38,7 +38,7 @@
                 <StackPanel Spacing="12">
                     <!-- Base Color Picker Row -->
                     <Grid ColumnDefinitions="Auto,Auto,*,Auto">
-                        <TextBlock Grid.Column="0" Text="Базовый цвет:" FontSize="12" FontWeight="SemiBold"
+                        <TextBlock Grid.Column="0" Text="{Binding Loc[Dlg_RampBaseColor]}" FontSize="12" FontWeight="SemiBold"
                                    Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,12,0" />
                         <Border Name="BaseColorSwatch" Grid.Column="1" Width="32" Height="32"
                                 Background="#E65100" CornerRadius="6"
@@ -47,10 +47,10 @@
                         <Button Name="UsePrimaryColorButton" Grid.Column="3" Classes="action-btn"
                                 Padding="10,6" CornerRadius="6" Background="{DynamicResource SurfacePanelBrush}"
                                 BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1"
-                                ToolTip.Tip="Взять текущий основной цвет из рабочей палитры">
+                                ToolTip.Tip="{Binding Loc[Dlg_RampUsePrimaryTip]}">
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <PathIcon Data="{DynamicResource IconPalette}" Width="12" Height="12" Foreground="{DynamicResource AccentPrimaryBrush}" />
-                                <TextBlock Text="Взять цвет палитры" FontSize="11" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                <TextBlock Text="{Binding Loc[Dlg_RampUsePrimary]}" FontSize="11" Foreground="{DynamicResource TextPrimaryBrush}" />
                             </StackPanel>
                         </Button>
                     </Grid>
@@ -59,22 +59,22 @@
 
                     <!-- Preset Selector Row -->
                     <Grid ColumnDefinitions="140,*">
-                        <TextBlock Grid.Column="0" Text="Стиль рампы:" FontSize="12"
+                        <TextBlock Grid.Column="0" Text="{Binding Loc[Dlg_RampPreset]}" FontSize="12"
                                    Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
                         <ComboBox Name="PresetComboBox" Grid.Column="1" Height="30" FontSize="12"
                                   HorizontalAlignment="Stretch" VerticalContentAlignment="Center">
-                            <ComboBoxItem Content="Солнечный свет (Холодная тень ➔ Теплый свет)" IsSelected="True" />
-                            <ComboBoxItem Content="Огонь и лава (Бордовый ➔ Оранжевый ➔ Желтый)" />
-                            <ComboBoxItem Content="Лед и холод (Глубокий синий ➔ Циан ➔ Белый)" />
-                            <ComboBoxItem Content="Токсик (Изумрудный ➔ Кислотный лайм)" />
-                            <ComboBoxItem Content="Золото и металл (Умбра ➔ Охра ➔ Золотистый)" />
-                            <ComboBoxItem Content="Пользовательский (Ручной сдвиг оттенка)" />
+                            <ComboBoxItem Content="{Binding Loc[Dlg_RampPreset_Sunlight]}" IsSelected="True" />
+                            <ComboBoxItem Content="{Binding Loc[Dlg_RampPreset_Fire]}" />
+                            <ComboBoxItem Content="{Binding Loc[Dlg_RampPreset_Ice]}" />
+                            <ComboBoxItem Content="{Binding Loc[Dlg_RampPreset_Toxic]}" />
+                            <ComboBoxItem Content="{Binding Loc[Dlg_RampPreset_Gold]}" />
+                            <ComboBoxItem Content="{Binding Loc[Dlg_RampPreset_Custom]}" />
                         </ComboBox>
                     </Grid>
 
                     <!-- Steps Slider Row -->
                     <Grid ColumnDefinitions="140,*,60">
-                        <TextBlock Grid.Column="0" Text="Количество цветов:" FontSize="12"
+                        <TextBlock Grid.Column="0" Text="{Binding Loc[Dlg_RampSteps]}" FontSize="12"
                                    Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
                         <Slider Name="StepsSlider" Grid.Column="1" Minimum="3" Maximum="12" Value="5"
                                 SmallChange="1" LargeChange="1" VerticalAlignment="Center" Margin="0,0,10,0" />
@@ -88,7 +88,7 @@
 
                     <!-- Hue Shift Angle Slider Row -->
                     <Grid ColumnDefinitions="140,*,60">
-                        <TextBlock Grid.Column="0" Text="Сдвиг тона (Hue Shift):" FontSize="12"
+                        <TextBlock Grid.Column="0" Text="{Binding Loc[Dlg_RampHueShift]}" FontSize="12"
                                    Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
                         <Slider Name="HueShiftSlider" Grid.Column="1" Minimum="-60" Maximum="60" Value="30"
                                 SmallChange="5" LargeChange="10" VerticalAlignment="Center" Margin="0,0,10,0" />
@@ -108,9 +108,9 @@
                     CornerRadius="8" Padding="14" Margin="0,0,0,16">
                 <Grid RowDefinitions="Auto,*">
                     <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
-                        <TextBlock Grid.Column="0" Text="ПРЕДПРОСМОТР РАМПЫ (Тень ➔ Свет)" FontSize="11" FontWeight="Bold"
+                        <TextBlock Grid.Column="0" Text="{Binding Loc[Dlg_RampPreview]}" FontSize="11" FontWeight="Bold"
                                    Foreground="{DynamicResource TextMutedBrush}" LetterSpacing="0.8" />
-                        <TextBlock Name="RampStatusText" Grid.Column="1" Text="5 цветов" FontSize="11"
+                        <TextBlock Name="RampStatusText" Grid.Column="1" Text="5" FontSize="11"
                                    Foreground="{DynamicResource AccentPrimaryBrush}" />
                     </Grid>
 
@@ -129,7 +129,7 @@
                         BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <PathIcon Data="{DynamicResource IconPalette}" Width="14" Height="14" Foreground="{DynamicResource AccentPrimaryBrush}" />
-                        <TextBlock Text="Добавить в палитру" FontSize="12" FontWeight="SemiBold"
+                        <TextBlock Text="{Binding Loc[Dlg_RampApplyToPalette]}" FontSize="12" FontWeight="SemiBold"
                                    Foreground="{DynamicResource TextPrimaryBrush}" />
                     </StackPanel>
                 </Button>
@@ -141,12 +141,12 @@
                         Cursor="Hand">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <PathIcon Data="{DynamicResource IconGradient}" Width="14" Height="14" Foreground="#0A0E17" />
-                        <TextBlock Text="Применить в градиент" FontSize="12" FontWeight="Bold"
+                        <TextBlock Text="{Binding Loc[Dlg_RampApplyToGradient]}" FontSize="12" FontWeight="Bold"
                                    Foreground="#0A0E17" />
                     </StackPanel>
                 </Button>
 
-                <Button Name="CloseButton" Grid.Column="4" Content="Закрыть"
+                <Button Name="CloseButton" Grid.Column="4" Content="{Binding Loc[Dlg_RampClose]}"
                         Padding="16,8" CornerRadius="6" FontSize="12"
                         Background="{DynamicResource SurfaceCardBrush}"
                         BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1"

@@ -11,6 +11,11 @@ public interface IFileDialogService
     Task<string?> ShowOpenProjectDialogAsync();
 
     /// <summary>
+    /// Shows the file open dialog for reference images (PNG, JPEG, BMP, WEBP).
+    /// </summary>
+    Task<string?> ShowOpenImageDialogAsync();
+
+    /// <summary>
     /// Shows the file save dialog for saving .pxproj projects.
     /// </summary>
     Task<string?> ShowSaveProjectDialogAsync(string? defaultFileName = null);

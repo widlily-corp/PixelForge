@@ -1,7 +1,9 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PixelForge.App.Services;
 using PixelForge.Core.History;
+using PixelForge.Core.Localization;
 using PixelForge.Core.Models;
 using PixelForge.Core.Services;
 using PixelForge.Core.Tools;
@@ -20,6 +22,13 @@ public partial class MainViewModel : ViewModelBase
     private readonly IClipboardService _clipboardService;
     private readonly IUpdateService _updateService;
     private readonly UndoRedoService _undoRedoService;
+    private readonly AppSettingsService _appSettingsService;
+
+    public LocalizationService Loc => LocalizationService.Instance;
+
+    public ObservableCollection<string> RecentProjects { get; } = new();
+
+    public bool HasRecentProjects => RecentProjects.Count > 0;
 
     [ObservableProperty]
     private ToolViewModel _toolViewModel;
@@ -73,7 +82,7 @@ public partial class MainViewModel : ViewModelBase
     {
         get
         {
-            string fileName = string.IsNullOrEmpty(CurrentFilePath) ? "Untitled" : Path.GetFileName(CurrentFilePath);
+            string fileName = string.IsNullOrEmpty(CurrentFilePath) ? Loc.Get("App_Untitled") : Path.GetFileName(CurrentFilePath);
             string dirtyMarker = IsDirty ? "*" : "";
             return $"PixelForge v{_updateService.CurrentVersion} — {fileName}{dirtyMarker}";
         }
@@ -87,7 +96,8 @@ public partial class MainViewModel : ViewModelBase
         IClipboardService clipboardService,
         IUpdateService updateService,
         ThemeService themeService,
-        UndoRedoService undoRedoService)
+        UndoRedoService undoRedoService,
+        AppSettingsService? appSettingsService = null)
     {
         _projectService = projectService ?? throw new ArgumentNullException(nameof(projectService));
         _exportService = exportService ?? throw new ArgumentNullException(nameof(exportService));
@@ -97,6 +107,18 @@ public partial class MainViewModel : ViewModelBase
         _updateService = updateService ?? throw new ArgumentNullException(nameof(updateService));
         _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
         _undoRedoService = undoRedoService ?? throw new ArgumentNullException(nameof(undoRedoService));
+        _appSettingsService = appSettingsService ?? new AppSettingsService();
+
+        // Load language from settings
+        Loc.SetLanguage(_appSettingsService.Language);
+        Loc.LanguageChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(Title));
+            OnPropertyChanged(nameof(Loc));
+            OnPropertyChanged(nameof(StatusMessage));
+        };
+
+        UpdateRecentProjectsList();
 
         // Create default 32x32 pixel canvas
         var canvas = new PixelCanvas(32, 32);
@@ -120,16 +142,26 @@ public partial class MainViewModel : ViewModelBase
         // Wire autosave service
         _autosaveService.Autosaved += (_, timestamp) =>
         {
-            StatusMessage = $"Autosaved at {timestamp:HH:mm:ss}";
+            StatusMessage = Loc.Format("Msg_Autosaved", timestamp);
         };
         _autosaveService.AutosaveFailed += (_, ex) =>
         {
-            StatusMessage = $"Autosave error: {ex.Message}";
+            StatusMessage = Loc.Format("Msg_AutosaveError", ex.Message);
         };
         _autosaveService.Start(GetProjectSnapshot, TimeSpan.FromMinutes(2));
 
         // Run non-blocking background update check
         _ = RunInitialUpdateCheckAsync();
+    }
+
+    public void UpdateRecentProjectsList()
+    {
+        RecentProjects.Clear();
+        foreach (var p in _appSettingsService.RecentProjects)
+        {
+            RecentProjects.Add(p);
+        }
+        OnPropertyChanged(nameof(HasRecentProjects));
     }
 
     public Project GetProjectSnapshot()
@@ -371,12 +403,92 @@ public partial class MainViewModel : ViewModelBase
                 return;
             }
 
-            var project = await _projectService.LoadProjectAsync(filePath);
-            LoadProject(project, filePath);
+            await OpenProjectFromFileAsync(filePath);
         }
         catch (Exception ex)
         {
             StatusMessage = $"Failed to open project: {ex.Message}";
+        }
+    }
+
+    public async Task OpenProjectFromFileAsync(string filePath)
+    {
+        if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath)) return;
+
+        try
+        {
+            var project = await _projectService.LoadProjectAsync(filePath);
+            LoadProject(project, filePath);
+            _appSettingsService.AddRecentProject(filePath);
+            UpdateRecentProjectsList();
+            StatusMessage = Loc.Format("Msg_LoadedProject", Path.GetFileName(filePath));
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Failed to open project: {ex.Message}";
+            AppLogger.LogError("MainViewModel", $"Failed to open project: {filePath}", ex);
+        }
+    }
+
+    [RelayCommand]
+    public async Task OpenRecentProjectAsync(string filePath)
+    {
+        await OpenProjectFromFileAsync(filePath);
+    }
+
+    [RelayCommand]
+    public void ClearRecentProjects()
+    {
+        _appSettingsService.ClearRecentProjects();
+        UpdateRecentProjectsList();
+    }
+
+    [RelayCommand]
+    public async Task LoadReferenceImageAsync()
+    {
+        try
+        {
+            var filePath = await _fileDialogService.ShowOpenImageDialogAsync();
+            if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
+            {
+                CanvasViewModel.ReferenceOverlay.LoadFromFile(filePath);
+                StatusMessage = Loc.Format("Msg_ReferenceLoaded", Path.GetFileName(filePath));
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Reference error: {ex.Message}";
+            AppLogger.LogError("MainViewModel", "Failed to load reference image", ex);
+        }
+    }
+
+    [RelayCommand]
+    public void ClearReferenceImage()
+    {
+        CanvasViewModel.ReferenceOverlay.Clear();
+        StatusMessage = Loc.Get("Msg_ReferenceCleared");
+    }
+
+    [RelayCommand]
+    public void ToggleLanguage()
+    {
+        Loc.ToggleLanguage();
+        _appSettingsService.Language = Loc.CurrentLanguage;
+    }
+
+    [RelayCommand]
+    public void SetLanguage(AppLanguage language)
+    {
+        Loc.SetLanguage(language);
+        _appSettingsService.Language = language;
+    }
+
+    [RelayCommand]
+    public void RegisterFileAssociation()
+    {
+        if (FileAssociationService.RegisterAssociation())
+        {
+            StatusMessage = Loc.Get("Msg_AssociationDone");
         }
     }
 

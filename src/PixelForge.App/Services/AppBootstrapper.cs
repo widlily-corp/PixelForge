@@ -4,6 +4,7 @@ using PixelForge.App.Controls;
 using PixelForge.App.ViewModels;
 using PixelForge.App.Views;
 using PixelForge.Core.History;
+using PixelForge.Core.Localization;
 using PixelForge.Core.Services;
 
 namespace PixelForge.App.Services;
@@ -40,46 +41,48 @@ public class AppBootstrapper
             AppLogger.LogDebug("Bootstrap", $"[{percent}%] {stage}: {detail}");
         }
 
+        var loc = LocalizationService.Instance;
+
         // Stage 1: Allocating Working Set & RAM Matrix (0% -> 20%)
-        Report(8, "Allocating RAM Working Set", "Configuring high-priority process working set (1024 MB)...");
+        Report(8, loc.Get("Splash_StageRam"), loc.Get("Splash_StageRamDetail"));
         await PacedDelayAsync(TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
 
-        Report(18, "Allocating RAM Working Set", "Pre-allocating virtual memory regions and thread pool...");
+        Report(18, loc.Get("Splash_StageRam"), loc.Get("Splash_StageRamDetail"));
         await PacedDelayAsync(TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
 
         // Stage 2: Locking Assemblies & Memory Pages into Physical RAM (20% -> 45%)
-        Report(28, "Locking Assemblies into RAM", "Pre-faulting native & managed module memory pages...");
+        Report(28, loc.Get("Splash_StageLock"), loc.Get("Splash_StageLockDetail"));
         var preloadTask = MemoryPreloadService.Instance.PreloadAsync(null, cancellationToken);
         await PacedDelayAsync(TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
 
-        Report(38, "Locking Assemblies into RAM", "Physical RAM residency active (Zero disk-paging latency)...");
+        Report(38, loc.Get("Splash_StageLock"), loc.Get("Splash_StageLockDetail"));
         await PacedDelayAsync(TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
         await preloadTask.ConfigureAwait(false);
         AppLogger.LogInfo("Bootstrap", "Core memory preloading complete.");
 
         // Stage 3: Pre-JIT Compiling Hot Paths (45% -> 70%)
-        Report(50, "Pre-JIT Compiling Hot Paths", "Compiling pixel canvas, history, and command methods...");
+        Report(50, loc.Get("Splash_StageJit"), loc.Get("Splash_StageJitDetail"));
         PreJitAppTypes();
         await PacedDelayAsync(TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
 
-        Report(65, "Pre-JIT Compiling Hot Paths", "Compiling Skia rasterizers and UI viewmodels...");
+        Report(65, loc.Get("Splash_StageJit"), loc.Get("Splash_StageJitDetail"));
         await PacedDelayAsync(TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
         AppLogger.LogInfo("Bootstrap", "App types Pre-JIT complete.");
 
         // Stage 4: Building Service Matrix & DI Container (70% -> 88%)
-        Report(75, "Warming Up SkiaSharp Graphics", "Initializing off-screen surface and rasterizer pipelines...");
+        Report(75, loc.Get("Splash_StageSkia"), loc.Get("Splash_StageSkiaDetail"));
         var services = new ServiceCollection();
         ConfigureServices(services);
         var serviceProvider = services.BuildServiceProvider();
         App.Services = serviceProvider;
         await PacedDelayAsync(TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
 
-        Report(85, "Building Service Matrix", "Resolving dependency injection container and services...");
+        Report(85, loc.Get("Splash_StageServices"), loc.Get("Splash_StageServicesDetail"));
         await PacedDelayAsync(TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
         AppLogger.LogInfo("Bootstrap", "Dependency Injection container built.");
 
         // Stage 5: Preparing Studio Workspace & MainWindow (88% -> 98%)
-        Report(92, "Preparing Studio Workspace", "Initializing viewport, canvas controls, and palette matrix...");
+        Report(92, loc.Get("Splash_StageStudio"), loc.Get("Splash_StageStudioDetail"));
         MainWindow? mainWindow = null;
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
@@ -157,6 +160,8 @@ public class AppBootstrapper
         services.AddSingleton<ICrashReportService>(_ => CrashReportService.Instance);
         services.AddSingleton<ThemeService>();
         services.AddSingleton<UndoRedoService>();
+        services.AddSingleton<AppSettingsService>();
+        services.AddSingleton(_ => LocalizationService.Instance);
         services.AddSingleton<MainViewModel>();
     }
 }

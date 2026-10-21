@@ -56,12 +56,17 @@ Name: "{group}\{cm:UninstallProgram,PixelForge}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\PixelForge"; Filename: "{app}\PixelForge.App.exe"; Tasks: desktopicon
 
 [Registry]
-; Register .pxproj file extension
+; Register .pxproj file extension and association
 Root: HKA; Subkey: "Software\Classes\.pxproj"; ValueType: string; ValueName: ""; ValueData: "PixelForge.Project"; Flags: uninsdeletevalue
 Root: HKA; Subkey: "Software\Classes\.pxproj\Content Type"; ValueType: string; ValueName: ""; ValueData: "application/x-pixelforge"; Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Classes\.pxproj\OpenWithProgids"; ValueType: string; ValueName: "PixelForge.Project"; ValueData: ""; Flags: uninsdeletevalue
 Root: HKA; Subkey: "Software\Classes\PixelForge.Project"; ValueType: string; ValueName: ""; ValueData: "PixelForge Project"; Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\Classes\PixelForge.Project\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\PixelForge.App.exe,0"
 Root: HKA; Subkey: "Software\Classes\PixelForge.Project\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\PixelForge.App.exe"" ""%1"""
+; Register Application for Open With and Windows Default Apps
+Root: HKA; Subkey: "Software\Classes\Applications\PixelForge.App.exe"; ValueType: string; ValueName: "FriendlyAppName"; ValueData: "PixelForge"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\Applications\PixelForge.App.exe\SupportedTypes"; ValueType: string; ValueName: ".pxproj"; ValueData: ""; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\Applications\PixelForge.App.exe\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\PixelForge.App.exe"" ""%1"""
 
 [Run]
 Filename: "{app}\PixelForge.App.exe"; Description: "{cm:LaunchProgram,PixelForge}"; Flags: nowait postinstall skipifsilent

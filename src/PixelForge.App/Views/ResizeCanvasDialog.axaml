@@ -4,7 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="460" d:DesignHeight="540"
         x:Class="PixelForge.App.Views.ResizeCanvasDialog"
-        Title="Размер холста — PixelForge"
+        Title="{Binding Loc[Dlg_ResizeTitle]}"
         Width="460" Height="540"
         CanResize="False"
         WindowStartupLocation="CenterOwner"
@@ -51,18 +51,18 @@
         <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto">
             <!-- 1. Header -->
             <StackPanel Grid.Row="0" Spacing="2" Margin="0,0,0,14">
-                <TextBlock Text="Размер холста" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
-                <TextBlock Name="CurrentDimensionsText" Text="Текущий размер: 32 × 32 px" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
+                <TextBlock Text="{Binding Loc[Dlg_ResizeHeader]}" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                <TextBlock Name="CurrentDimensionsText" Text="32 × 32 px" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
             </StackPanel>
 
             <!-- 2. New Dimensions Inputs -->
             <Border Grid.Row="1" Background="{DynamicResource SurfacePanelBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}"
                     BorderThickness="1" CornerRadius="6" Padding="14,10" Margin="0,0,0,12">
                 <StackPanel Spacing="10">
-                    <TextBlock Text="НОВЫЙ РАЗМЕР (8–1024 px)" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
+                    <TextBlock Text="{Binding Loc[Dlg_ResizeDimensions]}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
                     <Grid ColumnDefinitions="*,16,*">
                         <StackPanel Grid.Column="0" Spacing="4">
-                            <TextBlock Text="Ширина (px)" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
+                            <TextBlock Text="{Binding Loc[Dlg_ResizeWidth]}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
                             <NumericUpDown Name="WidthInput" Value="32" Minimum="8" Maximum="1024" Increment="8"
                                            FormatString="0"
                                            Background="{DynamicResource SurfaceCardBrush}"
@@ -71,7 +71,7 @@
                         </StackPanel>
 
                         <StackPanel Grid.Column="2" Spacing="4">
-                            <TextBlock Text="Высота (px)" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
+                            <TextBlock Text="{Binding Loc[Dlg_ResizeHeight]}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
                             <NumericUpDown Name="HeightInput" Value="32" Minimum="8" Maximum="1024" Increment="8"
                                            FormatString="0"
                                            Background="{DynamicResource SurfaceCardBrush}"
@@ -80,14 +80,14 @@
                         </StackPanel>
                     </Grid>
 
-                    <CheckBox Name="KeepAspectCheckBox" Content="Сохранять пропорции (1:1)" FontSize="12"
+                    <CheckBox Name="KeepAspectCheckBox" Content="{Binding Loc[Dlg_ResizeKeepAspect]}" FontSize="12"
                               Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
                 </StackPanel>
             </Border>
 
             <!-- 3. Presets & Quick Scales -->
             <StackPanel Grid.Row="2" Spacing="6" Margin="0,0,0,12">
-                <TextBlock Text="БЫСТРЫЕ ПРЕСЕТЫ И МАСШТАБ" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
+                <TextBlock Text="{Binding Loc[Dlg_ResizePresets]}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
                 <WrapPanel Orientation="Horizontal">
                     <Button Name="Preset16Button" Classes="preset-btn" Content="16 × 16" Margin="0,0,6,6" />
                     <Button Name="Preset32Button" Classes="preset-btn" Content="32 × 32" Margin="0,0,6,6" />
@@ -102,12 +102,12 @@
 
             <!-- 4. Mode Selection -->
             <StackPanel Grid.Row="3" Spacing="6" Margin="0,0,0,12">
-                <TextBlock Text="РЕЖИМ ПРЕОБРАЗОВАНИЯ" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
+                <TextBlock Text="{Binding Loc[Dlg_ResizePresets]}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
                 <Grid ColumnDefinitions="*,*">
-                    <RadioButton Name="AnchorModeRadio" Grid.Column="0" Content="Якорь размещения"
+                    <RadioButton Name="AnchorModeRadio" Grid.Column="0" Content="{Binding Loc[Dlg_ResizeAnchorMode]}"
                                  IsChecked="True" GroupName="ResizeModeGroup" FontSize="12"
                                  Foreground="{DynamicResource TextPrimaryBrush}" />
-                    <RadioButton Name="ScaleModeRadio" Grid.Column="1" Content="Масштабировать пиксели"
+                    <RadioButton Name="ScaleModeRadio" Grid.Column="1" Content="{Binding Loc[Dlg_ResizeScaleMode]}"
                                  GroupName="ResizeModeGroup" FontSize="12"
                                  Foreground="{DynamicResource TextPrimaryBrush}" />
                 </Grid>
@@ -119,9 +119,9 @@
                     CornerRadius="6" Padding="12,10" Margin="0,0,0,12">
                 <Grid ColumnDefinitions="*,Auto">
                     <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="4">
-                        <TextBlock Text="Точка привязки (Якорь):" FontSize="12" FontWeight="SemiBold"
+                        <TextBlock Text="{Binding Loc[Dlg_ResizeAnchorPoint]}" FontSize="12" FontWeight="SemiBold"
                                    Foreground="{DynamicResource TextPrimaryBrush}" />
-                        <TextBlock Name="AnchorDescriptionText" Text="По центру (равномерное расширение)"
+                        <TextBlock Name="AnchorDescriptionText" Text="•"
                                    FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
                     </StackPanel>
 
@@ -150,13 +150,13 @@
                 <TextBlock Name="ErrorText" Grid.Column="0" VerticalAlignment="Center"
                            Foreground="{DynamicResource AccentDangerBrush}" FontSize="12" TextWrapping="Wrap" />
 
-                <Button Name="CancelButton" Grid.Column="1" Content="Отмена"
+                <Button Name="CancelButton" Grid.Column="1" Content="{Binding Loc[Dlg_ResizeCancel]}"
                         Padding="16,8" CornerRadius="6"
                         Background="{DynamicResource SurfaceCardBrush}"
                         Foreground="{DynamicResource TextPrimaryBrush}"
                         BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" />
 
-                <Button Name="ApplyButton" Grid.Column="3" Content="Применить"
+                <Button Name="ApplyButton" Grid.Column="3" Content="{Binding Loc[Dlg_ResizeApply]}"
                         Padding="20,8" CornerRadius="6"
                         Background="{DynamicResource AccentPrimaryBrush}"
                         Foreground="#0A0E17" FontWeight="SemiBold"

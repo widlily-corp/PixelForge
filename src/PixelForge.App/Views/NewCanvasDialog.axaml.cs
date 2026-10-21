@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using PixelForge.Core.Localization;
 
 namespace PixelForge.App.Views;
 
@@ -11,10 +12,13 @@ public sealed record NewCanvasResult(int Width, int Height);
 
 public partial class NewCanvasDialog : Window
 {
+    public LocalizationService Loc => LocalizationService.Instance;
+
     public NewCanvasResult? Result { get; private set; }
 
     public NewCanvasDialog()
     {
+        DataContext = this;
         InitializeComponent();
 
         Preset32Button.Click += (_, _) => SetPreset(32, 32);
@@ -45,7 +49,7 @@ public partial class NewCanvasDialog : Window
 
         if (width < 16 || width > 256 || height < 16 || height > 256)
         {
-            ErrorText.Text = "Размеры холста должны быть от 16 до 256 пикселей.";
+            ErrorText.Text = Loc["Dlg_NewCanvasError"];
             return;
         }
 

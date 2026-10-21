@@ -45,6 +45,9 @@ public partial class CanvasViewModel : ViewModelBase
     [ObservableProperty]
     private SelectionModel _selection = new();
 
+    [ObservableProperty]
+    private ReferenceImageOverlay _referenceOverlay = new();
+
     public int CanvasWidth => Canvas.Width;
 
     public int CanvasHeight => Canvas.Height;
@@ -138,5 +141,17 @@ public partial class CanvasViewModel : ViewModelBase
     public void ToggleSymmetryY()
     {
         ShowSymmetryY = !ShowSymmetryY;
+    }
+
+    [RelayCommand]
+    public void ToggleReferenceVisibility()
+    {
+        ReferenceOverlay.IsVisible = !ReferenceOverlay.IsVisible;
+    }
+
+    [RelayCommand]
+    public void ClearReferenceOverlay()
+    {
+        ReferenceOverlay.Clear();
     }
 }

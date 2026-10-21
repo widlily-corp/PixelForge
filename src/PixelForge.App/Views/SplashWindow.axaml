@@ -6,7 +6,7 @@
         x:Class="PixelForge.App.Views.SplashWindow"
         Title="PixelForge"
         Icon="/Assets/icon.ico"
-        Width="600" Height="360"
+        Width="620" Height="440"
         CanResize="False"
         SystemDecorations="None"
         WindowStartupLocation="CenterScreen"
@@ -14,104 +14,98 @@
         Background="Transparent"
         TransparencyLevelHint="Transparent">
 
-    <Border Background="#12131C"
-            BorderBrush="#2A3045"
+    <Border Background="#10131E"
+            BorderBrush="#2A334E"
             BorderThickness="1.5"
-            CornerRadius="14"
-            BoxShadow="0 18 48 0 #80000000"
+            CornerRadius="16"
+            BoxShadow="0 24 64 0 #90000000"
             ClipToBounds="True">
-        <Grid RowDefinitions="*,Auto">
-            <!-- Decorative Background Glow -->
-            <Canvas Grid.RowSpan="2" IsHitTestVisible="False">
-                <Ellipse Width="320" Height="240"
-                         Canvas.Left="-60" Canvas.Top="-60"
-                         Opacity="0.12">
-                    <Ellipse.Fill>
-                        <RadialGradientBrush Center="50%,50%" GradientOrigin="50%,50%" RadiusX="50%" RadiusY="50%">
-                            <GradientStop Color="#00D2FF" Offset="0" />
-                            <GradientStop Color="Transparent" Offset="1" />
-                        </RadialGradientBrush>
-                    </Ellipse.Fill>
-                </Ellipse>
-                <Ellipse Width="280" Height="200"
-                         Canvas.Right="-40" Canvas.Bottom="20"
-                         Opacity="0.08">
-                    <Ellipse.Fill>
-                        <RadialGradientBrush Center="50%,50%" GradientOrigin="50%,50%" RadiusX="50%" RadiusY="50%">
-                            <GradientStop Color="#818CF8" Offset="0" />
-                            <GradientStop Color="Transparent" Offset="1" />
-                        </RadialGradientBrush>
-                    </Ellipse.Fill>
-                </Ellipse>
-            </Canvas>
+        <Grid RowDefinitions="Auto,Auto,*,Auto">
+            <!-- 1. Hero Pixel Art Artwork Banner -->
+            <Border Grid.Row="0" Height="170" ClipToBounds="True" Background="#0A0D18">
+                <Panel>
+                    <Image Source="/Assets/splash_art.png"
+                           Stretch="UniformToFill"
+                           RenderOptions.BitmapInterpolationMode="None" />
 
-            <!-- Main Content Area -->
-            <StackPanel Grid.Row="0" Margin="36,32,36,16" Spacing="18">
-                <!-- Branding Header -->
-                <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
-                    <Image Grid.Column="0"
-                           Source="/Assets/icon.png"
-                           Width="64" Height="64"
-                           Margin="0,0,16,0"
-                           VerticalAlignment="Center" />
-
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                        <TextBlock Text="PixelForge"
-                                   FontSize="28"
-                                   FontWeight="Bold"
-                                   Foreground="#F8FAFC"
-                                   LetterSpacing="0.5" />
-                        <TextBlock Text="PROFESSIONAL PIXEL ART STUDIO"
-                                   FontSize="11"
-                                   FontWeight="SemiBold"
-                                   Foreground="#00D2FF"
-                                   LetterSpacing="1.2" />
-                    </StackPanel>
-
-                    <!-- Version Badge -->
-                    <Border Grid.Column="2"
-                            Background="#1E2333"
-                            BorderBrush="#313952"
-                            BorderThickness="1"
-                            CornerRadius="6"
-                            Padding="8,4"
-                            VerticalAlignment="Center">
-                        <TextBlock Name="VersionBadgeText" Text="v0.1.0"
-                                   FontSize="12"
-                                   FontWeight="SemiBold"
-                                   Foreground="#38BDF8" />
+                    <!-- Bottom gradient fade into header -->
+                    <Border VerticalAlignment="Bottom" Height="50">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                <GradientStop Color="Transparent" Offset="0" />
+                                <GradientStop Color="#10131E" Offset="1" />
+                            </LinearGradientBrush>
+                        </Border.Background>
                     </Border>
-                </Grid>
+                </Panel>
+            </Border>
 
-                <Separator Background="#22283A" Height="1" Margin="0,4" />
+            <!-- 2. Branding Header -->
+            <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" Margin="28,12,28,8" VerticalAlignment="Center">
+                <Border Grid.Column="0" Width="48" Height="48" CornerRadius="10"
+                        Background="#191E2E" BorderBrush="#2C3550" BorderThickness="1"
+                        Margin="0,0,14,0" VerticalAlignment="Center">
+                    <Image Source="/Assets/icon.png" Width="36" Height="36" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                </Border>
 
-                <!-- Feature Highlights -->
-                <StackPanel Spacing="8">
-                    <Grid ColumnDefinitions="Auto,*">
-                        <TextBlock Grid.Column="0" Text="◆" Foreground="#00D2FF" Margin="0,0,8,0" FontSize="11" VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="1" Text="Hardware-Accelerated 60+ FPS SkiaSharp Render Pipeline"
-                                   FontSize="12" Foreground="#CBD5E1" VerticalAlignment="Center" />
-                    </Grid>
-                    <Grid ColumnDefinitions="Auto,*">
-                        <TextBlock Grid.Column="0" Text="◆" Foreground="#38BDF8" Margin="0,0,8,0" FontSize="11" VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="1" Text="Full RAM Working Set resident execution (Zero disk-paging latency)"
-                                   FontSize="12" Foreground="#CBD5E1" VerticalAlignment="Center" />
-                    </Grid>
-                    <Grid ColumnDefinitions="Auto,*">
-                        <TextBlock Grid.Column="0" Text="◆" Foreground="#818CF8" Margin="0,0,8,0" FontSize="11" VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="1" Text="Pre-JIT compiled rendering hot paths and sparse delta undo engine"
-                                   FontSize="12" Foreground="#CBD5E1" VerticalAlignment="Center" />
-                    </Grid>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="PixelForge"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               Foreground="#F8FAFC"
+                               LetterSpacing="0.5" />
+                    <TextBlock Name="SubtitleText"
+                               Text="PROFESSIONAL PIXEL ART STUDIO"
+                               FontSize="10"
+                               FontWeight="Bold"
+                               Foreground="#00D2FF"
+                               LetterSpacing="1.2" />
                 </StackPanel>
+
+                <!-- Version Badge -->
+                <Border Grid.Column="2"
+                        Background="#1A2032"
+                        BorderBrush="#2F3A58"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="10,4"
+                        VerticalAlignment="Center">
+                    <TextBlock Name="VersionBadgeText" Text="v0.1.5"
+                               FontSize="12"
+                               FontWeight="Bold"
+                               Foreground="#38BDF8" />
+                </Border>
+            </Grid>
+
+            <!-- 3. Key Feature Badges Row -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="10" Margin="28,6,28,14" HorizontalAlignment="Center">
+                <Border Background="#161B29" BorderBrush="#252D42" BorderThickness="1" CornerRadius="6" Padding="8,4">
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <TextBlock Text="◆" Foreground="#00D2FF" FontSize="10" VerticalAlignment="Center" />
+                        <TextBlock Name="Feature1Text" Text="SkiaSharp 60+ FPS" FontSize="11" Foreground="#CBD5E1" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+                <Border Background="#161B29" BorderBrush="#252D42" BorderThickness="1" CornerRadius="6" Padding="8,4">
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <TextBlock Text="◆" Foreground="#818CF8" FontSize="10" VerticalAlignment="Center" />
+                        <TextBlock Name="Feature2Text" Text="Zero-Latency RAM Resident" FontSize="11" Foreground="#CBD5E1" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+                <Border Background="#161B29" BorderBrush="#252D42" BorderThickness="1" CornerRadius="6" Padding="8,4">
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <TextBlock Text="◆" Foreground="#38BDF8" FontSize="10" VerticalAlignment="Center" />
+                        <TextBlock Name="Feature3Text" Text="Sparse Undo &amp; References" FontSize="11" Foreground="#CBD5E1" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
             </StackPanel>
 
-            <!-- Bottom Progress & Real-Time Loading Status -->
-            <Border Grid.Row="1"
-                    Background="#161924"
-                    BorderBrush="#252A3C"
+            <!-- 4. Bottom Progress & Real-Time Loading Status -->
+            <Border Grid.Row="3"
+                    Background="#141825"
+                    BorderBrush="#22283A"
                     BorderThickness="0,1,0,0"
-                    Padding="36,16,36,20">
-                <StackPanel Spacing="10">
+                    Padding="28,14,28,18">
+                <StackPanel Spacing="8">
                     <!-- Status Labels & Percentage -->
                     <Grid ColumnDefinitions="*,Auto">
                         <TextBlock Name="StatusText"
@@ -141,7 +135,7 @@
                                  Minimum="0" Maximum="100" Value="0"
                                  Height="5"
                                  CornerRadius="2.5"
-                                 Background="#22283A"
+                                 Background="#1F263A"
                                  Foreground="#00D2FF" />
 
                     <!-- Bottom Copyright / Platform Note -->

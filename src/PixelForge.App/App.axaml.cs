@@ -26,6 +26,18 @@ public partial class App : Application
             // Prevent immediate app exit while transitioning from Splash to MainWindow
             desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
+            // Detect command-line argument for file opening (e.g. double-click in Windows Explorer)
+            string? initialFilePath = null;
+            if (desktop.Args != null && desktop.Args.Length > 0)
+            {
+                var candidate = desktop.Args[0]?.Trim('\"');
+                if (!string.IsNullOrWhiteSpace(candidate) && File.Exists(candidate))
+                {
+                    initialFilePath = Path.GetFullPath(candidate);
+                    AppLogger.LogInfo("App", $"Received startup file argument: {initialFilePath}");
+                }
+            }
+
             AppLogger.LogInfo("App", "Displaying SplashWindow...");
             var splash = new SplashWindow();
             splash.Show();
@@ -40,7 +52,7 @@ public partial class App : Application
                     var mainWindow = await bootstrapper.BootstrapAsync().ConfigureAwait(false);
                     AppLogger.LogInfo("Bootstrapper", "Bootstrap completed successfully. Scheduling UI transition...");
 
-                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    await Dispatcher.UIThread.InvokeAsync(async () =>
                     {
                         try
                         {
@@ -54,6 +66,25 @@ public partial class App : Application
                             AppLogger.LogInfo("UI", "Closing SplashWindow...");
                             splash.Close();
                             AppLogger.LogInfo("UI", "Workspace ready and active.");
+
+                            // If a file argument was passed from Windows Explorer, open it now
+                            if (!string.IsNullOrEmpty(initialFilePath) && mainWindow.DataContext is ViewModels.MainViewModel mainVm)
+                            {
+                                await mainVm.OpenProjectFromFileAsync(initialFilePath);
+                            }
+
+                            // Silently register .pxproj Windows file association in background
+                            _ = Task.Run(() =>
+                            {
+                                try
+                                {
+                                    FileAssociationService.RegisterAssociation();
+                                }
+                                catch
+                                {
+                                    // Suppress on non-Windows/restricted
+                                }
+                            });
                         }
                         catch (Exception uiEx)
                         {
