@@ -275,6 +275,7 @@
 
                 <!-- Help Menu -->
                 <MenuItem Header="Справка">
+                    <MenuItem Name="MenuHotkeys" Header="Горячие клавиши... (F1)" HotKey="F1" Command="{Binding OpenHotkeysDialogCommand}" />
                     <MenuItem Header="Проверить обновления..." Command="{Binding CheckForUpdatesCommand}" />
                     <Separator />
                     <MenuItem Name="MenuAbout" Header="О программе..." />

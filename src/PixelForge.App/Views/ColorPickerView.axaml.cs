@@ -10,11 +10,48 @@ using PixelForge.Core.Palettes;
 
 namespace PixelForge.App.Views;
 
+/// <summary>
+/// Active editing target for sliders and hex input.
+/// </summary>
+public enum ActiveColorTarget
+{
+    /// <summary>
+    /// Editing the primary (LMB) color.
+    /// </summary>
+    Primary,
+
+    /// <summary>
+    /// Editing the secondary (RMB) color.
+    /// </summary>
+    Secondary
+}
+
+/// <summary>
+/// Display mode for the color picker content area.
+/// </summary>
+public enum ColorPickerViewMode
+{
+    /// <summary>
+    /// Displays palette swatches grid.
+    /// </summary>
+    Palette,
+
+    /// <summary>
+    /// Displays RGBA sliders.
+    /// </summary>
+    Sliders
+}
+
+/// <summary>
+/// UserControl providing color picking, RGBA sliders, hex input, and palette preset management.
+/// </summary>
 public partial class ColorPickerView : UserControl
 {
     private bool _isUpdating;
     private PixelColor _primaryColor = PixelColor.Black;
     private PixelColor _secondaryColor = PixelColor.White;
+    private ActiveColorTarget _activeTarget = ActiveColorTarget.Primary;
+    private ColorPickerViewMode _viewMode = ColorPickerViewMode.Palette;
     private readonly List<PixelColor> _currentPalette = new();
     private System.ComponentModel.INotifyPropertyChanged? _subscribedInpc;
 
@@ -24,21 +61,47 @@ public partial class ColorPickerView : UserControl
     public static readonly StyledProperty<PixelColor> SecondaryColorProperty =
         AvaloniaProperty.Register<ColorPickerView, PixelColor>(nameof(SecondaryColor), PixelColor.White);
 
+    /// <summary>
+    /// Gets or sets the primary (LMB) drawing color.
+    /// </summary>
     public PixelColor PrimaryColor
     {
         get => GetValue(PrimaryColorProperty);
         set => SetValue(PrimaryColorProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the secondary (RMB) drawing color.
+    /// </summary>
     public PixelColor SecondaryColor
     {
         get => GetValue(SecondaryColorProperty);
         set => SetValue(SecondaryColorProperty, value);
     }
 
+    /// <summary>
+    /// Gets the current active color editing target (Primary or Secondary).
+    /// </summary>
+    public ActiveColorTarget ActiveTarget => _activeTarget;
+
+    /// <summary>
+    /// Gets the current view mode (Palette swatches or RGB sliders).
+    /// </summary>
+    public ColorPickerViewMode ViewMode => _viewMode;
+
+    /// <summary>
+    /// Occurs when the primary color has changed.
+    /// </summary>
     public event EventHandler<PixelColor>? PrimaryColorChanged;
+
+    /// <summary>
+    /// Occurs when the secondary color has changed.
+    /// </summary>
     public event EventHandler<PixelColor>? SecondaryColorChanged;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ColorPickerView"/> class.
+    /// </summary>
     public ColorPickerView()
     {
         InitializeComponent();
@@ -61,22 +124,76 @@ public partial class ColorPickerView : UserControl
         AddColorButton.Click += (_, _) => AddCurrentColorToPalette();
         PresetComboBox.SelectionChanged += OnPresetSelectionChanged;
 
-        PrimaryColorBox.PointerPressed += (_, _) =>
-        {
-            // Activate primary editing
-            UpdateSlidersFromColor(_primaryColor);
-        };
+        // View mode tabs
+        PaletteTabButton.Click += (_, _) => SetViewMode(ColorPickerViewMode.Palette);
+        SlidersTabButton.Click += (_, _) => SetViewMode(ColorPickerViewMode.Sliders);
 
-        SecondaryColorBox.PointerPressed += (_, _) =>
-        {
-            // Activate secondary editing
-            UpdateSlidersFromColor(_secondaryColor);
-        };
+        // Color plates selection
+        PrimaryPlate.PointerPressed += (_, _) => SetActiveTarget(ActiveColorTarget.Primary);
+        PrimaryColorBox.PointerPressed += (_, _) => SetActiveTarget(ActiveColorTarget.Primary);
+
+        SecondaryPlate.PointerPressed += (_, _) => SetActiveTarget(ActiveColorTarget.Secondary);
+        SecondaryColorBox.PointerPressed += (_, _) => SetActiveTarget(ActiveColorTarget.Secondary);
 
         // Load default palette
         LoadPalette(PalettePresets.Default32);
         SetPrimaryColor(_primaryColor);
         SetSecondaryColor(_secondaryColor);
+        SetActiveTarget(ActiveColorTarget.Primary);
+    }
+
+    /// <summary>
+    /// Switches the content view between Palette swatches and RGB sliders.
+    /// </summary>
+    public void SetViewMode(ColorPickerViewMode mode)
+    {
+        _viewMode = mode;
+        if (mode == ColorPickerViewMode.Palette)
+        {
+            PaletteTabButton.Classes.Set("active", true);
+            SlidersTabButton.Classes.Set("active", false);
+            PaletteContainer.IsVisible = true;
+            SlidersContainer.IsVisible = false;
+        }
+        else
+        {
+            SlidersTabButton.Classes.Set("active", true);
+            PaletteTabButton.Classes.Set("active", false);
+            SlidersContainer.IsVisible = true;
+            PaletteContainer.IsVisible = false;
+        }
+    }
+
+    /// <summary>
+    /// Sets whether sliders and hex inputs currently target the primary or secondary color.
+    /// </summary>
+    public void SetActiveTarget(ActiveColorTarget target)
+    {
+        _activeTarget = target;
+        var accentBrush = GetBrush("AccentPrimaryBrush", Brushes.DodgerBlue);
+        var secondaryBrush = GetBrush("AccentSecondaryBrush", Brushes.MediumPurple);
+        var subtleBrush = GetBrush("BorderSubtleBrush", Brushes.DimGray);
+
+        if (target == ActiveColorTarget.Primary)
+        {
+            PrimaryPlate.BorderBrush = accentBrush;
+            PrimaryPlate.BorderThickness = new Thickness(1.5);
+            SecondaryPlate.BorderBrush = subtleBrush;
+            SecondaryPlate.BorderThickness = new Thickness(1);
+
+            UpdateSlidersFromColor(_primaryColor);
+            UpdateHexTextFromColor(_primaryColor);
+        }
+        else
+        {
+            SecondaryPlate.BorderBrush = secondaryBrush;
+            SecondaryPlate.BorderThickness = new Thickness(1.5);
+            PrimaryPlate.BorderBrush = subtleBrush;
+            PrimaryPlate.BorderThickness = new Thickness(1);
+
+            UpdateSlidersFromColor(_secondaryColor);
+            UpdateHexTextFromColor(_secondaryColor);
+        }
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -129,6 +246,16 @@ public partial class ColorPickerView : UserControl
                 SetSecondaryColor(sc);
             }
         }
+        else if (e.PropertyName == "CurrentPalette")
+        {
+            var paletteProp = DataContext?.GetType().GetProperty("CurrentPalette");
+            if (paletteProp != null && paletteProp.GetValue(DataContext) is Palette pal)
+            {
+                _currentPalette.Clear();
+                _currentPalette.AddRange(pal.Colors);
+                RebuildSwatches();
+            }
+        }
     }
 
     private void SyncFromDataContext()
@@ -138,7 +265,6 @@ public partial class ColorPickerView : UserControl
             return;
         }
 
-        // Check if DataContext has Palette property or ViewModel
         var primaryProp = DataContext.GetType().GetProperty("PrimaryColor");
         if (primaryProp != null && primaryProp.GetValue(DataContext) is PixelColor pc)
         {
@@ -149,6 +275,14 @@ public partial class ColorPickerView : UserControl
         if (secondaryProp != null && secondaryProp.GetValue(DataContext) is PixelColor sc)
         {
             SetSecondaryColor(sc);
+        }
+
+        var paletteProp = DataContext.GetType().GetProperty("CurrentPalette");
+        if (paletteProp != null && paletteProp.GetValue(DataContext) is Palette pal)
+        {
+            _currentPalette.Clear();
+            _currentPalette.AddRange(pal.Colors);
+            RebuildSwatches();
         }
     }
 
@@ -190,7 +324,14 @@ public partial class ColorPickerView : UserControl
         AlphaValueText.Text = a.ToString();
 
         var newColor = new PixelColor(r, g, b, a);
-        SetPrimaryColor(newColor, updateSliders: false);
+        if (_activeTarget == ActiveColorTarget.Primary)
+        {
+            SetPrimaryColor(newColor, updateSliders: false);
+        }
+        else
+        {
+            SetSecondaryColor(newColor, updateSliders: false);
+        }
     }
 
     private void OnHexCommitted()
@@ -203,15 +344,37 @@ public partial class ColorPickerView : UserControl
         string text = HexTextBox.Text?.Trim() ?? string.Empty;
         if (PixelColor.TryParse(text, out var color))
         {
-            SetPrimaryColor(color);
+            if (_activeTarget == ActiveColorTarget.Primary)
+            {
+                SetPrimaryColor(color);
+            }
+            else
+            {
+                SetSecondaryColor(color);
+            }
         }
         else
         {
-            // Revert invalid hex text
-            HexTextBox.Text = _primaryColor.ToHex(_primaryColor.A < 255);
+            var activeColor = _activeTarget == ActiveColorTarget.Primary ? _primaryColor : _secondaryColor;
+            HexTextBox.Text = activeColor.ToHex(activeColor.A < 255);
         }
     }
 
+    private void UpdateHexTextFromColor(PixelColor color)
+    {
+        if (_isUpdating)
+        {
+            return;
+        }
+
+        _isUpdating = true;
+        HexTextBox.Text = color.ToHex(color.A < 255);
+        _isUpdating = false;
+    }
+
+    /// <summary>
+    /// Sets the primary color and updates visual representations.
+    /// </summary>
     public void SetPrimaryColor(PixelColor color, bool updateSliders = true)
     {
         _primaryColor = color;
@@ -219,28 +382,41 @@ public partial class ColorPickerView : UserControl
 
         PrimaryColorBox.Background = new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B));
 
-        if (updateSliders)
+        if (updateSliders && _activeTarget == ActiveColorTarget.Primary)
         {
             UpdateSlidersFromColor(color);
         }
 
-        if (!_isUpdating)
+        if (_activeTarget == ActiveColorTarget.Primary)
         {
-            _isUpdating = true;
-            HexTextBox.Text = color.ToHex(color.A < 255);
-            _isUpdating = false;
+            UpdateHexTextFromColor(color);
         }
+
+        UpdateActiveSwatchHighlight();
 
         PrimaryColorChanged?.Invoke(this, color);
         SyncToDataContext();
     }
 
-    public void SetSecondaryColor(PixelColor color)
+    /// <summary>
+    /// Sets the secondary color and updates visual representations.
+    /// </summary>
+    public void SetSecondaryColor(PixelColor color, bool updateSliders = true)
     {
         _secondaryColor = color;
         SecondaryColor = color;
 
         SecondaryColorBox.Background = new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B));
+
+        if (updateSliders && _activeTarget == ActiveColorTarget.Secondary)
+        {
+            UpdateSlidersFromColor(color);
+        }
+
+        if (_activeTarget == ActiveColorTarget.Secondary)
+        {
+            UpdateHexTextFromColor(color);
+        }
 
         SecondaryColorChanged?.Invoke(this, color);
         SyncToDataContext();
@@ -261,11 +437,15 @@ public partial class ColorPickerView : UserControl
         _isUpdating = false;
     }
 
+    /// <summary>
+    /// Swaps the primary and secondary colors.
+    /// </summary>
     public void SwapColors()
     {
         var temp = _primaryColor;
         SetPrimaryColor(_secondaryColor);
         SetSecondaryColor(temp);
+        SetActiveTarget(_activeTarget);
     }
 
     private void OnPresetSelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -279,7 +459,7 @@ public partial class ColorPickerView : UserControl
                 "Endesga 32" => PalettePresets.Endesga32,
                 "PICO-8" => PalettePresets.Pico8,
                 "GameBoy" => PalettePresets.GameBoy,
-                "NES 54" => PalettePresets.Nes,
+                "NES 54" or "NES" => PalettePresets.Nes,
                 "Cyberpunk Neo" => PalettePresets.CyberpunkNeo,
                 "Solarized" => PalettePresets.Solarized,
                 _ => PalettePresets.Default32
@@ -288,19 +468,47 @@ public partial class ColorPickerView : UserControl
         }
     }
 
+    /// <summary>
+    /// Loads a palette and rebuilds the swatches grid.
+    /// </summary>
     public void LoadPalette(Palette palette)
     {
+        ArgumentNullException.ThrowIfNull(palette);
         _currentPalette.Clear();
         _currentPalette.AddRange(palette.Colors);
         RebuildSwatches();
+
+        if (DataContext is ViewModels.PaletteViewModel pvm && pvm.CurrentPalette != palette)
+        {
+            pvm.LoadPreset(palette);
+        }
     }
 
+    /// <summary>
+    /// Adds the currently active primary color to the palette swatches.
+    /// </summary>
     public void AddCurrentColorToPalette()
     {
         if (!_currentPalette.Contains(_primaryColor))
         {
             _currentPalette.Add(_primaryColor);
             RebuildSwatches();
+
+            if (DataContext is ViewModels.PaletteViewModel pvm)
+            {
+                pvm.AddColor(_primaryColor);
+            }
+        }
+    }
+
+    private void UpdateActiveSwatchHighlight()
+    {
+        foreach (var child in PaletteWrapPanel.Children)
+        {
+            if (child is Border swatch && swatch.Tag is PixelColor color)
+            {
+                swatch.Classes.Set("active", color == _primaryColor);
+            }
         }
     }
 
@@ -324,21 +532,25 @@ public partial class ColorPickerView : UserControl
         PaletteWrapPanel.Children.Clear();
         ColorCountText.Text = $"{_currentPalette.Count} цветов";
 
-        var borderBrush = GetBrush("BorderSubtleBrush", new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)));
-
-        foreach (var color in _currentPalette)
+        for (int i = 0; i < _currentPalette.Count; i++)
         {
+            var color = _currentPalette[i];
             var swatch = new Border
             {
-                Width = 20,
-                Height = 20,
+                Width = 22,
+                Height = 22,
                 Margin = new Thickness(2),
-                CornerRadius = new CornerRadius(3),
+                CornerRadius = new CornerRadius(4),
                 Background = new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B)),
-                BorderBrush = borderBrush,
-                BorderThickness = new Thickness(1),
-                Cursor = new Cursor(StandardCursorType.Hand)
+                Cursor = new Cursor(StandardCursorType.Hand),
+                Tag = color
             };
+            swatch.Classes.Add("palette-swatch");
+            if (color == _primaryColor)
+            {
+                swatch.Classes.Add("active");
+            }
+
             ToolTip.SetTip(swatch, color.ToHex(color.A < 255));
 
             swatch.PointerPressed += (s, e) =>
@@ -347,11 +559,13 @@ public partial class ColorPickerView : UserControl
                 if (point.Properties.IsLeftButtonPressed)
                 {
                     SetPrimaryColor(color);
+                    SetActiveTarget(ActiveColorTarget.Primary);
                     e.Handled = true;
                 }
                 else if (point.Properties.IsRightButtonPressed)
                 {
                     SetSecondaryColor(color);
+                    SetActiveTarget(ActiveColorTarget.Secondary);
                     e.Handled = true;
                 }
             };

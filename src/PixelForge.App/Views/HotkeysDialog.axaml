@@ -1,0 +1,278 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="680" d:DesignHeight="520"
+        x:Class="PixelForge.App.Views.HotkeysDialog"
+        Title="Горячие клавиши PixelForge"
+        Width="680" Height="520"
+        MinWidth="640" MinHeight="480"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource SurfaceBaseBrush}">
+
+    <Window.Styles>
+        <Style Selector="Border.key-badge">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderStrongBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="6,2" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Border.key-badge TextBlock">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontFamily" Value="Consolas, monospace" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+        </Style>
+        <Style Selector="TextBlock.key-separator">
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="2,0" />
+        </Style>
+        <Style Selector="TextBlock.hotkey-desc">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Border.hotkey-card">
+            <Setter Property="Background" Value="{DynamicResource SurfacePanelBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="12,10" />
+        </Style>
+    </Window.Styles>
+
+    <Border Padding="20">
+        <Grid RowDefinitions="Auto,*,Auto">
+            <!-- Header -->
+            <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,0,0,16">
+                <Border Grid.Column="0" Width="40" Height="40" CornerRadius="8"
+                        Background="{DynamicResource SurfacePanelBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1"
+                        Margin="0,0,12,0">
+                    <PathIcon Data="{DynamicResource IconKeyboard}" Width="22" Height="22"
+                              Foreground="{DynamicResource AccentPrimaryBrush}"
+                              HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="Горячие клавиши PixelForge" FontSize="18" FontWeight="Bold"
+                               Foreground="{DynamicResource TextPrimaryBrush}" />
+                    <TextBlock Text="Справочник клавиатурных комбинаций для максимальной скорости работы"
+                               FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Scrollable Hotkey Groups Grid -->
+            <ScrollViewer Grid.Row="1" Margin="0,0,0,14" VerticalScrollBarVisibility="Auto">
+                <Grid ColumnDefinitions="*,12,*">
+                    <!-- Column 0: 1) Инструменты -->
+                    <Border Grid.Column="0" Classes="hotkey-card" VerticalAlignment="Top">
+                        <StackPanel Spacing="6">
+                            <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,0,0,4">
+                                <PathIcon Data="{DynamicResource IconPencil}" Width="13" Height="13"
+                                          Foreground="{DynamicResource AccentPrimaryBrush}" />
+                                <TextBlock Text="ИНСТРУМЕНТЫ" FontSize="11" FontWeight="Bold"
+                                           Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <!-- Tool Rows -->
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Карандаш" />
+                                <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="B" /></Border>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Ластик" />
+                                <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="E" /></Border>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Дизеринг" />
+                                <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="D" /></Border>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Паттерн" />
+                                <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="P" /></Border>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Заливка" />
+                                <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="G" /></Border>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Волшебная палочка" />
+                                <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="W" /></Border>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Градиент" />
+                                <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="T" /></Border>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Пипетка" />
+                                <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="I" /></Border>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Линия" />
+                                <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="L" /></Border>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Прямоугольник" />
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                    <Border Classes="key-badge"><TextBlock Text="R" /></Border>
+                                    <TextBlock Classes="key-separator" Text="/" />
+                                    <Border Classes="key-badge"><TextBlock Text="U" /></Border>
+                                </StackPanel>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Эллипс" />
+                                <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="C" /></Border>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Выделение" />
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                    <Border Classes="key-badge"><TextBlock Text="S" /></Border>
+                                    <TextBlock Classes="key-separator" Text="/" />
+                                    <Border Classes="key-badge"><TextBlock Text="M" /></Border>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Column 1: 2) Рисование и холст, 3) Навигация, 4) Проект и история -->
+                    <StackPanel Grid.Column="2" Spacing="10" VerticalAlignment="Top">
+                        <!-- 2) Рисование и холст -->
+                        <Border Classes="hotkey-card">
+                            <StackPanel Spacing="6">
+                                <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,0,0,4">
+                                    <PathIcon Data="{DynamicResource IconCrop}" Width="13" Height="13"
+                                              Foreground="{DynamicResource AccentPrimaryBrush}" />
+                                    <TextBlock Text="РИСОВАНИЕ И ХОЛСТ" FontSize="11" FontWeight="Bold"
+                                               Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Pixel-Perfect режим" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                        <Border Classes="key-badge"><TextBlock Text="Shift" /></Border>
+                                        <TextBlock Classes="key-separator" Text="+" />
+                                        <Border Classes="key-badge"><TextBlock Text="P" /></Border>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Бесшовный режим" />
+                                    <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="F10" /></Border>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Поменять цвета местами" />
+                                    <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="X" /></Border>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Размер кисти" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                        <Border Classes="key-badge"><TextBlock Text="[" /></Border>
+                                        <TextBlock Classes="key-separator" Text="/" />
+                                        <Border Classes="key-badge"><TextBlock Text="]" /></Border>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Размер холста" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                        <Border Classes="key-badge"><TextBlock Text="Ctrl+Alt+C" /></Border>
+                                        <TextBlock Classes="key-separator" Text="/" />
+                                        <Border Classes="key-badge"><TextBlock Text="Ctrl+R" /></Border>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Пиксельная сетка" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                        <Border Classes="key-badge"><TextBlock Text="Ctrl" /></Border>
+                                        <TextBlock Classes="key-separator" Text="+" />
+                                        <Border Classes="key-badge"><TextBlock Text="G" /></Border>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 3) Навигация -->
+                        <Border Classes="hotkey-card">
+                            <StackPanel Spacing="6">
+                                <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,0,0,4">
+                                    <PathIcon Data="{DynamicResource IconZoomIn}" Width="13" Height="13"
+                                              Foreground="{DynamicResource AccentPrimaryBrush}" />
+                                    <TextBlock Text="НАВИГАЦИЯ" FontSize="11" FontWeight="Bold"
+                                               Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Панорама холста" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                        <Border Classes="key-badge"><TextBlock Text="Space + Drag" /></Border>
+                                        <TextBlock Classes="key-separator" Text="/" />
+                                        <Border Classes="key-badge"><TextBlock Text="СКМ" /></Border>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Масштабирование" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                        <Border Classes="key-badge"><TextBlock Text="Ctrl + / -" /></Border>
+                                        <TextBlock Classes="key-separator" Text="/" />
+                                        <Border Classes="key-badge"><TextBlock Text="Колесо" /></Border>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 4) Проект и история -->
+                        <Border Classes="hotkey-card">
+                            <StackPanel Spacing="6">
+                                <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,0,0,4">
+                                    <PathIcon Data="{DynamicResource IconSave}" Width="13" Height="13"
+                                              Foreground="{DynamicResource AccentPrimaryBrush}" />
+                                    <TextBlock Text="ПРОЕКТ И ИСТОРИЯ" FontSize="11" FontWeight="Bold"
+                                               Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Отмена действия" />
+                                    <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="Ctrl+Z" /></Border>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Повтор действия" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                        <Border Classes="key-badge"><TextBlock Text="Ctrl+Y" /></Border>
+                                        <TextBlock Classes="key-separator" Text="/" />
+                                        <Border Classes="key-badge"><TextBlock Text="Ctrl+Shift+Z" /></Border>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Сохранить" />
+                                    <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="Ctrl+S" /></Border>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Открыть" />
+                                    <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="Ctrl+O" /></Border>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="Новый холст" />
+                                    <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="Ctrl+N" /></Border>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
+
+            <!-- Bottom: Footer with Close button -->
+            <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Text="Нажмите Esc для быстрого закрытия"
+                           FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                <Button Name="CloseButton" Grid.Column="1" Content="Понятно / Закрыть"
+                        Padding="20,8" CornerRadius="6"
+                        Background="{DynamicResource AccentPrimaryBrush}"
+                        Foreground="#0A0E17" FontWeight="SemiBold" FontSize="12"
+                        IsDefault="True" IsCancel="True" />
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

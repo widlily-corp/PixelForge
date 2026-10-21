@@ -29,6 +29,7 @@ public partial class MainWindow : Window
         StatusDimensionsButton.Click += OnResizeCanvasClick;
         MenuExit.Click += (_, _) => Close();
         MenuAbout.Click += OnAboutClick;
+        MenuHotkeys.Click += OnHotkeysClick;
 
         MenuToggleTheme.Click += OnToggleThemeClick;
         QuickThemeButton.Click += OnToggleThemeClick;
@@ -48,24 +49,41 @@ public partial class MainWindow : Window
         ToolSelectionButton.Click += (_, _) => SelectTool(CanvasToolType.Selection);
     }
 
-    private void OnWindowLoaded(object? sender, RoutedEventArgs e)
+    private MainViewModel? _subscribedMainVm;
+
+    private void SubscribeToViewModel(MainViewModel? vm)
     {
-        if (ViewModel != null)
+        if (_subscribedMainVm != null)
         {
-            ViewModel.ToolViewModel.PropertyChanged += OnToolViewModelPropertyChanged;
+            _subscribedMainVm.ToolViewModel.PropertyChanged -= OnToolViewModelPropertyChanged;
+            _subscribedMainVm.ShowHotkeysRequested -= OnShowHotkeysRequested;
+            _subscribedMainVm = null;
+        }
+
+        if (vm != null)
+        {
+            _subscribedMainVm = vm;
+            _subscribedMainVm.ToolViewModel.PropertyChanged += OnToolViewModelPropertyChanged;
+            _subscribedMainVm.ShowHotkeysRequested += OnShowHotkeysRequested;
             UpdateActiveToolHighlight();
         }
+    }
+
+    private void OnShowHotkeysRequested(object? sender, EventArgs e)
+    {
+        OnHotkeysClick(this, new RoutedEventArgs());
+    }
+
+    private void OnWindowLoaded(object? sender, RoutedEventArgs e)
+    {
+        SubscribeToViewModel(ViewModel);
         MainCanvasControl.Focus();
     }
 
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);
-        if (ViewModel != null)
-        {
-            ViewModel.ToolViewModel.PropertyChanged += OnToolViewModelPropertyChanged;
-            UpdateActiveToolHighlight();
-        }
+        SubscribeToViewModel(ViewModel);
     }
 
     private void OnToolViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -254,6 +272,12 @@ public partial class MainWindow : Window
         await aboutWindow.ShowDialog(this);
     }
 
+    private async void OnHotkeysClick(object? sender, RoutedEventArgs e)
+    {
+        var dialog = new HotkeysDialog();
+        await dialog.ShowDialog(this);
+    }
+
     private static bool MatchesKey(KeyEventArgs e, Key key, PhysicalKey physicalKey, char? ruChar = null)
     {
         if (e.Key == key || e.PhysicalKey == physicalKey)
@@ -289,6 +313,14 @@ public partial class MainWindow : Window
         bool ctrl = e.KeyModifiers.HasFlag(KeyModifiers.Control);
         bool shift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
         bool alt = e.KeyModifiers.HasFlag(KeyModifiers.Alt);
+
+        // F1: Hotkeys cheat sheet dialog
+        if (!ctrl && !alt && !shift && (e.Key == Key.F1 || e.PhysicalKey == PhysicalKey.F1))
+        {
+            e.Handled = true;
+            OnHotkeysClick(this, new RoutedEventArgs());
+            return;
+        }
 
         // F10: Seamless Tiled Mode toggle
         if (!ctrl && !alt && !shift && (e.Key == Key.F10 || e.PhysicalKey == PhysicalKey.F10))

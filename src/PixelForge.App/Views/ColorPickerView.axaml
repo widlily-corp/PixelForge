@@ -2,19 +2,100 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="280" d:DesignHeight="380"
+             mc:Ignorable="d" d:DesignWidth="290" d:DesignHeight="380"
              x:Class="PixelForge.App.Views.ColorPickerView">
+
+    <UserControl.Styles>
+        <!-- View Mode Segmented Tab Button Style -->
+        <Style Selector="Button.mode-tab-btn">
+            <Setter Property="Height" Value="26" />
+            <Setter Property="Padding" Value="4,0" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.1" />
+                    <BrushTransition Property="Foreground" Duration="0:0:0.1" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.mode-tab-btn:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        </Style>
+        <Style Selector="Button.mode-tab-btn.active">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+        </Style>
+
+        <!-- Palette Swatch Border Style -->
+        <Style Selector="Border.palette-swatch">
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.1" />
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.palette-swatch:pointerover">
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryHoverBrush}" />
+            <Setter Property="BorderThickness" Value="1.5" />
+            <Setter Property="RenderTransform" Value="scale(1.15)" />
+            <Setter Property="ZIndex" Value="10" />
+        </Style>
+        <Style Selector="Border.palette-swatch.active">
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="BoxShadow" Value="0 0 6 1 #6000D2FF" />
+        </Style>
+
+        <!-- Action / Swap Button Style -->
+        <Style Selector="Button.swap-btn">
+            <Setter Property="Width" Value="26" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="13" />
+            <Setter Property="Background" Value="{DynamicResource SurfacePanelBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.1" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.1" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.swap-btn:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+        </Style>
+    </UserControl.Styles>
 
     <Border Background="{DynamicResource SurfaceCardBrush}"
             BorderBrush="{DynamicResource BorderSubtleBrush}"
             BorderThickness="1"
             CornerRadius="8"
             Padding="12">
-        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*">
-            <!-- Header -->
+        <Grid RowDefinitions="Auto,Auto,Auto,Auto">
+            <!-- 1. Header: Title + Preset ComboBox -->
             <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
-                <TextBlock Grid.Column="0" Text="ПАЛИТРА И ЦВЕТ" FontSize="11" FontWeight="Bold"
-                           Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <PathIcon Data="{DynamicResource IconPalette}" Width="13" Height="13"
+                              Foreground="{DynamicResource AccentPrimaryBrush}" />
+                    <TextBlock Text="ПАЛИТРА И ЦВЕТ" FontSize="11" FontWeight="Bold"
+                               Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                </StackPanel>
                 <ComboBox Name="PresetComboBox" Grid.Column="1" Height="26" FontSize="11"
                           Padding="6,2" VerticalAlignment="Center"
                           Background="{DynamicResource SurfacePanelBrush}"
@@ -30,104 +111,146 @@
                 </ComboBox>
             </Grid>
 
-            <!-- Color Swatches & Hex Display -->
-            <Grid Grid.Row="1" ColumnDefinitions="Auto,12,*" Margin="0,0,0,12">
-                <!-- Primary / Secondary Overlapping Boxes -->
-                <Grid Grid.Column="0" Width="48" Height="48">
-                    <!-- Secondary Color (Behind) -->
-                    <Border Name="SecondaryColorBox" Width="30" Height="30"
-                            HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                            Background="#FFFFFF"
-                            BorderBrush="{DynamicResource BorderStrongBrush}"
-                            BorderThickness="1" CornerRadius="4"
-                            Cursor="Hand" ToolTip.Tip="Вторичный цвет (ПКМ на палитре)" />
-
-                    <!-- Primary Color (In Front) -->
-                    <Border Name="PrimaryColorBox" Width="32" Height="32"
-                            HorizontalAlignment="Left" VerticalAlignment="Top"
-                            Background="#000000"
-                            BorderBrush="{DynamicResource BorderStrongBrush}"
-                            BorderThickness="2" CornerRadius="4"
-                            BoxShadow="0 2 6 #40000000"
-                            Cursor="Hand" ToolTip.Tip="Основной цвет (ЛКМ на палитре)" />
+            <!-- 2. Color Selection Block: Primary, Swap, Secondary Plates & Hex Input -->
+            <StackPanel Grid.Row="1" Spacing="8" Margin="0,0,0,10">
+                <Grid ColumnDefinitions="*,Auto,*">
+                    <!-- Primary Color Plate -->
+                    <Border Name="PrimaryPlate" Grid.Column="0"
+                            Background="{DynamicResource SurfacePanelBrush}"
+                            BorderBrush="{DynamicResource AccentPrimaryBrush}"
+                            BorderThickness="1.5"
+                            CornerRadius="6"
+                            Padding="8,6"
+                            Cursor="Hand"
+                            ToolTip.Tip="[ЛКМ] Основной цвет — нажмите для выбора">
+                        <Grid RowDefinitions="Auto,Auto">
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" Margin="0,0,0,6">
+                                <Border Background="{DynamicResource AccentGlowBrush}" CornerRadius="3" Padding="4,1">
+                                    <TextBlock Text="ЛКМ" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource AccentPrimaryBrush}" />
+                                </Border>
+                                <TextBlock Text="Основной" FontSize="10" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <Border Name="PrimaryColorBox" Grid.Row="1" Height="28" CornerRadius="4"
+                                    Background="#000000" BorderBrush="{DynamicResource BorderStrongBrush}"
+                                    BorderThickness="1" BoxShadow="0 2 4 0 #40000000" />
+                        </Grid>
+                    </Border>
 
                     <!-- Swap Button -->
-                    <Button Name="SwapColorsButton" Width="18" Height="18" Padding="0"
-                            HorizontalAlignment="Right" VerticalAlignment="Top"
-                            CornerRadius="9" Background="{DynamicResource SurfaceBaseBrush}"
-                            BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1"
+                    <Button Name="SwapColorsButton" Grid.Column="1" Classes="swap-btn" Margin="6,0"
                             ToolTip.Tip="Поменять цвета местами (X)">
-                        <TextBlock Text="⇄" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center"
+                        <TextBlock Text="⇄" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"
                                    Foreground="{DynamicResource TextSecondaryBrush}" />
                     </Button>
+
+                    <!-- Secondary Color Plate -->
+                    <Border Name="SecondaryPlate" Grid.Column="2"
+                            Background="{DynamicResource SurfacePanelBrush}"
+                            BorderBrush="{DynamicResource BorderSubtleBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="8,6"
+                            Cursor="Hand"
+                            ToolTip.Tip="[ПКМ] Вторичный цвет — нажмите для выбора">
+                        <Grid RowDefinitions="Auto,Auto">
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" Margin="0,0,0,6">
+                                <Border Background="{DynamicResource SurfaceChipBrush}" CornerRadius="3" Padding="4,1">
+                                    <TextBlock Text="ПКМ" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource AccentSecondaryBrush}" />
+                                </Border>
+                                <TextBlock Text="Вторичный" FontSize="10" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <Border Name="SecondaryColorBox" Grid.Row="1" Height="28" CornerRadius="4"
+                                    Background="#FFFFFF" BorderBrush="{DynamicResource BorderStrongBrush}"
+                                    BorderThickness="1" BoxShadow="0 2 4 0 #40000000" />
+                        </Grid>
+                    </Border>
                 </Grid>
 
-                <!-- Hex & Quick Input -->
-                <StackPanel Grid.Column="2" Spacing="4" VerticalAlignment="Center">
-                    <TextBlock Text="HEX КОД" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" />
-                    <Grid ColumnDefinitions="*,Auto">
-                        <TextBox Name="HexTextBox" Grid.Column="0" Text="#000000" Height="28" FontSize="12"
-                                 FontFamily="Consolas, monospace" VerticalContentAlignment="Center"
-                                 Background="{DynamicResource SurfaceInputBrush}"
-                                 Foreground="{DynamicResource TextPrimaryBrush}"
-                                 BorderBrush="{DynamicResource BorderSubtleBrush}" CornerRadius="4,0,0,4" />
-                        <Button Name="AddColorButton" Grid.Column="1" Content="+" Height="28" Width="28"
-                                Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                                Background="{DynamicResource SurfacePanelBrush}"
-                                Foreground="{DynamicResource AccentPrimaryBrush}"
-                                BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,1,1,1"
-                                CornerRadius="0,4,4,0" ToolTip.Tip="Добавить цвет в палитру" />
-                    </Grid>
-                </StackPanel>
-            </Grid>
-
-            <!-- RGBA Sliders -->
-            <StackPanel Grid.Row="2" Spacing="4" Margin="0,0,0,10">
-                <!-- Red -->
-                <Grid ColumnDefinitions="14,*,32">
-                    <TextBlock Grid.Column="0" Text="R" FontSize="11" FontWeight="Bold" Foreground="#EF4444" VerticalAlignment="Center" />
-                    <Slider Name="RedSlider" Grid.Column="1" Minimum="0" Maximum="255" Value="0" Margin="6,0" VerticalAlignment="Center" />
-                    <TextBlock Name="RedValueText" Grid.Column="2" Text="0" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"
-                               Foreground="{DynamicResource TextSecondaryBrush}" />
-                </Grid>
-
-                <!-- Green -->
-                <Grid ColumnDefinitions="14,*,32">
-                    <TextBlock Grid.Column="0" Text="G" FontSize="11" FontWeight="Bold" Foreground="#10B981" VerticalAlignment="Center" />
-                    <Slider Name="GreenSlider" Grid.Column="1" Minimum="0" Maximum="255" Value="0" Margin="6,0" VerticalAlignment="Center" />
-                    <TextBlock Name="GreenValueText" Grid.Column="2" Text="0" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"
-                               Foreground="{DynamicResource TextSecondaryBrush}" />
-                </Grid>
-
-                <!-- Blue -->
-                <Grid ColumnDefinitions="14,*,32">
-                    <TextBlock Grid.Column="0" Text="B" FontSize="11" FontWeight="Bold" Foreground="#3B82F6" VerticalAlignment="Center" />
-                    <Slider Name="BlueSlider" Grid.Column="1" Minimum="0" Maximum="255" Value="0" Margin="6,0" VerticalAlignment="Center" />
-                    <TextBlock Name="BlueValueText" Grid.Column="2" Text="0" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"
-                               Foreground="{DynamicResource TextSecondaryBrush}" />
-                </Grid>
-
-                <!-- Alpha -->
-                <Grid ColumnDefinitions="14,*,32">
-                    <TextBlock Grid.Column="0" Text="A" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
-                    <Slider Name="AlphaSlider" Grid.Column="1" Minimum="0" Maximum="255" Value="255" Margin="6,0" VerticalAlignment="Center" />
-                    <TextBlock Name="AlphaValueText" Grid.Column="2" Text="255" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"
-                               Foreground="{DynamicResource TextSecondaryBrush}" />
+                <!-- Hex & Add to Palette Row -->
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <TextBlock Grid.Column="0" Text="HEX" FontSize="10" FontWeight="Bold"
+                               Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                    <TextBox Name="HexTextBox" Grid.Column="1" Text="#000000" Height="26" FontSize="11"
+                             FontFamily="Consolas, monospace" VerticalContentAlignment="Center"
+                             Background="{DynamicResource SurfaceInputBrush}"
+                             Foreground="{DynamicResource TextPrimaryBrush}"
+                             BorderBrush="{DynamicResource BorderSubtleBrush}" CornerRadius="4,0,0,4" />
+                    <Button Name="AddColorButton" Grid.Column="2" Content="+" Height="26" Width="26"
+                            Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                            Background="{DynamicResource SurfacePanelBrush}"
+                            Foreground="{DynamicResource AccentPrimaryBrush}" FontWeight="Bold" FontSize="14"
+                            BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,1,1,1"
+                            CornerRadius="0,4,4,0" ToolTip.Tip="Добавить цвет в палитру" />
                 </Grid>
             </StackPanel>
 
-            <!-- Palette Swatches Section Header -->
-            <Grid Grid.Row="3" ColumnDefinitions="*,Auto" Margin="0,0,0,6">
-                <TextBlock Grid.Column="0" Text="ОБРАЗЦЫ ПАЛИТРЫ" FontSize="10" FontWeight="Bold"
-                           Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
-                <TextBlock Name="ColorCountText" Grid.Column="1" Text="32 цвета" FontSize="10"
-                           Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
-            </Grid>
+            <!-- 3. View Mode Switcher: Segmented Tabs (Палитра / RGB Слайдеры) -->
+            <Border Grid.Row="2" Background="{DynamicResource SurfacePanelBrush}"
+                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Padding="2"
+                    Margin="0,0,0,10">
+                <Grid ColumnDefinitions="*,*">
+                    <Button Name="PaletteTabButton" Grid.Column="0" Content="Палитра"
+                            Classes="mode-tab-btn active" HorizontalAlignment="Stretch" />
+                    <Button Name="SlidersTabButton" Grid.Column="1" Content="RGB Слайдеры"
+                            Classes="mode-tab-btn" HorizontalAlignment="Stretch" />
+                </Grid>
+            </Border>
 
-            <!-- Palette Swatches Wrap Area -->
-            <ScrollViewer Grid.Row="4" MaxHeight="140" VerticalScrollBarVisibility="Auto">
-                <WrapPanel Name="PaletteWrapPanel" Orientation="Horizontal" Margin="0,2" />
-            </ScrollViewer>
+            <!-- 4. Content Area: Palette View or RGB Sliders View -->
+            <Panel Grid.Row="3">
+                <!-- 4A. Palette Swatches Grid Container -->
+                <Grid Name="PaletteContainer" RowDefinitions="Auto,*" IsVisible="True">
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+                        <TextBlock Grid.Column="0" Text="ОБРАЗЦЫ ПАЛИТРЫ" FontSize="10" FontWeight="Bold"
+                                   Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                        <TextBlock Name="ColorCountText" Grid.Column="1" Text="32 цвета" FontSize="10"
+                                   Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                    </Grid>
+                    <ScrollViewer Grid.Row="1" MaxHeight="140" VerticalScrollBarVisibility="Auto">
+                        <WrapPanel Name="PaletteWrapPanel" Orientation="Horizontal" Margin="0,2" />
+                    </ScrollViewer>
+                </Grid>
+
+                <!-- 4B. RGB Sliders Container -->
+                <StackPanel Name="SlidersContainer" Spacing="5" IsVisible="False">
+                    <!-- Red -->
+                    <Grid ColumnDefinitions="14,*,32">
+                        <TextBlock Grid.Column="0" Text="R" FontSize="11" FontWeight="Bold" Foreground="#EF4444" VerticalAlignment="Center" />
+                        <Slider Name="RedSlider" Grid.Column="1" Minimum="0" Maximum="255" Value="0" Margin="6,0" VerticalAlignment="Center" />
+                        <TextBlock Name="RedValueText" Grid.Column="2" Text="0" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" />
+                    </Grid>
+
+                    <!-- Green -->
+                    <Grid ColumnDefinitions="14,*,32">
+                        <TextBlock Grid.Column="0" Text="G" FontSize="11" FontWeight="Bold" Foreground="#10B981" VerticalAlignment="Center" />
+                        <Slider Name="GreenSlider" Grid.Column="1" Minimum="0" Maximum="255" Value="0" Margin="6,0" VerticalAlignment="Center" />
+                        <TextBlock Name="GreenValueText" Grid.Column="2" Text="0" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" />
+                    </Grid>
+
+                    <!-- Blue -->
+                    <Grid ColumnDefinitions="14,*,32">
+                        <TextBlock Grid.Column="0" Text="B" FontSize="11" FontWeight="Bold" Foreground="#3B82F6" VerticalAlignment="Center" />
+                        <Slider Name="BlueSlider" Grid.Column="1" Minimum="0" Maximum="255" Value="0" Margin="6,0" VerticalAlignment="Center" />
+                        <TextBlock Name="BlueValueText" Grid.Column="2" Text="0" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" />
+                    </Grid>
+
+                    <!-- Alpha -->
+                    <Grid ColumnDefinitions="14,*,32">
+                        <TextBlock Grid.Column="0" Text="A" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                        <Slider Name="AlphaSlider" Grid.Column="1" Minimum="0" Maximum="255" Value="255" Margin="6,0" VerticalAlignment="Center" />
+                        <TextBlock Name="AlphaValueText" Grid.Column="2" Text="255" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" />
+                    </Grid>
+                </StackPanel>
+            </Panel>
         </Grid>
     </Border>
 </UserControl>

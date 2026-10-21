@@ -780,6 +780,20 @@ public partial class MainViewModel : ViewModelBase
         StatusMessage = $"Заменен цвет на слое '{layer.Name}'";
     }
 
+    /// <summary>
+    /// Event triggered when opening the hotkeys cheat sheet dialog is requested.
+    /// </summary>
+    public event EventHandler? ShowHotkeysRequested;
+
+    /// <summary>
+    /// Requests display of the hotkeys cheat sheet dialog.
+    /// </summary>
+    [RelayCommand]
+    public void OpenHotkeysDialog()
+    {
+        ShowHotkeysRequested?.Invoke(this, EventArgs.Empty);
+    }
+
     private async Task RunInitialUpdateCheckAsync()
     {
         try

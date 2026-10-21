@@ -318,4 +318,134 @@ public class MainViewModelTests
         vm.LayerViewModel.ToggleAlphaLock();
         layer.IsAlphaLocked.Should().BeFalse();
     }
+
+    [Fact]
+    public void OpenHotkeysDialog_InvokesShowHotkeysRequestedEvent()
+    {
+        // Arrange
+        var vm = CreateMainViewModel();
+        bool eventFired = false;
+        object? senderReceived = null;
+        vm.ShowHotkeysRequested += (sender, _) =>
+        {
+            eventFired = true;
+            senderReceived = sender;
+        };
+
+        // Act
+        vm.OpenHotkeysDialog();
+
+        // Assert
+        eventFired.Should().BeTrue();
+        senderReceived.Should().BeSameAs(vm);
+    }
+
+    [Fact]
+    public void OpenHotkeysDialogCommand_Execution_InvokesShowHotkeysRequestedEvent()
+    {
+        // Arrange
+        var vm = CreateMainViewModel();
+        bool eventFired = false;
+        vm.ShowHotkeysRequested += (_, _) => eventFired = true;
+
+        // Act
+        vm.OpenHotkeysDialogCommand.Execute(null);
+
+        // Assert
+        eventFired.Should().BeTrue();
+    }
+
+    [Fact]
+    public void PaletteViewModel_SwapColors_ExchangesPrimaryAndSecondaryColors()
+    {
+        // Arrange
+        var pvm = new PaletteViewModel();
+        var red = new PixelColor(255, 0, 0, 255);
+        var blue = new PixelColor(0, 0, 255, 255);
+        pvm.PrimaryColor = red;
+        pvm.SecondaryColor = blue;
+
+        // Act
+        pvm.SwapColors();
+
+        // Assert
+        pvm.PrimaryColor.Should().Be(blue);
+        pvm.SecondaryColor.Should().Be(red);
+    }
+
+    [Fact]
+    public void PaletteViewModel_SelectPrimaryAndSecondaryColor_UpdatesProperties()
+    {
+        // Arrange
+        var pvm = new PaletteViewModel();
+        var magenta = new PixelColor(255, 0, 255, 255);
+        var cyan = new PixelColor(0, 255, 255, 255);
+
+        // Act
+        pvm.SelectPrimaryColor(magenta);
+        pvm.SelectSecondaryColor(cyan);
+
+        // Assert
+        pvm.PrimaryColor.Should().Be(magenta);
+        pvm.SecondaryColor.Should().Be(cyan);
+    }
+
+    [Fact]
+    public void PaletteViewModel_LoadPreset_UpdatesCurrentPaletteAndColorsList()
+    {
+        // Arrange
+        var pvm = new PaletteViewModel();
+        var dawnBringer = PixelForge.Core.Palettes.PalettePresets.DawnBringer16;
+
+        // Act
+        pvm.LoadPreset(dawnBringer);
+
+        // Assert
+        pvm.CurrentPalette.Name.Should().Be("DawnBringer 16");
+        pvm.Colors.Should().HaveCount(16);
+        pvm.Colors[0].Should().Be(dawnBringer.Colors[0]);
+    }
+
+    [Fact]
+    public void PaletteViewModel_LoadPresetByName_FindsAndLoadsCorrectPreset()
+    {
+        // Arrange
+        var pvm = new PaletteViewModel();
+
+        // Act
+        pvm.LoadPresetByName("PICO-8");
+
+        // Assert
+        pvm.CurrentPalette.Name.Should().Be("PICO-8");
+        pvm.Colors.Should().HaveCount(16);
+    }
+
+    [Fact]
+    public void PaletteViewModel_AddAndRemoveColor_ModifiesColorsAndCurrentPalette()
+    {
+        // Arrange
+        var pvm = new PaletteViewModel();
+        var customColor = new PixelColor(123, 234, 45, 255);
+        int initialCount = pvm.Colors.Count;
+
+        // Act - Add
+        pvm.AddColor(customColor);
+
+        // Assert
+        pvm.Colors.Should().HaveCount(initialCount + 1);
+        pvm.Colors.Should().Contain(customColor);
+        pvm.CurrentPalette.Colors.Should().Contain(customColor);
+
+        // Act - Duplicate Add should not add again
+        pvm.AddColor(customColor);
+        pvm.Colors.Should().HaveCount(initialCount + 1);
+
+        // Act - Remove
+        pvm.RemoveColor(customColor);
+
+        // Assert
+        pvm.Colors.Should().HaveCount(initialCount);
+        pvm.Colors.Should().NotContain(customColor);
+        pvm.CurrentPalette.Colors.Should().NotContain(customColor);
+    }
 }
