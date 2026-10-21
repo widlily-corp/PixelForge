@@ -49,6 +49,7 @@ public class FlipCanvasCommand : IUndoableCommand
         {
             Array.Copy(newPixels, layer.Pixels, newPixels.Length);
         }
+        _canvas.InvalidateComposite();
         _onFlipped?.Invoke();
     }
 
@@ -58,6 +59,7 @@ public class FlipCanvasCommand : IUndoableCommand
         {
             Array.Copy(oldPixels, layer.Pixels, oldPixels.Length);
         }
+        _canvas.InvalidateComposite();
         _onFlipped?.Invoke();
     }
 }

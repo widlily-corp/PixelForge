@@ -236,9 +236,22 @@ public partial class MainWindow : Window
         await aboutWindow.ShowDialog(this);
     }
 
-    private static bool MatchesKey(KeyEventArgs e, Key key, PhysicalKey physicalKey)
+    private static bool MatchesKey(KeyEventArgs e, Key key, PhysicalKey physicalKey, char? ruChar = null)
     {
-        return e.Key == key || e.PhysicalKey == physicalKey;
+        if (e.Key == key || e.PhysicalKey == physicalKey)
+        {
+            return true;
+        }
+
+        if (ruChar.HasValue && !string.IsNullOrEmpty(e.KeySymbol))
+        {
+            if (char.ToLowerInvariant(e.KeySymbol[0]) == ruChar.Value)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private async void OnWindowKeyDown(object? sender, KeyEventArgs e)
@@ -266,7 +279,7 @@ public partial class MainWindow : Window
         }
 
         // Ctrl + Alt combinations (Canvas Resize)
-        if (ctrl && alt && (MatchesKey(e, Key.C, PhysicalKey.C) || MatchesKey(e, Key.R, PhysicalKey.R)))
+        if (ctrl && alt && (MatchesKey(e, Key.C, PhysicalKey.C, 'с') || MatchesKey(e, Key.R, PhysicalKey.R, 'к')))
         {
             e.Handled = true;
             OnResizeCanvasClick(this, new RoutedEventArgs());
@@ -275,17 +288,17 @@ public partial class MainWindow : Window
 
         if (ctrl)
         {
-            if (MatchesKey(e, Key.N, PhysicalKey.N))
+            if (MatchesKey(e, Key.N, PhysicalKey.N, 'т'))
             {
                 e.Handled = true;
                 OnNewProjectClick(this, new RoutedEventArgs());
             }
-            else if (MatchesKey(e, Key.O, PhysicalKey.O))
+            else if (MatchesKey(e, Key.O, PhysicalKey.O, 'щ'))
             {
                 e.Handled = true;
                 await ViewModel.OpenProjectAsync();
             }
-            else if (MatchesKey(e, Key.S, PhysicalKey.S))
+            else if (MatchesKey(e, Key.S, PhysicalKey.S, 'ы'))
             {
                 e.Handled = true;
                 if (shift)
@@ -297,7 +310,7 @@ public partial class MainWindow : Window
                     await ViewModel.SaveProjectAsync();
                 }
             }
-            else if (MatchesKey(e, Key.Z, PhysicalKey.Z))
+            else if (MatchesKey(e, Key.Z, PhysicalKey.Z, 'я'))
             {
                 e.Handled = true;
                 if (shift)
@@ -308,38 +321,41 @@ public partial class MainWindow : Window
                 {
                     ViewModel.HistoryViewModel.Undo();
                 }
+                MainCanvasControl?.MarkCompositeDirty();
             }
-            else if (MatchesKey(e, Key.Y, PhysicalKey.Y))
+            else if (MatchesKey(e, Key.Y, PhysicalKey.Y, 'н'))
             {
                 e.Handled = true;
                 ViewModel.HistoryViewModel.Redo();
+                MainCanvasControl?.MarkCompositeDirty();
             }
-            else if (MatchesKey(e, Key.C, PhysicalKey.C))
+
+            else if (MatchesKey(e, Key.C, PhysicalKey.C, 'с'))
             {
                 e.Handled = true;
                 await ViewModel.CopyAsync();
             }
-            else if (MatchesKey(e, Key.X, PhysicalKey.X))
+            else if (MatchesKey(e, Key.X, PhysicalKey.X, 'ч'))
             {
                 e.Handled = true;
                 await ViewModel.CutAsync();
             }
-            else if (MatchesKey(e, Key.V, PhysicalKey.V))
+            else if (MatchesKey(e, Key.V, PhysicalKey.V, 'м'))
             {
                 e.Handled = true;
                 await ViewModel.PasteAsync();
             }
-            else if (MatchesKey(e, Key.A, PhysicalKey.A))
+            else if (MatchesKey(e, Key.A, PhysicalKey.A, 'ф'))
             {
                 e.Handled = true;
                 ViewModel.SelectAll();
             }
-            else if (MatchesKey(e, Key.D, PhysicalKey.D))
+            else if (MatchesKey(e, Key.D, PhysicalKey.D, 'в'))
             {
                 e.Handled = true;
                 ViewModel.Deselect();
             }
-            else if (MatchesKey(e, Key.G, PhysicalKey.G))
+            else if (MatchesKey(e, Key.G, PhysicalKey.G, 'п'))
             {
                 e.Handled = true;
                 ViewModel.CanvasViewModel.ToggleGrid();
@@ -362,77 +378,77 @@ public partial class MainWindow : Window
         }
         else if (!alt)
         {
-            if (MatchesKey(e, Key.B, PhysicalKey.B))
+            if (MatchesKey(e, Key.B, PhysicalKey.B, 'и'))
             {
                 e.Handled = true;
                 SelectTool(CanvasToolType.Pencil);
             }
-            else if (MatchesKey(e, Key.E, PhysicalKey.E))
+            else if (MatchesKey(e, Key.E, PhysicalKey.E, 'у'))
             {
                 e.Handled = true;
                 SelectTool(CanvasToolType.Eraser);
             }
-            else if (MatchesKey(e, Key.D, PhysicalKey.D))
+            else if (MatchesKey(e, Key.D, PhysicalKey.D, 'в'))
             {
                 e.Handled = true;
                 SelectTool(CanvasToolType.DitherBrush);
             }
-            else if (MatchesKey(e, Key.F, PhysicalKey.F) || MatchesKey(e, Key.G, PhysicalKey.G))
+            else if (MatchesKey(e, Key.F, PhysicalKey.F, 'а') || MatchesKey(e, Key.G, PhysicalKey.G, 'п'))
             {
                 e.Handled = true;
                 SelectTool(CanvasToolType.Fill);
             }
-            else if (MatchesKey(e, Key.T, PhysicalKey.T))
+            else if (MatchesKey(e, Key.T, PhysicalKey.T, 'е'))
             {
                 e.Handled = true;
                 SelectTool(CanvasToolType.Gradient);
             }
-            else if (MatchesKey(e, Key.I, PhysicalKey.I))
+            else if (MatchesKey(e, Key.I, PhysicalKey.I, 'ш'))
             {
                 e.Handled = true;
                 SelectTool(CanvasToolType.Eyedropper);
             }
-            else if (MatchesKey(e, Key.L, PhysicalKey.L))
+            else if (MatchesKey(e, Key.L, PhysicalKey.L, 'д'))
             {
                 e.Handled = true;
                 SelectTool(CanvasToolType.Line);
             }
-            else if (MatchesKey(e, Key.R, PhysicalKey.R) || MatchesKey(e, Key.U, PhysicalKey.U))
+            else if (MatchesKey(e, Key.R, PhysicalKey.R, 'к') || MatchesKey(e, Key.U, PhysicalKey.U, 'г'))
             {
                 e.Handled = true;
                 SelectTool(CanvasToolType.Rectangle);
             }
-            else if (MatchesKey(e, Key.C, PhysicalKey.C))
+            else if (MatchesKey(e, Key.C, PhysicalKey.C, 'с'))
             {
                 e.Handled = true;
                 SelectTool(CanvasToolType.Ellipse);
             }
-            else if (MatchesKey(e, Key.S, PhysicalKey.S) || MatchesKey(e, Key.M, PhysicalKey.M))
+            else if (MatchesKey(e, Key.S, PhysicalKey.S, 'ы') || MatchesKey(e, Key.M, PhysicalKey.M, 'ь'))
             {
                 e.Handled = true;
                 SelectTool(CanvasToolType.Selection);
             }
-            else if (MatchesKey(e, Key.X, PhysicalKey.X))
+            else if (MatchesKey(e, Key.X, PhysicalKey.X, 'ч'))
             {
                 e.Handled = true;
                 ViewModel.PaletteViewModel.SwapColors();
             }
-            else if (MatchesKey(e, Key.H, PhysicalKey.H))
+            else if (MatchesKey(e, Key.H, PhysicalKey.H, 'р'))
             {
                 e.Handled = true;
                 ViewModel.FlipActiveLayerHorizontal();
             }
-            else if (MatchesKey(e, Key.V, PhysicalKey.V))
+            else if (MatchesKey(e, Key.V, PhysicalKey.V, 'м'))
             {
                 e.Handled = true;
                 ViewModel.FlipActiveLayerVertical();
             }
-            else if (MatchesKey(e, Key.OemOpenBrackets, PhysicalKey.BracketLeft))
+            else if (MatchesKey(e, Key.OemOpenBrackets, PhysicalKey.BracketLeft, 'х'))
             {
                 e.Handled = true;
                 ViewModel.ToolViewModel.DecreaseBrushSize();
             }
-            else if (MatchesKey(e, Key.OemCloseBrackets, PhysicalKey.BracketRight))
+            else if (MatchesKey(e, Key.OemCloseBrackets, PhysicalKey.BracketRight, 'ъ'))
             {
                 e.Handled = true;
                 ViewModel.ToolViewModel.IncreaseBrushSize();

@@ -61,6 +61,26 @@ public partial class LayerViewModel : ViewModelBase
         }
     }
 
+    public bool CanMoveUp
+    {
+        get
+        {
+            if (ActiveLayer == null) return false;
+            int index = _canvas.Layers.IndexOf(ActiveLayer);
+            return index >= 0 && index < _canvas.Layers.Count - 1;
+        }
+    }
+
+    public bool CanMoveDown
+    {
+        get
+        {
+            if (ActiveLayer == null) return false;
+            int index = _canvas.Layers.IndexOf(ActiveLayer);
+            return index > 0;
+        }
+    }
+
     public LayerViewModel(PixelCanvas canvas, UndoRedoService undoRedoService)
     {
         _canvas = canvas ?? throw new ArgumentNullException(nameof(canvas));
@@ -176,11 +196,33 @@ public partial class LayerViewModel : ViewModelBase
         ActiveLayer = clone;
     }
 
+    [RelayCommand(CanExecute = nameof(CanMoveUp))]
+    public void MoveUp()
+    {
+        if (ActiveLayer == null || !CanMoveUp) return;
+        int index = _canvas.Layers.IndexOf(ActiveLayer);
+        var command = new ReorderLayerCommand(_canvas, index, index + 1, $"Move {ActiveLayer.Name} Up");
+        _undoRedoService.ExecuteCommand(command);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanMoveDown))]
+    public void MoveDown()
+    {
+        if (ActiveLayer == null || !CanMoveDown) return;
+        int index = _canvas.Layers.IndexOf(ActiveLayer);
+        var command = new ReorderLayerCommand(_canvas, index, index - 1, $"Move {ActiveLayer.Name} Down");
+        _undoRedoService.ExecuteCommand(command);
+    }
+
     private void UpdateCommandStates()
     {
         OnPropertyChanged(nameof(CanRemoveLayer));
         OnPropertyChanged(nameof(CanMergeDown));
         RemoveLayerCommand.NotifyCanExecuteChanged();
         MergeDownCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(CanMoveUp));
+        OnPropertyChanged(nameof(CanMoveDown));
+        MoveUpCommand.NotifyCanExecuteChanged();
+        MoveDownCommand.NotifyCanExecuteChanged();
     }
 }

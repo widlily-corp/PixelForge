@@ -340,6 +340,10 @@ public class CanvasTests
         nes.Colors.Should().HaveCount(54);
         byName.Name.Should().Be(pico8.Name);
         byName.Colors.Should().BeEquivalentTo(pico8.Colors);
-        PalettePresets.AllPresets.Should().HaveCount(4);
+        PalettePresets.DawnBringer16.Colors.Should().HaveCount(16);
+        PalettePresets.Endesga32.Colors.Should().HaveCount(32);
+        PalettePresets.CyberpunkNeo.Colors.Should().HaveCount(16);
+        PalettePresets.Solarized.Colors.Should().HaveCount(16);
+        PalettePresets.AllPresets.Should().HaveCount(8);
     }
 }

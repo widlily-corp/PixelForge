@@ -26,6 +26,16 @@ public partial class PixelCanvas : ObservableObject
 
     public ObservableCollection<Layer> Layers { get; } = new();
 
+    /// <summary>
+    /// Event raised when any layer's pixels or layer composition changes.
+    /// </summary>
+    public event Action? PixelsChanged;
+
+    /// <summary>
+    /// Manually signals that the composite visual is dirty and needs re-rendering.
+    /// </summary>
+    public void InvalidateComposite() => PixelsChanged?.Invoke();
+
     public Layer? ActiveLayer
     {
         get => _activeLayer;
@@ -50,6 +60,7 @@ public partial class PixelCanvas : ObservableObject
         var defaultLayer = new Layer("Layer 1", width, height);
         Layers.Add(defaultLayer);
         ActiveLayer = defaultLayer;
+        InitializeLayerEvents();
     }
 
     /// <summary>
@@ -69,6 +80,7 @@ public partial class PixelCanvas : ObservableObject
 
         Width = newWidth;
         Height = newHeight;
+        InvalidateComposite();
     }
 
     public PixelCanvas(int width, int height, IEnumerable<Layer> layers, Layer? activeLayer = null)
@@ -102,12 +114,14 @@ public partial class PixelCanvas : ObservableObject
             var defaultLayer = new Layer("Layer 1", width, height);
             Layers.Add(defaultLayer);
             ActiveLayer = defaultLayer;
+            InitializeLayerEvents();
         }
         else
         {
             ActiveLayer = activeLayer != null && Layers.Contains(activeLayer)
                 ? activeLayer
                 : Layers[^1];
+            InitializeLayerEvents();
         }
     }
 
@@ -214,6 +228,8 @@ public partial class PixelCanvas : ObservableObject
 
         Layers.RemoveAt(index);
         ActiveLayer = bottomLayer;
+        bottomLayer.Invalidate();
+        InvalidateComposite();
         return bottomLayer;
     }
 
@@ -346,5 +362,50 @@ public partial class PixelCanvas : ObservableObject
             (byte)Math.Clamp(MathF.Round(outG), 0, 255),
             (byte)Math.Clamp(MathF.Round(outB), 0, 255),
             (byte)Math.Clamp(MathF.Round(outAlpha * 255f), 0, 255));
+    }
+
+    private void InitializeLayerEvents()
+    {
+        Layers.CollectionChanged += OnLayersCollectionChanged;
+        foreach (var layer in Layers)
+        {
+            HookLayerEvents(layer);
+        }
+    }
+
+    private void HookLayerEvents(Layer layer)
+    {
+        layer.PixelsChanged += OnLayerPixelsChanged;
+    }
+
+    private void UnhookLayerEvents(Layer layer)
+    {
+        layer.PixelsChanged -= OnLayerPixelsChanged;
+    }
+
+    private void OnLayerPixelsChanged()
+    {
+        InvalidateComposite();
+    }
+
+    private void OnLayersCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        if (e.OldItems != null)
+        {
+            foreach (Layer oldLayer in e.OldItems)
+            {
+                UnhookLayerEvents(oldLayer);
+            }
+        }
+
+        if (e.NewItems != null)
+        {
+            foreach (Layer newLayer in e.NewItems)
+            {
+                HookLayerEvents(newLayer);
+            }
+        }
+
+        InvalidateComposite();
     }
 }

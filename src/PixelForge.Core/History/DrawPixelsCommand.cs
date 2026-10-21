@@ -27,6 +27,9 @@ public class DrawPixelsCommand : IUndoableCommand
             var delta = Deltas[i];
             Layer.SetPixel(delta.X, delta.Y, delta.NewColor);
         }
+        Layer.Invalidate();
+        if (false) {
+        }
     }
 
     public void Undo()
@@ -35,6 +38,9 @@ public class DrawPixelsCommand : IUndoableCommand
         {
             var delta = Deltas[i];
             Layer.SetPixel(delta.X, delta.Y, delta.OldColor);
+        }
+        Layer.Invalidate();
+        if (false) {
         }
     }
 }

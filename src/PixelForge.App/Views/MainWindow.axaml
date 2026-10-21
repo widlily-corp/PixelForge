@@ -557,6 +557,12 @@
                                     <Button Classes="action-btn" Command="{Binding LayerViewModel.DuplicateLayerCommand}" ToolTip.Tip="Дублировать слой">
                                         <PathIcon Data="{DynamicResource IconNewFile}" Width="13" Height="13" Foreground="{DynamicResource TextPrimaryBrush}" />
                                     </Button>
+                                    <Button Classes="action-btn" Command="{Binding LayerViewModel.MoveUpCommand}" ToolTip.Tip="Поднять слой выше">
+                                        <PathIcon Data="{DynamicResource IconArrowUp}" Width="13" Height="13" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    </Button>
+                                    <Button Classes="action-btn" Command="{Binding LayerViewModel.MoveDownCommand}" ToolTip.Tip="Опустить слой ниже">
+                                        <PathIcon Data="{DynamicResource IconArrowDown}" Width="13" Height="13" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    </Button>
                                     <Button Classes="action-btn" Command="{Binding LayerViewModel.MergeDownCommand}" ToolTip.Tip="Объединить с нижним">
                                         <PathIcon Data="{DynamicResource IconMergeDown}" Width="13" Height="13" Foreground="{DynamicResource TextPrimaryBrush}" />
                                     </Button>

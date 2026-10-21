@@ -80,6 +80,7 @@ public partial class LivePreviewControl : UserControl
         if (_currentCanvas != null)
         {
             _currentCanvas.PropertyChanged -= OnCanvasPropertyChanged;
+            _currentCanvas.PixelsChanged -= RequestRefresh;
         }
 
         _currentCanvas = canvas;
@@ -87,6 +88,7 @@ public partial class LivePreviewControl : UserControl
         if (_currentCanvas != null)
         {
             _currentCanvas.PropertyChanged += OnCanvasPropertyChanged;
+            _currentCanvas.PixelsChanged += RequestRefresh;
             ReinitializeBitmap(_currentCanvas.Width, _currentCanvas.Height);
             RequestRefresh();
         }

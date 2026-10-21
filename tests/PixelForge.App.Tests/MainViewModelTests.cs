@@ -161,4 +161,41 @@ public class MainViewModelTests
         vm.HistoryViewModel.Undo();
         layer.GetPixel(2, 2).Should().Be(color);
     }
+
+    [Fact]
+    public void LayerViewModel_MoveUpAndMoveDown_ChangesLayerOrderAndSupportsUndoRedo()
+    {
+        // Arrange
+        var vm = CreateMainViewModel();
+        var layer1 = vm.CanvasViewModel.Canvas.Layers[0];
+        vm.LayerViewModel.AddLayer();
+        var layer2 = vm.LayerViewModel.ActiveLayer!;
+        vm.LayerViewModel.AddLayer();
+        var layer3 = vm.LayerViewModel.ActiveLayer!;
+
+        vm.LayerViewModel.ActiveLayer = layer2; // Index 1
+        vm.LayerViewModel.CanMoveUp.Should().BeTrue();
+        vm.LayerViewModel.CanMoveDown.Should().BeTrue();
+
+        // Act - Move layer 2 up to index 2
+        vm.LayerViewModel.MoveUp();
+
+        // Assert
+        vm.CanvasViewModel.Canvas.Layers[2].Should().BeSameAs(layer2);
+        vm.CanvasViewModel.Canvas.Layers[1].Should().BeSameAs(layer3);
+
+        // Undo
+        vm.HistoryViewModel.Undo();
+        vm.CanvasViewModel.Canvas.Layers[1].Should().BeSameAs(layer2);
+        vm.CanvasViewModel.Canvas.Layers[2].Should().BeSameAs(layer3);
+
+        // Act - Move layer 2 down to index 0
+        vm.LayerViewModel.MoveDown();
+        vm.CanvasViewModel.Canvas.Layers[0].Should().BeSameAs(layer2);
+        vm.CanvasViewModel.Canvas.Layers[1].Should().BeSameAs(layer1);
+
+        // Undo
+        vm.HistoryViewModel.Undo();
+        vm.CanvasViewModel.Canvas.Layers[1].Should().BeSameAs(layer2);
+    }
 }

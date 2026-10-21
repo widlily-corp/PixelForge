@@ -20,9 +20,13 @@
                           Background="{DynamicResource SurfacePanelBrush}"
                           BorderBrush="{DynamicResource BorderSubtleBrush}">
                     <ComboBoxItem Content="Default 32" IsSelected="True" />
+                    <ComboBoxItem Content="DawnBringer 16" />
+                    <ComboBoxItem Content="Endesga 32" />
                     <ComboBoxItem Content="PICO-8" />
                     <ComboBoxItem Content="GameBoy" />
                     <ComboBoxItem Content="NES 54" />
+                    <ComboBoxItem Content="Cyberpunk Neo" />
+                    <ComboBoxItem Content="Solarized" />
                 </ComboBox>
             </Grid>
 

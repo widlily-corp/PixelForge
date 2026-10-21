@@ -75,12 +75,14 @@ public class FlipLayerCommand : IUndoableCommand
     public void Execute()
     {
         Array.Copy(_newPixels, _layer.Pixels, _newPixels.Length);
+        _layer.Invalidate();
         _onFlipped?.Invoke();
     }
 
     public void Undo()
     {
         Array.Copy(_oldPixels, _layer.Pixels, _oldPixels.Length);
+        _layer.Invalidate();
         _onFlipped?.Invoke();
     }
 }

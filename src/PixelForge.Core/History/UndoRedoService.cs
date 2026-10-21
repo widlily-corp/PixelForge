@@ -20,6 +20,26 @@ public partial class UndoRedoService : ObservableObject
     public bool CanUndo => _undoStack.Count > 0;
     public bool CanRedo => _redoStack.Count > 0;
 
+    /// <summary>
+    /// Event raised whenever a command is executed, undone, redone, or the history stack is cleared.
+    /// </summary>
+    public event Action? HistoryChanged;
+
+    /// <summary>
+    /// Event raised when a command is newly executed.
+    /// </summary>
+    public event Action<IUndoableCommand>? CommandExecuted;
+
+    /// <summary>
+    /// Event raised when a command is undone.
+    /// </summary>
+    public event Action<IUndoableCommand>? CommandUndone;
+
+    /// <summary>
+    /// Event raised when a command is redone.
+    /// </summary>
+    public event Action<IUndoableCommand>? CommandRedone;
+
     public UndoRedoService(int maxSteps = DefaultMaxSteps)
     {
         if (maxSteps <= 0)
@@ -47,6 +67,7 @@ public partial class UndoRedoService : ObservableObject
 
         _redoStack.Clear();
         NotifyStateChanged();
+        CommandExecuted?.Invoke(command);
     }
 
     /// <summary>
@@ -67,6 +88,7 @@ public partial class UndoRedoService : ObservableObject
         _redoStack.Add(command);
 
         NotifyStateChanged();
+        CommandUndone?.Invoke(command);
         return true;
     }
 
@@ -88,6 +110,7 @@ public partial class UndoRedoService : ObservableObject
         _undoStack.Add(command);
 
         NotifyStateChanged();
+        CommandRedone?.Invoke(command);
         return true;
     }
 
@@ -107,5 +130,6 @@ public partial class UndoRedoService : ObservableObject
         OnPropertyChanged(nameof(CanRedo));
         OnPropertyChanged(nameof(UndoStack));
         OnPropertyChanged(nameof(RedoStack));
+        HistoryChanged?.Invoke();
     }
 }

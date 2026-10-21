@@ -16,6 +16,7 @@ public partial class ColorPickerView : UserControl
     private PixelColor _primaryColor = PixelColor.Black;
     private PixelColor _secondaryColor = PixelColor.White;
     private readonly List<PixelColor> _currentPalette = new();
+    private System.ComponentModel.INotifyPropertyChanged? _subscribedInpc;
 
     public static readonly StyledProperty<PixelColor> PrimaryColorProperty =
         AvaloniaProperty.Register<ColorPickerView, PixelColor>(nameof(PrimaryColor), PixelColor.Black);
@@ -95,7 +96,39 @@ public partial class ColorPickerView : UserControl
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);
+
+        if (_subscribedInpc != null)
+        {
+            _subscribedInpc.PropertyChanged -= OnDataContextPropertyChanged;
+            _subscribedInpc = null;
+        }
+
+        if (DataContext is System.ComponentModel.INotifyPropertyChanged inpc)
+        {
+            _subscribedInpc = inpc;
+            _subscribedInpc.PropertyChanged += OnDataContextPropertyChanged;
+        }
         SyncFromDataContext();
+    }
+
+    private void OnDataContextPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == "PrimaryColor")
+        {
+            var primaryProp = DataContext?.GetType().GetProperty("PrimaryColor");
+            if (primaryProp != null && primaryProp.GetValue(DataContext) is PixelColor pc && pc != _primaryColor)
+            {
+                SetPrimaryColor(pc);
+            }
+        }
+        else if (e.PropertyName == "SecondaryColor")
+        {
+            var secondaryProp = DataContext?.GetType().GetProperty("SecondaryColor");
+            if (secondaryProp != null && secondaryProp.GetValue(DataContext) is PixelColor sc && sc != _secondaryColor)
+            {
+                SetSecondaryColor(sc);
+            }
+        }
     }
 
     private void SyncFromDataContext()
@@ -242,9 +275,13 @@ public partial class ColorPickerView : UserControl
             string? header = item.Content?.ToString();
             Palette palette = header switch
             {
+                "DawnBringer 16" => PalettePresets.DawnBringer16,
+                "Endesga 32" => PalettePresets.Endesga32,
                 "PICO-8" => PalettePresets.Pico8,
                 "GameBoy" => PalettePresets.GameBoy,
                 "NES 54" => PalettePresets.Nes,
+                "Cyberpunk Neo" => PalettePresets.CyberpunkNeo,
+                "Solarized" => PalettePresets.Solarized,
                 _ => PalettePresets.Default32
             };
             LoadPalette(palette);

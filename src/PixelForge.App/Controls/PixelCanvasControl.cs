@@ -77,7 +77,23 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
     public HistoryViewModel? HistoryViewModel
     {
         get => _historyViewModel;
-        set => SetAndRaise(HistoryViewModelProperty, ref _historyViewModel, value);
+        set
+        {
+            if (_historyViewModel != value)
+            {
+                if (_historyViewModel != null)
+                {
+                    _historyViewModel.Service.HistoryChanged -= MarkCompositeDirty;
+                }
+                if (SetAndRaise(HistoryViewModelProperty, ref _historyViewModel, value))
+                {
+                    if (_historyViewModel != null)
+                    {
+                        _historyViewModel.Service.HistoryChanged += MarkCompositeDirty;
+                    }
+                }
+            }
+        }
     }
 
     // Viewport transform
@@ -158,6 +174,7 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
     private SKBitmap? _compositeBitmap;
     private PixelColor[]? _compositePixels;
     private bool _isDirtyComposite = true;
+    private PixelCanvas? _subscribedCanvas;
 
     // ICustomDrawOperation bounds
     Rect ICustomDrawOperation.Bounds => new(0, 0, Bounds.Width, Bounds.Height);
@@ -204,11 +221,19 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
 
     private void OnCanvasViewModelChanged()
     {
+        if (_subscribedCanvas != null)
+        {
+            _subscribedCanvas.PixelsChanged -= MarkCompositeDirty;
+            _subscribedCanvas = null;
+        }
+
         _isDirtyComposite = true;
         _hasInitializedViewport = false;
 
         if (CanvasViewModel?.Canvas != null)
         {
+            _subscribedCanvas = CanvasViewModel.Canvas;
+            _subscribedCanvas.PixelsChanged += MarkCompositeDirty;
             CanvasViewModel.Canvas.PropertyChanged += (_, _) => MarkCompositeDirty();
             CanvasViewModel.Canvas.Layers.CollectionChanged += (_, _) => MarkCompositeDirty();
             foreach (var layer in CanvasViewModel.Canvas.Layers)
@@ -222,6 +247,25 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
 
     public void MarkCompositeDirty()
     {
+        _isDirtyComposite = true;
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            InvalidateVisual();
+        }
+        else
+        {
+            Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Render);
+        }
+    }
+
+    private void CleanupCanvasSubscription()
+    {
+        if (_subscribedCanvas != null)
+        {
+            _subscribedCanvas.PixelsChanged -= MarkCompositeDirty;
+            _subscribedCanvas = null;
+        }
+
         _isDirtyComposite = true;
         Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Render);
     }
@@ -359,7 +403,8 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
             _compositeBitmap?.Dispose();
             _compositeBitmap = new SKBitmap(w, h, SKColorType.Rgba8888, SKAlphaType.Unpremul);
             _compositePixels = new PixelColor[total];
-            _isDirtyComposite = true;
+
+        _isDirtyComposite = true;
         }
 
         if (_isDirtyComposite && _compositePixels != null)

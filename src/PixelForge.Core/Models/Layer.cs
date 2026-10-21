@@ -11,6 +11,11 @@ public partial class Layer : ObservableObject
     private bool _isVisible;
     private float _opacity;
 
+    /// <summary>
+    /// Event raised when the pixel buffer of this layer is modified.
+    /// </summary>
+    public event Action? PixelsChanged;
+
     public Guid Id { get; init; }
 
     public int Width { get; private set; }
@@ -115,6 +120,7 @@ public partial class Layer : ObservableObject
         OnPropertyChanged(nameof(Width));
         OnPropertyChanged(nameof(Height));
         OnPropertyChanged(nameof(Pixels));
+        Invalidate();
     }
 
     /// <summary>
@@ -152,6 +158,15 @@ public partial class Layer : ObservableObject
     {
         var fill = color ?? PixelColor.Transparent;
         Array.Fill(Pixels, fill);
+        Invalidate();
+    }
+
+    /// <summary>
+    /// Notifies listeners that the pixel buffer has been modified.
+    /// </summary>
+    public void Invalidate()
+    {
+        PixelsChanged?.Invoke();
     }
 
     /// <summary>

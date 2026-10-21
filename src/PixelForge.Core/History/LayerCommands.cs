@@ -150,3 +150,49 @@ public class SetLayerVisibilityCommand : IUndoableCommand
         _layer.IsVisible = _oldVisibility;
     }
 }
+
+/// <summary>
+/// Undoable command that changes the order/index of a layer in the canvas stack.
+/// </summary>
+public class ReorderLayerCommand : IUndoableCommand
+{
+    private readonly PixelCanvas _canvas;
+    private readonly Layer _layer;
+    private readonly int _fromIndex;
+    private readonly int _toIndex;
+
+    public string Description { get; }
+
+    public ReorderLayerCommand(PixelCanvas canvas, int fromIndex, int toIndex, string description = "Reorder Layer")
+    {
+        _canvas = canvas ?? throw new ArgumentNullException(nameof(canvas));
+        if (fromIndex < 0 || fromIndex >= canvas.Layers.Count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(fromIndex));
+        }
+
+        if (toIndex < 0 || toIndex >= canvas.Layers.Count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(toIndex));
+        }
+
+        _fromIndex = fromIndex;
+        _toIndex = toIndex;
+        _layer = canvas.Layers[fromIndex];
+        Description = description;
+    }
+
+    public void Execute()
+    {
+        _canvas.Layers.Move(_fromIndex, _toIndex);
+        _canvas.ActiveLayer = _layer;
+        _canvas.InvalidateComposite();
+    }
+
+    public void Undo()
+    {
+        _canvas.Layers.Move(_toIndex, _fromIndex);
+        _canvas.ActiveLayer = _layer;
+        _canvas.InvalidateComposite();
+    }
+    }

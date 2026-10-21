@@ -237,4 +237,96 @@ public class UndoRedoTests
         cmd.Undo();
         layer.IsVisible.Should().BeTrue();
     }
+
+    [Fact]
+    public void ReorderLayerCommand_ExecuteAndUndo_MovesLayerAndRestoresOrder()
+    {
+        // Arrange
+        var canvas = new PixelCanvas(16, 16);
+        var layer2 = canvas.AddLayer("Layer 2");
+        var layer3 = canvas.AddLayer("Layer 3");
+
+        canvas.Layers[0].Name.Should().Be("Layer 1");
+        canvas.Layers[1].Name.Should().Be("Layer 2");
+        canvas.Layers[2].Name.Should().Be("Layer 3");
+
+        // Move Layer 3 to index 0
+        var cmd = new ReorderLayerCommand(canvas, 2, 0);
+
+        // Act - Execute
+        cmd.Execute();
+
+        // Assert
+        canvas.Layers[0].Should().BeSameAs(layer3);
+        canvas.Layers[1].Name.Should().Be("Layer 1");
+        canvas.Layers[2].Should().BeSameAs(layer2);
+        canvas.ActiveLayer.Should().BeSameAs(layer3);
+
+        // Act - Undo
+        cmd.Undo();
+
+        // Assert
+        canvas.Layers[0].Name.Should().Be("Layer 1");
+        canvas.Layers[1].Should().BeSameAs(layer2);
+        canvas.Layers[2].Should().BeSameAs(layer3);
+        canvas.ActiveLayer.Should().BeSameAs(layer3);
+    }
+
+    [Fact]
+    public void DrawPixelsCommand_ExecuteAndUndo_FiresPixelsChangedEvents()
+    {
+        // Arrange
+        var canvas = new PixelCanvas(16, 16);
+        var layer = canvas.ActiveLayer!;
+        int layerFired = 0;
+        int canvasFired = 0;
+
+        layer.PixelsChanged += () => layerFired++;
+        canvas.PixelsChanged += () => canvasFired++;
+
+        var cmd = new DrawPixelsCommand(layer, [new PixelDelta(2, 2, PixelColor.Transparent, PixelColor.Red)]);
+
+        // Act - Execute
+        cmd.Execute();
+
+        // Assert
+        layerFired.Should().Be(1);
+        canvasFired.Should().Be(1);
+        layer.GetPixel(2, 2).Should().Be(PixelColor.Red);
+
+        // Act - Undo
+        cmd.Undo();
+
+        // Assert
+        layerFired.Should().Be(2);
+        canvasFired.Should().Be(2);
+        layer.GetPixel(2, 2).Should().Be(PixelColor.Transparent);
+    }
+
+    [Fact]
+    public void UndoRedoService_HistoryChanged_EventFiresOnExecuteUndoRedo()
+    {
+        // Arrange
+        var service = new UndoRedoService();
+        var canvas = new PixelCanvas(16, 16);
+        var layer = canvas.ActiveLayer!;
+        int historyEvents = 0;
+
+        service.HistoryChanged += () => historyEvents++;
+
+        var cmd = new DrawPixelsCommand(layer, [new PixelDelta(0, 0, PixelColor.Transparent, PixelColor.Blue)]);
+
+        // Act & Assert
+        service.ExecuteCommand(cmd);
+        historyEvents.Should().Be(1);
+
+        service.Undo();
+        historyEvents.Should().Be(2);
+
+        service.Redo();
+        historyEvents.Should().Be(3);
+
+        service.Clear();
+        historyEvents.Should().Be(4);
+    }
 }

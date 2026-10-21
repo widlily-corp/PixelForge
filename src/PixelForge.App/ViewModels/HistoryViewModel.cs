@@ -26,10 +26,16 @@ public partial class HistoryViewModel : ViewModelBase
 
     public UndoRedoService Service => _undoRedoService;
 
+    /// <summary>
+    /// Event forwarded when any command is executed, undone, redone, or cleared.
+    /// </summary>
+    public event Action? HistoryChanged;
+
     public HistoryViewModel(UndoRedoService undoRedoService)
     {
         _undoRedoService = undoRedoService ?? throw new ArgumentNullException(nameof(undoRedoService));
         _undoRedoService.PropertyChanged += OnUndoRedoServicePropertyChanged;
+        _undoRedoService.HistoryChanged += () => HistoryChanged?.Invoke();
     }
 
     private void OnUndoRedoServicePropertyChanged(object? sender, PropertyChangedEventArgs e)

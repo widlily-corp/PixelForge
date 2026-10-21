@@ -145,15 +145,132 @@ public static class PalettePresets
             PixelColor.FromHex("#B8B8B8")
         ]);
 
+    
+    /// <summary>
+    /// DawnBringer 16 (DB16) - highly acclaimed 16-color pixel art palette.
+    /// </summary>
+    public static Palette DawnBringer16 => new(
+        "DawnBringer 16",
+        [
+            PixelColor.FromHex("#140C1C"),
+            PixelColor.FromHex("#442434"),
+            PixelColor.FromHex("#30346D"),
+            PixelColor.FromHex("#4E4A4E"),
+            PixelColor.FromHex("#854C30"),
+            PixelColor.FromHex("#346524"),
+            PixelColor.FromHex("#D04648"),
+            PixelColor.FromHex("#757161"),
+            PixelColor.FromHex("#597DCF"),
+            PixelColor.FromHex("#D27D2C"),
+            PixelColor.FromHex("#8595A1"),
+            PixelColor.FromHex("#6DAA2C"),
+            PixelColor.FromHex("#D2A479"),
+            PixelColor.FromHex("#4992DB"),
+            PixelColor.FromHex("#DAB192"),
+            PixelColor.FromHex("#FFFFFF")
+        ]);
+
+    /// <summary>
+    /// Endesga 32 (EDG32) - vibrant 32-color palette popular in modern indie games.
+    /// </summary>
+    public static Palette Endesga32 => new(
+        "Endesga 32",
+        [
+            PixelColor.FromHex("#BE4A2F"),
+            PixelColor.FromHex("#D77643"),
+            PixelColor.FromHex("#EAD4AA"),
+            PixelColor.FromHex("#E4A672"),
+            PixelColor.FromHex("#B86F50"),
+            PixelColor.FromHex("#733E39"),
+            PixelColor.FromHex("#3E2731"),
+            PixelColor.FromHex("#A22633"),
+            PixelColor.FromHex("#E43B44"),
+            PixelColor.FromHex("#F77622"),
+            PixelColor.FromHex("#FEAE34"),
+            PixelColor.FromHex("#FEE761"),
+            PixelColor.FromHex("#63C74D"),
+            PixelColor.FromHex("#3E8948"),
+            PixelColor.FromHex("#265C42"),
+            PixelColor.FromHex("#193C3E"),
+            PixelColor.FromHex("#124E89"),
+            PixelColor.FromHex("#0099DB"),
+            PixelColor.FromHex("#2CE8F5"),
+            PixelColor.FromHex("#FFFFFF"),
+            PixelColor.FromHex("#C0CBDC"),
+            PixelColor.FromHex("#8B9BB4"),
+            PixelColor.FromHex("#5A6988"),
+            PixelColor.FromHex("#3A4466"),
+            PixelColor.FromHex("#262B44"),
+            PixelColor.FromHex("#181425"),
+            PixelColor.FromHex("#FF0044"),
+            PixelColor.FromHex("#68386C"),
+            PixelColor.FromHex("#B55088"),
+            PixelColor.FromHex("#F6757A"),
+            PixelColor.FromHex("#E8B796"),
+            PixelColor.FromHex("#C28569")
+        ]);
+
+    /// <summary>
+    /// Cyberpunk Neo 16-color high-contrast synthwave palette.
+    /// </summary>
+    public static Palette CyberpunkNeo => new(
+        "Cyberpunk Neo",
+        [
+            PixelColor.FromHex("#080811"),
+            PixelColor.FromHex("#1C1236"),
+            PixelColor.FromHex("#3A1F5D"),
+            PixelColor.FromHex("#79287A"),
+            PixelColor.FromHex("#B82772"),
+            PixelColor.FromHex("#E83968"),
+            PixelColor.FromHex("#FF6078"),
+            PixelColor.FromHex("#FF9580"),
+            PixelColor.FromHex("#FFEE82"),
+            PixelColor.FromHex("#00FFCC"),
+            PixelColor.FromHex("#00B8FF"),
+            PixelColor.FromHex("#0066FF"),
+            PixelColor.FromHex("#3020FF"),
+            PixelColor.FromHex("#5000CC"),
+            PixelColor.FromHex("#F0F8FF"),
+            PixelColor.FromHex("#2A2B36")
+        ]);
+
+    /// <summary>
+    /// Solarized 16-color designer retro palette.
+    /// </summary>
+    public static Palette Solarized => new(
+        "Solarized",
+        [
+            PixelColor.FromHex("#002B36"),
+            PixelColor.FromHex("#073642"),
+            PixelColor.FromHex("#586E75"),
+            PixelColor.FromHex("#657B83"),
+            PixelColor.FromHex("#839496"),
+            PixelColor.FromHex("#93A1A1"),
+            PixelColor.FromHex("#EEE8D5"),
+            PixelColor.FromHex("#FDF6E3"),
+            PixelColor.FromHex("#B58900"),
+            PixelColor.FromHex("#CB4B16"),
+            PixelColor.FromHex("#DC322F"),
+            PixelColor.FromHex("#D33682"),
+            PixelColor.FromHex("#6C71C4"),
+            PixelColor.FromHex("#268BD2"),
+            PixelColor.FromHex("#2AA198"),
+            PixelColor.FromHex("#859900")
+        ]);
+
     public static IReadOnlyList<Palette> AllPresets =>
     [
         Default32,
+        DawnBringer16,
+        Endesga32,
         Pico8,
         GameBoy,
-        Nes
+        Nes,
+        CyberpunkNeo,
+        Solarized
     ];
 
-    public static Palette GetPresetByName(string name)
+public static Palette GetPresetByName(string name)
     {
         return AllPresets.FirstOrDefault(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase))
                ?? Default32;
