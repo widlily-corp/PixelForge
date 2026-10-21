@@ -1,7 +1,7 @@
 {
-    "version":  "0.1.2",
-    "releaseNotes":  "PixelForge v0.1.2: Automated silent in-app updater, Pixel-Perfect drawing engine, 8x8 pattern brush presets, stroke stabilizer, magic wand selection, layer alpha lock, smart outline/shadow/color replace, and seamless 3x3 tiled mode.",
-    "downloadUrl":  "https://github.com/widlily-corp/PixelForge/releases/download/v0.1.2/PixelForge_0.1.2_x64-setup.exe",
-    "installerSizeMb":  35.18,
-    "pub_date":  "2026-10-21T07:10:27Z"
+    "version":  "0.1.3",
+    "releaseNotes":  "PixelForge v0.1.3: Major UI/UX redesign, categorized left toolbar, modular chip context bar, floating canvas HUD, dual color picker cards, and interactive F1 hotkeys cheat sheet.",
+    "downloadUrl":  "https://github.com/widlily-corp/PixelForge/releases/download/v0.1.3/PixelForge_0.1.3_x64-setup.exe",
+    "installerSizeMb":  35.23,
+    "pub_date":  "2026-10-21T07:56:40Z"
 }

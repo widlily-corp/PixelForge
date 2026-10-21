@@ -58,7 +58,7 @@ public class UpdateServiceTests
         // Arrange
         var jsonManifest = """
         {
-            "version": "0.1.2",
+            "version": "0.1.3",
             "releaseNotes": "Current version",
             "downloadUrl": "https://example.com/PixelForge.exe"
         }

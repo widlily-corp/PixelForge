@@ -28,10 +28,10 @@ public class MainViewModelTests
 
     private class DummyUpdateService : IUpdateService
     {
-        public string CurrentVersion => "0.1.2";
+        public string CurrentVersion => "0.1.3";
         public Task<UpdateCheckResult> CheckForUpdatesAsync(bool silent = true, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(new UpdateCheckResult { Success = true, CurrentVersion = "0.1.2" });
+            return Task.FromResult(new UpdateCheckResult { Success = true, CurrentVersion = "0.1.3" });
         }
         public void OpenDownloadPage(string url) { }
         public Task<bool> DownloadAndInstallUpdateAsync(string downloadUrl, IProgress<double>? progress = null, CancellationToken cancellationToken = default) => Task.FromResult(true);

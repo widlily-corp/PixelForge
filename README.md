@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.1.2-blue.svg" alt="Version 0.1.2" />
+  <img src="https://img.shields.io/badge/version-0.1.3-blue.svg" alt="Version 0.1.3" />
   <img src="https://img.shields.io/badge/.NET-8.0-purple.svg" alt=".NET 8.0" />
   <img src="https://img.shields.io/badge/Avalonia-11.1.3-informational.svg" alt="Avalonia 11" />
   <img src="https://img.shields.io/badge/Rendering-SkiaSharp-orange.svg" alt="SkiaSharp" />
@@ -205,7 +205,7 @@ graph TD
 Готовый компактный установщик доступен на странице **[Релизов GitHub Releases](https://github.com/widlily-corp/PixelForge/releases/latest)**:
 
 1. Перейдите в раздел **[Releases](https://github.com/widlily-corp/PixelForge/releases/latest)**;
-2. Скачайте официальный установщик: **`PixelForge_0.1.2_x64-setup.exe`** (~35.18 МБ);
+2. Скачайте официальный установщик: **`PixelForge_0.1.3_x64-setup.exe`** (~35.18 МБ);
 3. Запустите установку — инсталлятор автоматически зарегистрирует ассоциацию файлов `.pxproj`, создаст ярлыки и обеспечит быстрый старт программы;
 4. Все последующие обновления будут происходить **автоматически прямо внутри приложения** («Справка» ➔ «Проверить обновления»).
 
@@ -228,10 +228,10 @@ dotnet test PixelForge.sln -c Release --no-build
 
 ### Сборка компактного установщика (Inno Setup LZMA2 Ultra)
 ```powershell
-powershell -ExecutionPolicy Bypass -File .agents/scripts/pack-release.ps1 -Version "0.1.2"
+powershell -ExecutionPolicy Bypass -File .agents/scripts/pack-release.ps1 -Version "0.1.3"
 ```
 Собранный инсталлятор будет расположен в:
-`publish/win-x64/PixelForge_0.1.2_x64-setup.exe` (~35.18 МБ).
+`publish/win-x64/PixelForge_0.1.3_x64-setup.exe` (~35.18 МБ).
 
 ---
 
