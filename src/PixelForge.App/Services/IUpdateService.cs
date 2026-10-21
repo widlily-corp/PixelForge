@@ -30,7 +30,7 @@ public class UpdateCheckResult
 {
     public bool Success { get; init; }
     public bool IsUpdateAvailable { get; init; }
-    public string CurrentVersion { get; init; } = "0.0.1";
+    public string CurrentVersion { get; init; } = PixelForge.Core.AppVersionInfo.CurrentVersion;
     public string? LatestVersion { get; init; }
     public string? ReleaseNotes { get; init; }
     public string? DownloadUrl { get; init; }

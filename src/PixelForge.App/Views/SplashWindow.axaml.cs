@@ -13,6 +13,10 @@ public partial class SplashWindow : Window
     public SplashWindow()
     {
         InitializeComponent();
+        if (VersionBadgeText != null)
+        {
+            VersionBadgeText.Text = PixelForge.Core.AppVersionInfo.FullVersionString;
+        }
     }
 
     /// <summary>

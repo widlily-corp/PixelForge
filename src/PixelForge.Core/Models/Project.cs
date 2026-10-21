@@ -11,7 +11,7 @@ public class Project
     public int FormatVersion { get; set; } = 1;
 
     [JsonPropertyName("appVersion")]
-    public string AppVersion { get; set; } = "0.0.1";
+    public string AppVersion { get; set; } = AppVersionInfo.CurrentVersion;
 
     [JsonPropertyName("width")]
     public int Width { get; set; }

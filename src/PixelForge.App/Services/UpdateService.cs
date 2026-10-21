@@ -13,13 +13,15 @@ public class UpdateService : IUpdateService
 
     private readonly HttpClient _httpClient;
     private readonly string _manifestUrl;
+    private readonly string? _customCurrentVersion;
 
-    public string CurrentVersion => "0.1.3";
+    public string CurrentVersion => _customCurrentVersion ?? PixelForge.Core.AppVersionInfo.CurrentVersion;
 
-    public UpdateService(HttpClient? httpClient = null, string? manifestUrl = null)
+    public UpdateService(HttpClient? httpClient = null, string? manifestUrl = null, string? currentVersion = null)
     {
         _httpClient = httpClient ?? new HttpClient();
         _manifestUrl = manifestUrl ?? DefaultManifestUrl;
+        _customCurrentVersion = currentVersion;
         _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd($"PixelForge/{CurrentVersion}");
     }
 

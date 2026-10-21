@@ -214,7 +214,7 @@ public partial class MainWindow : Window
 
     private async void OnAboutClick(object? sender, RoutedEventArgs e)
     {
-        var version = "0.1.1";
+        var version = PixelForge.Core.AppVersionInfo.CurrentVersion;
         var aboutWindow = new Window
         {
             Title = $"О программе — PixelForge v{version}",

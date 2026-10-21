@@ -56,9 +56,10 @@ public class UpdateServiceTests
     public async Task CheckForUpdatesAsync_WhenRemoteVersionSame_ReturnsNoUpdate()
     {
         // Arrange
-        var jsonManifest = """
+        var currentVer = PixelForge.Core.AppVersionInfo.CurrentVersion;
+        var jsonManifest = $$"""
         {
-            "version": "0.1.3",
+            "version": "{{currentVer}}",
             "releaseNotes": "Current version",
             "downloadUrl": "https://example.com/PixelForge.exe"
         }
