@@ -2,25 +2,30 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- Dark Theme Semantic Colors -->
-    <Color x:Key="SurfaceBaseColor">#12131C</Color>
-    <Color x:Key="SurfacePanelColor">#181A26</Color>
-    <Color x:Key="SurfaceCardColor">#202334</Color>
-    <Color x:Key="SurfaceCardHoverColor">#292D42</Color>
-    <Color x:Key="SurfaceCardSelectedColor">#363C59</Color>
-    <Color x:Key="SurfaceInputColor">#161824</Color>
+    <Color x:Key="SurfaceBaseColor">#0E1017</Color>
+    <Color x:Key="SurfacePanelColor">#141622</Color>
+    <Color x:Key="SurfaceCardColor">#1A1D2E</Color>
+    <Color x:Key="SurfaceCardHoverColor">#23273D</Color>
+    <Color x:Key="SurfaceCardSelectedColor">#2E3452</Color>
+    <Color x:Key="SurfaceInputColor">#12141F</Color>
+    <Color x:Key="SurfaceBadgeColor">#252A40</Color>
+    <Color x:Key="SurfaceChipColor">#1F2338</Color>
 
-    <Color x:Key="BorderSubtleColor">#272C3E</Color>
-    <Color x:Key="BorderStrongColor">#3A415C</Color>
+    <Color x:Key="BorderSubtleColor">#24283E</Color>
+    <Color x:Key="BorderStrongColor">#393F5F</Color>
 
     <Color x:Key="TextPrimaryColor">#F8FAFC</Color>
     <Color x:Key="TextSecondaryColor">#94A3B8</Color>
     <Color x:Key="TextMutedColor">#64748B</Color>
+    <Color x:Key="TextBadgeColor">#CBD5E1</Color>
 
     <Color x:Key="AccentPrimaryColor">#00D2FF</Color>
     <Color x:Key="AccentPrimaryHoverColor">#38BDF8</Color>
     <Color x:Key="AccentSecondaryColor">#818CF8</Color>
     <Color x:Key="AccentSuccessColor">#10B981</Color>
     <Color x:Key="AccentDangerColor">#EF4444</Color>
+    <Color x:Key="AccentWarningColor">#F59E0B</Color>
+    <Color x:Key="AccentGlowColor">#3300D2FF</Color>
 
     <Color x:Key="CheckerLightColor">#2A2E40</Color>
     <Color x:Key="CheckerDarkColor">#1F2332</Color>
@@ -32,6 +37,8 @@
     <SolidColorBrush x:Key="SurfaceCardHoverBrush" Color="{StaticResource SurfaceCardHoverColor}" />
     <SolidColorBrush x:Key="SurfaceCardSelectedBrush" Color="{StaticResource SurfaceCardSelectedColor}" />
     <SolidColorBrush x:Key="SurfaceInputBrush" Color="{StaticResource SurfaceInputColor}" />
+    <SolidColorBrush x:Key="SurfaceBadgeBrush" Color="{StaticResource SurfaceBadgeColor}" />
+    <SolidColorBrush x:Key="SurfaceChipBrush" Color="{StaticResource SurfaceChipColor}" />
 
     <SolidColorBrush x:Key="BorderSubtleBrush" Color="{StaticResource BorderSubtleColor}" />
     <SolidColorBrush x:Key="BorderStrongBrush" Color="{StaticResource BorderStrongColor}" />
@@ -39,12 +46,15 @@
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}" />
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}" />
     <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMutedColor}" />
+    <SolidColorBrush x:Key="TextBadgeBrush" Color="{StaticResource TextBadgeColor}" />
 
     <SolidColorBrush x:Key="AccentPrimaryBrush" Color="{StaticResource AccentPrimaryColor}" />
     <SolidColorBrush x:Key="AccentPrimaryHoverBrush" Color="{StaticResource AccentPrimaryHoverColor}" />
     <SolidColorBrush x:Key="AccentSecondaryBrush" Color="{StaticResource AccentSecondaryColor}" />
     <SolidColorBrush x:Key="AccentSuccessBrush" Color="{StaticResource AccentSuccessColor}" />
     <SolidColorBrush x:Key="AccentDangerBrush" Color="{StaticResource AccentDangerColor}" />
+    <SolidColorBrush x:Key="AccentWarningBrush" Color="{StaticResource AccentWarningColor}" />
+    <SolidColorBrush x:Key="AccentGlowBrush" Color="{StaticResource AccentGlowColor}" />
 
     <SolidColorBrush x:Key="CheckerLightBrush" Color="{StaticResource CheckerLightColor}" />
     <SolidColorBrush x:Key="CheckerDarkBrush" Color="{StaticResource CheckerDarkColor}" />
