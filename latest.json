@@ -1,7 +1,7 @@
 {
-    "version":  "0.1.1",
-    "releaseNotes":  "PixelForge v0.1.1: Automated silent in-app updater, Pixel-Perfect drawing engine, 8x8 pattern brush presets, stroke stabilizer, magic wand selection, layer alpha lock, smart outline/shadow/color replace, and seamless 3x3 tiled mode.",
-    "downloadUrl":  "https://github.com/widlily-corp/PixelForge/releases/download/v0.1.1/PixelForge_0.1.1_x64-setup.exe",
+    "version":  "0.1.2",
+    "releaseNotes":  "PixelForge v0.1.2: Automated silent in-app updater, Pixel-Perfect drawing engine, 8x8 pattern brush presets, stroke stabilizer, magic wand selection, layer alpha lock, smart outline/shadow/color replace, and seamless 3x3 tiled mode.",
+    "downloadUrl":  "https://github.com/widlily-corp/PixelForge/releases/download/v0.1.2/PixelForge_0.1.2_x64-setup.exe",
     "installerSizeMb":  35.18,
-    "pub_date":  "2026-10-21T06:51:46Z"
+    "pub_date":  "2026-10-21T07:10:27Z"
 }
