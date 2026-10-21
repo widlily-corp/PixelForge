@@ -123,6 +123,9 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         }
     }
 
+    // Cached cursors to prevent allocations during mouse interactions
+    private static readonly Cursor PanHandCursor = new(StandardCursorType.Hand);
+
     // Viewport transform
     private float _panX;
     private float _panY;
@@ -698,7 +701,7 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         if (point.Properties.IsMiddleButtonPressed || (_isSpacePressed && point.Properties.IsLeftButtonPressed))
         {
             _isPanning = true;
-            Cursor = new Cursor(StandardCursorType.Hand);
+            Cursor = PanHandCursor;
             e.Pointer.Capture(this);
             e.Handled = true;
             return;
@@ -806,7 +809,7 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         if (_isPanning)
         {
             _isPanning = false;
-            Cursor = _isSpacePressed ? new Cursor(StandardCursorType.Hand) : Cursor.Default;
+            Cursor = _isSpacePressed ? PanHandCursor : Cursor.Default;
             e.Pointer.Capture(null);
             e.Handled = true;
             return;
@@ -845,7 +848,7 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
             _isSpacePressed = true;
             if (!_isDrawing)
             {
-                Cursor = new Cursor(StandardCursorType.Hand);
+                Cursor = PanHandCursor;
             }
         }
     }

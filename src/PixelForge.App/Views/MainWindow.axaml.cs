@@ -109,7 +109,7 @@ public partial class MainWindow : Window
         var activeTool = ViewModel.ToolViewModel.ActiveTool;
         var accentBrush = GetBrush("AccentPrimaryBrush", Brushes.DodgerBlue);
         var mutedTextBrush = GetBrush("TextSecondaryBrush", Brushes.SlateGray);
-        var activeBackground = new SolidColorBrush(Color.FromArgb(40, 0, 210, 255));
+        var activeBackground = GetBrush("AccentGlowBrush", new SolidColorBrush(Color.FromArgb(40, 0, 210, 255)));
 
         SetToolButtonVisuals(ToolPencilButton, activeTool == CanvasToolType.Pencil, accentBrush, activeBackground, mutedTextBrush);
         SetToolButtonVisuals(ToolEraserButton, activeTool == CanvasToolType.Eraser, accentBrush, activeBackground, mutedTextBrush);
@@ -123,6 +123,19 @@ public partial class MainWindow : Window
         SetToolButtonVisuals(ToolRectangleButton, activeTool == CanvasToolType.Rectangle, accentBrush, activeBackground, mutedTextBrush);
         SetToolButtonVisuals(ToolEllipseButton, activeTool == CanvasToolType.Ellipse, accentBrush, activeBackground, mutedTextBrush);
         SetToolButtonVisuals(ToolSelectionButton, activeTool == CanvasToolType.Selection, accentBrush, activeBackground, mutedTextBrush);
+
+        if (ActiveToolIcon != null)
+        {
+            string iconKey = ToolToIconGeometryConverter.GetIconResourceKey(activeTool);
+            if (this.TryFindResource(iconKey, out var res) && res is Geometry geom)
+            {
+                ActiveToolIcon.Data = geom;
+            }
+            else if (Application.Current != null && Application.Current.TryFindResource(iconKey, out var appRes) && appRes is Geometry appGeom)
+            {
+                ActiveToolIcon.Data = appGeom;
+            }
+        }
     }
 
     private static void SetToolButtonVisuals(Button btn, bool isActive, IBrush accentBrush, IBrush activeBackground, IBrush mutedBrush)
@@ -178,6 +191,7 @@ public partial class MainWindow : Window
     private void OnToggleThemeClick(object? sender, RoutedEventArgs e)
     {
         ViewModel?.ThemeService.ToggleTheme();
+        UpdateActiveToolHighlight();
     }
 
     private async void OnAboutClick(object? sender, RoutedEventArgs e)
@@ -490,3 +504,54 @@ public partial class MainWindow : Window
         }
     }
 }
+
+/// <summary>
+/// Value converter mapping <see cref="CanvasToolType"/> to the corresponding vector icon geometry.
+/// </summary>
+public class ToolToIconGeometryConverter : Avalonia.Data.Converters.IValueConverter
+{
+    /// <summary>
+    /// Gets the singleton instance of <see cref="ToolToIconGeometryConverter"/>.
+    /// </summary>
+    public static readonly ToolToIconGeometryConverter Instance = new();
+
+    /// <summary>
+    /// Converts a <see cref="CanvasToolType"/> into a Skia / Avalonia <see cref="Geometry"/>.
+    /// </summary>
+    public object? Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+    {
+        if (value is CanvasToolType toolType)
+        {
+            string key = GetIconResourceKey(toolType);
+            if (Application.Current != null && Application.Current.TryFindResource(key, out var res) && res is Geometry geom)
+            {
+                return geom;
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Gets the resource key of the vector icon for the specified tool type.
+    /// </summary>
+    public static string GetIconResourceKey(CanvasToolType tool) => tool switch
+    {
+        CanvasToolType.Pencil => "IconPencil",
+        CanvasToolType.Eraser => "IconEraser",
+        CanvasToolType.DitherBrush => "IconDither",
+        CanvasToolType.PatternBrush => "IconPatternBrush",
+        CanvasToolType.Fill => "IconFill",
+        CanvasToolType.MagicWand => "IconMagicWand",
+        CanvasToolType.Gradient => "IconGradient",
+        CanvasToolType.Eyedropper => "IconEyedropper",
+        CanvasToolType.Line => "IconLine",
+        CanvasToolType.Rectangle => "IconRectangle",
+        CanvasToolType.Ellipse => "IconEllipse",
+        CanvasToolType.Selection => "IconSelection",
+        _ => "IconPencil"
+    };
+
+    /// <inheritdoc/>
+    public object? ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture) => throw new NotSupportedException();
+}
+
