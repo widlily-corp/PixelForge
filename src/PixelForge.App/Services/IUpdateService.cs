@@ -58,4 +58,9 @@ public interface IUpdateService
     /// Opens the release download page or URL in the default browser.
     /// </summary>
     void OpenDownloadPage(string url);
+
+    /// <summary>
+    /// Downloads the latest installer executable with progress reporting and initiates the automated silent upgrade.
+    /// </summary>
+    Task<bool> DownloadAndInstallUpdateAsync(string downloadUrl, IProgress<double>? progress = null, CancellationToken cancellationToken = default);
 }

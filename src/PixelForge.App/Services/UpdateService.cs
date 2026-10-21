@@ -86,6 +86,70 @@ public class UpdateService : IUpdateService
         }
     }
 
+    /// <summary>
+    /// Downloads the latest installer executable with progress reporting and initiates the automated silent upgrade.
+    /// </summary>
+    public async Task<bool> DownloadAndInstallUpdateAsync(string downloadUrl, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(downloadUrl))
+        {
+            return false;
+        }
+
+        try
+        {
+            string tempDir = Path.GetTempPath();
+            string fileName = $"PixelForge_Update_{Guid.NewGuid():N}.exe";
+            string installerPath = Path.Combine(tempDir, fileName);
+
+            using (var response = await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false))
+            {
+                response.EnsureSuccessStatusCode();
+
+                long? totalBytes = response.Content.Headers.ContentLength;
+
+                await using var contentStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                await using var fileStream = new FileStream(installerPath, FileMode.Create, FileAccess.Write, FileShare.None, 81920, useAsync: true);
+
+                byte[] buffer = new byte[81920];
+                long totalBytesRead = 0;
+                int bytesRead;
+
+                while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) > 0)
+                {
+                    await fileStream.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
+                    totalBytesRead += bytesRead;
+
+                    if (totalBytes.HasValue && totalBytes.Value > 0)
+                    {
+                        double percentage = (double)totalBytesRead / totalBytes.Value;
+                        progress?.Report(Math.Clamp(percentage, 0.0, 1.0));
+                    }
+                }
+            }
+
+            progress?.Report(1.0);
+
+            // Execute Inno Setup installer silently and restart application
+            var psi = new ProcessStartInfo
+            {
+                FileName = installerPath,
+                Arguments = "/SILENT /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS",
+                UseShellExecute = true
+            };
+
+            Process.Start(psi);
+
+            // Exit this process so Inno Setup can update files cleanly
+            Environment.Exit(0);
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
+
     private static bool IsRemoteVersionNewer(string remoteVersion, string localVersion)
     {
         string cleanRemote = remoteVersion.TrimStart('v', 'V');

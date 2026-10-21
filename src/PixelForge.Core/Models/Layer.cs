@@ -10,6 +10,7 @@ public partial class Layer : ObservableObject
     private string _name;
     private bool _isVisible;
     private float _opacity;
+    private bool _isAlphaLocked;
 
     /// <summary>
     /// Event raised when the pixel buffer of this layer is modified.
@@ -40,6 +41,16 @@ public partial class Layer : ObservableObject
     {
         get => _opacity;
         set => SetProperty(ref _opacity, Math.Clamp(value, 0f, 1f));
+    }
+
+    /// <summary>
+    /// Gets or sets whether alpha transparency locking is enabled.
+    /// When true, pixel operations and drawing tools will not modify pixels where existing Alpha is 0.
+    /// </summary>
+    public bool IsAlphaLocked
+    {
+        get => _isAlphaLocked;
+        set => SetProperty(ref _isAlphaLocked, value);
     }
 
     public Layer(string name, int width, int height, Guid? id = null)
@@ -148,7 +159,13 @@ public partial class Layer : ObservableObject
             return;
         }
 
-        Pixels[y * Width + x] = color;
+        int index = y * Width + x;
+        if (_isAlphaLocked && Pixels[index].A == 0)
+        {
+            return;
+        }
+
+        Pixels[index] = color;
     }
 
     /// <summary>
@@ -157,7 +174,20 @@ public partial class Layer : ObservableObject
     public void Clear(PixelColor? color = null)
     {
         var fill = color ?? PixelColor.Transparent;
-        Array.Fill(Pixels, fill);
+        if (_isAlphaLocked)
+        {
+            for (int i = 0; i < Pixels.Length; i++)
+            {
+                if (Pixels[i].A > 0)
+                {
+                    Pixels[i] = fill;
+                }
+            }
+        }
+        else
+        {
+            Array.Fill(Pixels, fill);
+        }
         Invalidate();
     }
 
@@ -181,7 +211,8 @@ public partial class Layer : ObservableObject
         return new Layer(Name, Width, Height, pixelCopy, newId ? Guid.NewGuid() : Id)
         {
             IsVisible = IsVisible,
-            Opacity = Opacity
+            Opacity = Opacity,
+            IsAlphaLocked = IsAlphaLocked
         };
     }
 }
