@@ -51,6 +51,8 @@ public partial class MainWindow : Window
         ToolEraserButton.Click += (_, _) => SelectTool(CanvasToolType.Eraser);
         ToolDitherButton.Click += (_, _) => SelectTool(CanvasToolType.DitherBrush);
         ToolPatternBrushButton.Click += (_, _) => SelectTool(CanvasToolType.PatternBrush);
+        ToolShadeBrushButton.Click += (_, _) => SelectTool(CanvasToolType.ShadeBrush);
+        ToolSprayBrushButton.Click += (_, _) => SelectTool(CanvasToolType.SprayBrush);
         ToolFillButton.Click += (_, _) => SelectTool(CanvasToolType.Fill);
         ToolMagicWandButton.Click += (_, _) => SelectTool(CanvasToolType.MagicWand);
         ToolGradientButton.Click += (_, _) => SelectTool(CanvasToolType.Gradient);
@@ -152,6 +154,8 @@ public partial class MainWindow : Window
         SetToolButtonVisuals(ToolEraserButton, activeTool == CanvasToolType.Eraser, accentBrush, activeBackground, mutedTextBrush);
         SetToolButtonVisuals(ToolDitherButton, activeTool == CanvasToolType.DitherBrush, accentBrush, activeBackground, mutedTextBrush);
         SetToolButtonVisuals(ToolPatternBrushButton, activeTool == CanvasToolType.PatternBrush, accentBrush, activeBackground, mutedTextBrush);
+        SetToolButtonVisuals(ToolShadeBrushButton, activeTool == CanvasToolType.ShadeBrush, accentBrush, activeBackground, mutedTextBrush);
+        SetToolButtonVisuals(ToolSprayBrushButton, activeTool == CanvasToolType.SprayBrush, accentBrush, activeBackground, mutedTextBrush);
         SetToolButtonVisuals(ToolFillButton, activeTool == CanvasToolType.Fill, accentBrush, activeBackground, mutedTextBrush);
         SetToolButtonVisuals(ToolMagicWandButton, activeTool == CanvasToolType.MagicWand, accentBrush, activeBackground, mutedTextBrush);
         SetToolButtonVisuals(ToolGradientButton, activeTool == CanvasToolType.Gradient, accentBrush, activeBackground, mutedTextBrush);
@@ -545,7 +549,14 @@ public partial class MainWindow : Window
             else if (MatchesKey(e, Key.G, PhysicalKey.G, 'п'))
             {
                 e.Handled = true;
-                ViewModel.CanvasViewModel.ToggleGrid();
+                if (shift)
+                {
+                    ViewModel.CanvasViewModel.ToggleTileGrid();
+                }
+                else
+                {
+                    ViewModel.CanvasViewModel.ToggleGrid();
+                }
             }
             else if (MatchesKey(e, Key.OemPlus, PhysicalKey.Equal) || e.Key == Key.Add || e.PhysicalKey == PhysicalKey.NumPadAdd || e.KeySymbol == "+")
             {
@@ -633,7 +644,19 @@ public partial class MainWindow : Window
             else if (MatchesKey(e, Key.H, PhysicalKey.H, 'р'))
             {
                 e.Handled = true;
-                ViewModel.FlipActiveLayerHorizontal();
+                if (shift)
+                {
+                    ViewModel.FlipActiveLayerHorizontal();
+                }
+                else
+                {
+                    SelectTool(CanvasToolType.ShadeBrush);
+                }
+            }
+            else if (MatchesKey(e, Key.A, PhysicalKey.A, 'ф'))
+            {
+                e.Handled = true;
+                SelectTool(CanvasToolType.SprayBrush);
             }
             else if (MatchesKey(e, Key.V, PhysicalKey.V, 'м'))
             {
@@ -694,6 +717,8 @@ public class ToolToIconGeometryConverter : Avalonia.Data.Converters.IValueConver
         CanvasToolType.Eraser => "IconEraser",
         CanvasToolType.DitherBrush => "IconDither",
         CanvasToolType.PatternBrush => "IconPatternBrush",
+        CanvasToolType.ShadeBrush => "IconShadeBrush",
+        CanvasToolType.SprayBrush => "IconSprayBrush",
         CanvasToolType.Fill => "IconFill",
         CanvasToolType.MagicWand => "IconMagicWand",
         CanvasToolType.Gradient => "IconGradient",

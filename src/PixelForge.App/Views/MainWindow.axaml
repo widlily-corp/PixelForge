@@ -6,6 +6,7 @@
         xmlns:models="using:PixelForge.Core.Models"
         xmlns:controls="using:PixelForge.App.Controls"
         xmlns:views="using:PixelForge.App.Views"
+        xmlns:converters="using:PixelForge.App.Converters"
         xmlns:loc="using:PixelForge.Core.Localization"
         mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
         x:Class="PixelForge.App.Views.MainWindow"
@@ -22,6 +23,7 @@
 
     <Window.Resources>
         <views:ToolToIconGeometryConverter x:Key="ToolToIconConverter" />
+        <converters:DitherPatternLocalizationConverter x:Key="DitherLocalizationConverter" />
     </Window.Resources>
 
     <Window.Styles>
@@ -278,6 +280,11 @@
                 <!-- View Menu -->
                 <MenuItem Header="{Binding Loc[Menu_View]}">
                     <MenuItem Header="{Binding Loc[Menu_Grid]}" HotKey="Ctrl+G" Command="{Binding CanvasViewModel.ToggleGridCommand}" />
+                    <MenuItem Header="{Binding Loc[Menu_TileGrid]}" HotKey="Ctrl+Shift+G" Command="{Binding CanvasViewModel.ToggleTileGridCommand}">
+                        <MenuItem.Icon>
+                            <PathIcon Data="{DynamicResource IconTileGrid}" Width="14" Height="14" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <MenuItem Header="{Binding Loc[Menu_SymmetryX]}" Command="{Binding CanvasViewModel.ToggleSymmetryXCommand}" />
                     <MenuItem Header="{Binding Loc[Menu_SymmetryY]}" Command="{Binding CanvasViewModel.ToggleSymmetryYCommand}" />
                     <MenuItem Header="{Binding Loc[Menu_TiledMode]}" HotKey="F10" Command="{Binding ToggleTiledModeCommand}" />
@@ -374,6 +381,15 @@
                             <TextBlock Text="{Binding Loc[Label_Tiled]}" FontSize="11" VerticalAlignment="Center" />
                         </StackPanel>
                     </ToggleButton>
+
+                    <ToggleButton Name="TileGridToggle" IsChecked="{Binding CanvasViewModel.ShowTileGrid, Mode=TwoWay}"
+                                  Height="30" Padding="8,4" CornerRadius="4"
+                                  ToolTip.Tip="{Binding Loc[Tip_TileGrid]}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{DynamicResource IconTileGrid}" Width="14" Height="14" />
+                            <TextBlock Text="{Binding Loc[Label_TileGrid]}" FontSize="11" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ToggleButton>
                 </StackPanel>
 
                 <!-- Zoom Controls & Theme Toggle -->
@@ -463,6 +479,16 @@
                             <Button Name="ToolPatternBrushButton" Classes="tool-btn"
                                     ToolTip.Tip="{Binding Loc[Tool_PatternBrushTip]}">
                                 <PathIcon Data="{DynamicResource IconPatternBrush}" Width="18" Height="18" />
+                            </Button>
+
+                            <Button Name="ToolShadeBrushButton" Classes="tool-btn"
+                                    ToolTip.Tip="{Binding Loc[Tool_ShadeBrushTip]}">
+                                <PathIcon Data="{DynamicResource IconShadeBrush}" Width="18" Height="18" />
+                            </Button>
+
+                            <Button Name="ToolSprayBrushButton" Classes="tool-btn"
+                                    ToolTip.Tip="{Binding Loc[Tool_SprayBrushTip]}">
+                                <PathIcon Data="{DynamicResource IconSprayBrush}" Width="18" Height="18" />
                             </Button>
 
                             <Separator Height="1" Margin="4,4" Background="{DynamicResource BorderSubtleBrush}" />
@@ -654,6 +680,7 @@
                                                           ToolTip.Tip="{Binding Loc[Context_PixelPerfectTip]}"
                                                           Height="26" Padding="6,2" CornerRadius="5">
                                                 <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                    <PathIcon Data="{DynamicResource IconPixelPerfect}" Width="12" Height="12" Foreground="{DynamicResource AccentPrimaryBrush}" />
                                                     <Border Width="8" Height="8" CornerRadius="4"
                                                             Background="{DynamicResource AccentPrimaryBrush}"
                                                             BoxShadow="0 0 6 0 #00D2FF"
@@ -683,6 +710,33 @@
                                         </StackPanel>
                                     </Border>
 
+                                    <!-- Spray Brush Settings Capsule: Radius & Density -->
+                                    <Border Classes="context-chip" IsVisible="{Binding ToolViewModel.SupportsSpraySettings}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                            <PathIcon Data="{DynamicResource IconSprayBrush}" Width="13" Height="13" Foreground="{DynamicResource AccentPrimaryBrush}" />
+                                            <!-- Radius -->
+                                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Loc[Context_SprayRadius]}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                                <NumericUpDown Value="{Binding ToolViewModel.SprayRadius, Mode=TwoWay}"
+                                                               Minimum="1" Maximum="16" Increment="1"
+                                                               Height="26" Width="68" FontSize="11" VerticalContentAlignment="Center" />
+                                            </StackPanel>
+                                            <Separator Width="1" Height="16" Background="{DynamicResource BorderSubtleBrush}" />
+                                            <!-- Density -->
+                                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Loc[Context_SprayDensity]}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                                <Slider Minimum="0.05" Maximum="1.0" Value="{Binding ToolViewModel.SprayDensity, Mode=TwoWay}"
+                                                        Width="65" VerticalAlignment="Center" SmallChange="0.05" LargeChange="0.1" />
+                                                <Border Background="{DynamicResource SurfacePanelBrush}"
+                                                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                                        BorderThickness="1" CornerRadius="4" Padding="5,1">
+                                                    <TextBlock Text="{Binding ToolViewModel.SprayDensity, StringFormat='{}{0:P0}'}" FontSize="10" FontWeight="Bold"
+                                                               Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" Width="32" TextAlignment="Center" />
+                                                </Border>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+
                                     <!-- 4. Textures Capsule: 8x8 Pattern Preset (PatternBrush) -->
                                     <Border Classes="context-chip" IsVisible="{Binding ToolViewModel.Supports8x8Pattern}">
                                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
@@ -699,7 +753,13 @@
                                             <TextBlock Text="{Binding Loc[Context_Dither]}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
                                             <ComboBox ItemsSource="{Binding ToolViewModel.AvailablePatterns}"
                                                       SelectedItem="{Binding ToolViewModel.SelectedDitherPattern, Mode=TwoWay}"
-                                                      Height="26" FontSize="11" VerticalContentAlignment="Center" MinWidth="100" />
+                                                      Height="26" FontSize="11" VerticalContentAlignment="Center" MinWidth="130">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Converter={StaticResource DitherLocalizationConverter}}" FontSize="11" />
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
                                         </StackPanel>
                                     </Border>
 
@@ -1003,7 +1063,7 @@
         <Border Grid.Row="4" Background="{DynamicResource SurfacePanelBrush}"
                 BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,1,0,0"
                 Height="30" Padding="10,0">
-            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto">
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto">
                 <!-- Status Message with ready indicator -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                     <Border Width="6" Height="6" CornerRadius="3" Background="{DynamicResource AccentSuccessBrush}"
@@ -1024,8 +1084,33 @@
                     </StackPanel>
                 </Button>
 
+                <!-- Tile Grid Capsule: Toggle & Cycle Size -->
+                <Border Grid.Column="2" Margin="3,0" Padding="4,1" VerticalAlignment="Center" Height="22"
+                        Classes="status-capsule-badge">
+                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                        <ToggleButton IsChecked="{Binding CanvasViewModel.ShowTileGrid, Mode=TwoWay}"
+                                      Background="Transparent" BorderThickness="0" Padding="4,1" Height="20"
+                                      CornerRadius="3"
+                                      ToolTip.Tip="{Binding Loc[Tip_TileGrid]}">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <PathIcon Data="{DynamicResource IconTileGrid}" Width="11" Height="11"
+                                          Foreground="{DynamicResource AccentPrimaryBrush}" />
+                                <TextBlock Text="{Binding Loc[Context_TileGrid]}" FontSize="10" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </ToggleButton>
+                        <Separator Width="1" Height="12" Background="{DynamicResource BorderSubtleBrush}" />
+                        <Button Command="{Binding CanvasViewModel.CycleTileGridSizeCommand}"
+                                Background="Transparent" BorderThickness="0" Padding="4,1" Height="20"
+                                CornerRadius="3"
+                                ToolTip.Tip="{Binding Loc[Context_TileSize]}">
+                            <TextBlock Text="{Binding CanvasViewModel.TileGridText}" FontSize="10" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" />
+                        </Button>
+                    </StackPanel>
+                </Border>
+
                 <!-- Zoom Level Capsule Badge -->
-                <Border Grid.Column="2" Margin="3,0" Padding="8,2" VerticalAlignment="Center" Height="22"
+                <Border Grid.Column="3" Margin="3,0" Padding="8,2" VerticalAlignment="Center" Height="22"
                         Classes="status-capsule-badge">
                     <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                         <TextBlock Text="{Binding Loc[Status_Zoom]}" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
@@ -1035,7 +1120,7 @@
                 </Border>
 
                 <!-- Language Switcher Capsule Button -->
-                <Button Grid.Column="3" Margin="3,0" Padding="8,2" VerticalAlignment="Center" Height="22"
+                <Button Grid.Column="4" Margin="3,0" Padding="8,2" VerticalAlignment="Center" Height="22"
                         Classes="status-capsule-btn"
                         Command="{Binding ToggleLanguageCommand}"
                         ToolTip.Tip="{Binding Loc[Status_LangButtonTip]}">
@@ -1047,7 +1132,7 @@
                 </Button>
 
                 <!-- Cursor Coordinates Capsule Badge -->
-                <Border Grid.Column="4" Margin="3,0,0,0" Padding="8,2" VerticalAlignment="Center" Height="22"
+                <Border Grid.Column="5" Margin="3,0,0,0" Padding="8,2" VerticalAlignment="Center" Height="22"
                         Classes="status-capsule-badge">
                     <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                         <TextBlock Text="✛" FontSize="11" Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" />

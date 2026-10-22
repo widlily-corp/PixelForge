@@ -165,6 +165,7 @@ public class LocalizationService : INotifyPropertyChanged
         // Top Menu: View
         ["Menu_View"] = "Вид",
         ["Menu_Grid"] = "Пиксельная сетка",
+        ["Menu_TileGrid"] = "Сетка тайлов",
         ["Menu_SymmetryX"] = "Симметрия по горизонтали (X)",
         ["Menu_SymmetryY"] = "Симметрия по вертикали (Y)",
         ["Menu_ZoomIn"] = "Приблизить",
@@ -189,6 +190,7 @@ public class LocalizationService : INotifyPropertyChanged
         ["Tip_Undo"] = "Отменить (Ctrl+Z)",
         ["Tip_Redo"] = "Повторить (Ctrl+Y)",
         ["Tip_Grid"] = "Пиксельная сетка (Ctrl+G)",
+        ["Tip_TileGrid"] = "Сетка тайлов (Ctrl+Shift+G)",
         ["Tip_SymX"] = "Симметрия X (зеркало по горизонтали)",
         ["Tip_SymY"] = "Симметрия Y (зеркало по вертикали)",
         ["Tip_Tiled"] = "Бесшовный режим (Tiled Mode) (F10)",
@@ -200,6 +202,7 @@ public class LocalizationService : INotifyPropertyChanged
 
         // Toolbar Button Labels
         ["Label_Grid"] = "Сетка",
+        ["Label_TileGrid"] = "Тайлы",
         ["Label_SymX"] = "Симм. X",
         ["Label_SymY"] = "Симм. Y",
         ["Label_Tiled"] = "Тайлы",
@@ -228,6 +231,10 @@ public class LocalizationService : INotifyPropertyChanged
         ["Tool_DitherBrushTip"] = "Дизеринг кисть (D)",
         ["Tool_PatternBrush"] = "Текстурная кисть",
         ["Tool_PatternBrushTip"] = "Текстурная кисть 8x8 (P)",
+        ["Tool_ShadeBrush"] = "Кисть светотени",
+        ["Tool_ShadeBrushTip"] = "Кисть светотени (H) - ЛКМ темнее, ПКМ светлее",
+        ["Tool_SprayBrush"] = "Спрей / Шум",
+        ["Tool_SprayBrushTip"] = "Спрей / Шум (A)",
         ["Tool_Fill"] = "Заливка",
         ["Tool_FillTip"] = "Заливка (G)",
         ["Tool_MagicWand"] = "Волшебная палочка",
@@ -260,6 +267,10 @@ public class LocalizationService : INotifyPropertyChanged
         ["Context_BrushTip8"] = "Кисть 8 px",
         ["Context_PixelPerfect"] = "Pixel-Perfect",
         ["Context_PixelPerfectTip"] = "Pixel-Perfect: устранение изломов в 1px линиях (Shift+P)",
+        ["Context_TileGrid"] = "Сетка тайлов",
+        ["Context_TileSize"] = "Шаг тайла",
+        ["Context_SprayRadius"] = "Радиус:",
+        ["Context_SprayDensity"] = "Плотность:",
         ["Context_Stabilizer"] = "Стабилизатор:",
         ["Context_Texture8x8"] = "Текстура 8x8:",
         ["Context_Dither"] = "Дизеринг:",
@@ -321,6 +332,7 @@ public class LocalizationService : INotifyPropertyChanged
         // Status Bar
         ["Status_Ready"] = "Готов к работе",
         ["Status_DimensionsTip"] = "Разрешение холста — нажмите для изменения размера (Ctrl+Alt+C)",
+        ["Status_TileGridTip"] = "Сетка тайлов (нажмите для смены размера)",
         ["Status_Zoom"] = "Зум:",
         ["Status_LangButton"] = "RU 🇷🇺",
         ["Status_LangButtonTip"] = "Сменить язык (Текущий: Русский) / Switch language",
@@ -395,6 +407,8 @@ public class LocalizationService : INotifyPropertyChanged
         ["Dlg_Hotkeys_Eraser"] = "Ластик",
         ["Dlg_Hotkeys_Dither"] = "Дизеринг",
         ["Dlg_Hotkeys_Pattern"] = "Паттерн",
+        ["Dlg_Hotkeys_Shade"] = "Кисть светотени",
+        ["Dlg_Hotkeys_Spray"] = "Спрей / Шум",
         ["Dlg_Hotkeys_Fill"] = "Заливка",
         ["Dlg_Hotkeys_Wand"] = "Волшебная палочка",
         ["Dlg_Hotkeys_Gradient"] = "Градиент",
@@ -404,6 +418,7 @@ public class LocalizationService : INotifyPropertyChanged
         ["Dlg_Hotkeys_Ellipse"] = "Эллипс",
         ["Dlg_Hotkeys_Selection"] = "Выделение",
         ["Dlg_Hotkeys_PixelPerfect"] = "Pixel-Perfect режим",
+        ["Dlg_Hotkeys_TileGrid"] = "Сетка тайлов",
         ["Dlg_Hotkeys_Tiled"] = "Бесшовный режим",
         ["Dlg_Hotkeys_SwapColors"] = "Поменять цвета местами",
         ["Dlg_Hotkeys_BrushSize"] = "Размер кисти",
@@ -474,7 +489,19 @@ public class LocalizationService : INotifyPropertyChanged
         ["Splash_StageStudioDetail"] = "Финализация холста, палитр и слоев...",
         ["Splash_Feature1"] = "Аппаратный SkiaSharp конвейер отрисовки (60+ FPS)",
         ["Splash_Feature2"] = "Полная загрузка рабочего набора в ОЗУ (Zero-latency)",
-        ["Splash_Feature3"] = "Разреженная дельта-история Undo/Redo и поддержка слоёв"
+        ["Splash_Feature3"] = "Разреженная дельта-история Undo/Redo и поддержка слоёв",
+
+        // Dither Patterns
+        ["Dither_None"] = "Без дизеринга",
+        ["Dither_Checker50"] = "Шахматка 50%",
+        ["Dither_Bayer2x2"] = "Байер 2×2",
+        ["Dither_Bayer4x4"] = "Байер 4×4",
+        ["Dither_Bayer8x8"] = "Байер 8×8",
+        ["Dither_Dots25"] = "Точки 25%",
+        ["Dither_Dots75"] = "Точки 75%",
+        ["Dither_HorizontalLines"] = "Горизонтальные линии",
+        ["Dither_VerticalLines"] = "Вертикальные линии",
+        ["Dither_DiagonalLines"] = "Диагональные линии"
     };
 
     // ==========================================
@@ -542,6 +569,7 @@ public class LocalizationService : INotifyPropertyChanged
         // Top Menu: View
         ["Menu_View"] = "View",
         ["Menu_Grid"] = "Pixel Grid",
+        ["Menu_TileGrid"] = "Tile Grid",
         ["Menu_SymmetryX"] = "Horizontal Symmetry (X)",
         ["Menu_SymmetryY"] = "Vertical Symmetry (Y)",
         ["Menu_ZoomIn"] = "Zoom In",
@@ -566,6 +594,7 @@ public class LocalizationService : INotifyPropertyChanged
         ["Tip_Undo"] = "Undo (Ctrl+Z)",
         ["Tip_Redo"] = "Redo (Ctrl+Y)",
         ["Tip_Grid"] = "Pixel Grid (Ctrl+G)",
+        ["Tip_TileGrid"] = "Tile Grid (Ctrl+Shift+G)",
         ["Tip_SymX"] = "Symmetry X (Horizontal Mirror)",
         ["Tip_SymY"] = "Symmetry Y (Vertical Mirror)",
         ["Tip_Tiled"] = "Seamless Tiled Mode (F10)",
@@ -577,6 +606,7 @@ public class LocalizationService : INotifyPropertyChanged
 
         // Toolbar Button Labels
         ["Label_Grid"] = "Grid",
+        ["Label_TileGrid"] = "Tile Grid",
         ["Label_SymX"] = "Symm. X",
         ["Label_SymY"] = "Symm. Y",
         ["Label_Tiled"] = "Tiles",
@@ -605,6 +635,10 @@ public class LocalizationService : INotifyPropertyChanged
         ["Tool_DitherBrushTip"] = "Dither Brush (D)",
         ["Tool_PatternBrush"] = "Pattern Brush 8x8",
         ["Tool_PatternBrushTip"] = "8x8 Pattern Brush (P)",
+        ["Tool_ShadeBrush"] = "Shade Brush",
+        ["Tool_ShadeBrushTip"] = "Shade Brush (H) - Left-click darker, Right-click lighter",
+        ["Tool_SprayBrush"] = "Spray / Noise Brush",
+        ["Tool_SprayBrushTip"] = "Spray / Noise Brush (A)",
         ["Tool_Fill"] = "Paint Bucket",
         ["Tool_FillTip"] = "Paint Bucket (G)",
         ["Tool_MagicWand"] = "Magic Wand",
@@ -637,6 +671,10 @@ public class LocalizationService : INotifyPropertyChanged
         ["Context_BrushTip8"] = "8 px Brush",
         ["Context_PixelPerfect"] = "Pixel-Perfect",
         ["Context_PixelPerfectTip"] = "Pixel-Perfect: eliminates jagged edges in 1px lines (Shift+P)",
+        ["Context_TileGrid"] = "Tile Grid",
+        ["Context_TileSize"] = "Tile Size",
+        ["Context_SprayRadius"] = "Radius:",
+        ["Context_SprayDensity"] = "Density:",
         ["Context_Stabilizer"] = "Stabilizer:",
         ["Context_Texture8x8"] = "8x8 Texture:",
         ["Context_Dither"] = "Dithering:",
@@ -698,6 +736,7 @@ public class LocalizationService : INotifyPropertyChanged
         // Status Bar
         ["Status_Ready"] = "Ready",
         ["Status_DimensionsTip"] = "Canvas dimensions — click to resize (Ctrl+Alt+C)",
+        ["Status_TileGridTip"] = "Tile Grid (click to cycle size)",
         ["Status_Zoom"] = "Zoom:",
         ["Status_LangButton"] = "EN 🇬🇧",
         ["Status_LangButtonTip"] = "Switch language (Current: English) / Сменить язык",
@@ -772,6 +811,8 @@ public class LocalizationService : INotifyPropertyChanged
         ["Dlg_Hotkeys_Eraser"] = "Eraser",
         ["Dlg_Hotkeys_Dither"] = "Dither Brush",
         ["Dlg_Hotkeys_Pattern"] = "Pattern Brush",
+        ["Dlg_Hotkeys_Shade"] = "Shade Brush",
+        ["Dlg_Hotkeys_Spray"] = "Spray / Noise Brush",
         ["Dlg_Hotkeys_Fill"] = "Fill",
         ["Dlg_Hotkeys_Wand"] = "Magic Wand",
         ["Dlg_Hotkeys_Gradient"] = "Gradient",
@@ -781,6 +822,7 @@ public class LocalizationService : INotifyPropertyChanged
         ["Dlg_Hotkeys_Ellipse"] = "Ellipse",
         ["Dlg_Hotkeys_Selection"] = "Selection",
         ["Dlg_Hotkeys_PixelPerfect"] = "Pixel-Perfect Mode",
+        ["Dlg_Hotkeys_TileGrid"] = "Tile Grid",
         ["Dlg_Hotkeys_Tiled"] = "Seamless Tiled Mode",
         ["Dlg_Hotkeys_SwapColors"] = "Swap Colors",
         ["Dlg_Hotkeys_BrushSize"] = "Brush Size",
@@ -851,6 +893,18 @@ public class LocalizationService : INotifyPropertyChanged
         ["Splash_StageStudioDetail"] = "Finalizing canvas, palettes, and layer composite...",
         ["Splash_Feature1"] = "Hardware-Accelerated 60+ FPS SkiaSharp Render Pipeline",
         ["Splash_Feature2"] = "Full RAM Working Set resident execution (Zero disk-paging latency)",
-        ["Splash_Feature3"] = "Sparse delta Undo/Redo history and multi-layer compositing"
+        ["Splash_Feature3"] = "Sparse delta Undo/Redo history and multi-layer compositing",
+
+        // Dither Patterns
+        ["Dither_None"] = "No Dithering",
+        ["Dither_Checker50"] = "Checkerboard 50%",
+        ["Dither_Bayer2x2"] = "Bayer 2×2",
+        ["Dither_Bayer4x4"] = "Bayer 4×4",
+        ["Dither_Bayer8x8"] = "Bayer 8×8",
+        ["Dither_Dots25"] = "Sparse Dots 25%",
+        ["Dither_Dots75"] = "Dense Dots 75%",
+        ["Dither_HorizontalLines"] = "Horizontal Lines",
+        ["Dither_VerticalLines"] = "Vertical Lines",
+        ["Dither_DiagonalLines"] = "Diagonal Lines"
     };
 }

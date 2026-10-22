@@ -23,7 +23,9 @@ public enum CanvasToolType
     DitherBrush,
     Gradient,
     PatternBrush,
-    MagicWand
+    MagicWand,
+    ShadeBrush,
+    SprayBrush
 }
 
 /// <summary>
@@ -72,8 +74,39 @@ public partial class ToolViewModel : ViewModelBase
     /// </summary>
     public GradientTool GradientTool { get; } = new();
 
+    /// <summary>
+    /// Gets the registered Shade Brush tool instance.
+    /// </summary>
+    public ShadeBrushTool ShadeBrushTool { get; } = new();
+
+    /// <summary>
+    /// Gets the registered Spray Brush tool instance.
+    /// </summary>
+    public SprayBrushTool SprayBrushTool { get; } = new();
+
     [ObservableProperty]
     private bool _isPixelPerfect = false;
+
+    [ObservableProperty]
+    private int _sprayRadius = 4;
+
+    [ObservableProperty]
+    private float _sprayDensity = 0.25f;
+
+    [ObservableProperty]
+    private ToolContext? _activeToolContext;
+
+    /// <summary>
+    /// Gets or sets the active tool context, syncing all tool settings and ramps.
+    /// </summary>
+    public ToolContext? ToolContext
+    {
+        get => ActiveToolContext;
+        set => ActiveToolContext = value;
+    }
+
+    [ObservableProperty]
+    private IReadOnlyList<PixelColor>? _activeColorRamp;
 
     [ObservableProperty]
     private int _stabilizerStrength = 0;
@@ -111,6 +144,8 @@ public partial class ToolViewModel : ViewModelBase
         new(CanvasToolType.Eraser, "Eraser", "E", "IconEraser"),
         new(CanvasToolType.DitherBrush, "Dither Brush", "D", "IconDither"),
         new(CanvasToolType.PatternBrush, "Pattern Brush", "P", "IconPatternBrush"),
+        new(CanvasToolType.ShadeBrush, "Shade Brush", "H", "IconShadeBrush"),
+        new(CanvasToolType.SprayBrush, "Spray Brush", "A", "IconSprayBrush"),
         new(CanvasToolType.Fill, "Paint Bucket", "G", "IconFill"),
         new(CanvasToolType.MagicWand, "Magic Wand", "W", "IconMagicWand"),
         new(CanvasToolType.Gradient, "Gradient", "T", "IconGradient"),
@@ -151,17 +186,25 @@ public partial class ToolViewModel : ViewModelBase
 
     public bool SupportsPixelPerfect => ActiveTool is CanvasToolType.Pencil or CanvasToolType.Eraser or CanvasToolType.DitherBrush or CanvasToolType.PatternBrush;
 
+    public bool SupportsSpraySettings => ActiveTool == CanvasToolType.SprayBrush;
+
     public bool SupportsStabilizer => ActiveTool is CanvasToolType.Pencil or CanvasToolType.Eraser or CanvasToolType.DitherBrush or CanvasToolType.PatternBrush;
 
     public ToolViewModel()
     {
-        LocalizationService.Instance.LanguageChanged += (_, _) => OnPropertyChanged(nameof(ActiveToolDisplayName));
+        LocalizationService.Instance.LanguageChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(ActiveToolDisplayName));
+            OnPropertyChanged(nameof(AvailablePatterns));
+        };
         _tools = new Dictionary<CanvasToolType, ITool>
         {
             [CanvasToolType.Pencil] = new PencilTool(),
             [CanvasToolType.Eraser] = new EraserTool(),
             [CanvasToolType.DitherBrush] = new DitherBrushTool(),
             [CanvasToolType.PatternBrush] = PatternBrushTool,
+            [CanvasToolType.ShadeBrush] = ShadeBrushTool,
+            [CanvasToolType.SprayBrush] = SprayBrushTool,
             [CanvasToolType.Fill] = new FillTool(),
             [CanvasToolType.MagicWand] = MagicWandTool,
             [CanvasToolType.Gradient] = GradientTool,
@@ -178,9 +221,55 @@ public partial class ToolViewModel : ViewModelBase
         PatternBrushTool.StabilizerStrength = Math.Clamp(value, 0, 10);
     }
 
+    partial void OnActiveToolContextChanged(ToolContext? value)
+    {
+        if (value != null)
+        {
+            value.IsPixelPerfect = IsPixelPerfect;
+            value.SprayRadius = SprayRadius;
+            value.SprayDensity = SprayDensity;
+            if (ActiveColorRamp != null)
+            {
+                value.ActiveColorRamp = ActiveColorRamp;
+            }
+        }
+    }
+
+    partial void OnActiveColorRampChanged(IReadOnlyList<PixelColor>? value)
+    {
+        if (ActiveToolContext != null)
+        {
+            ActiveToolContext.ActiveColorRamp = value;
+        }
+    }
+
+    partial void OnSprayRadiusChanged(int value)
+    {
+        int clamped = Math.Clamp(value, 1, 16);
+        SprayBrushTool.Radius = clamped;
+        if (ActiveToolContext != null)
+        {
+            ActiveToolContext.SprayRadius = clamped;
+        }
+    }
+
+    partial void OnSprayDensityChanged(float value)
+    {
+        float clamped = Math.Clamp(value, 0f, 1f);
+        SprayBrushTool.Density = clamped;
+        if (ActiveToolContext != null)
+        {
+            ActiveToolContext.SprayDensity = clamped;
+        }
+    }
+
     partial void OnIsPixelPerfectChanged(bool value)
     {
         PatternBrushTool.PixelPerfect = value;
+        if (ActiveToolContext != null)
+        {
+            ActiveToolContext.IsPixelPerfect = value;
+        }
     }
 
     partial void OnSelectedPatternPresetChanged(PatternPreset value)
@@ -225,7 +314,16 @@ public partial class ToolViewModel : ViewModelBase
         var preset = GradientPreset.FromColors(name, rampColors);
         GradientTool.Stops = preset.Stops;
         SelectedGradientPreset = preset;
+        ActiveColorRamp = rampColors;
         ActiveTool = CanvasToolType.Gradient;
+    }
+
+    /// <summary>
+    /// Updates the active color ramp for shading transitions and propagates to ToolContext.
+    /// </summary>
+    public void SetActiveColorRamp(IReadOnlyList<PixelColor>? ramp)
+    {
+        ActiveColorRamp = ramp;
     }
 
     partial void OnActiveToolChanged(CanvasToolType value)
@@ -244,6 +342,7 @@ public partial class ToolViewModel : ViewModelBase
         OnPropertyChanged(nameof(SupportsGradientSettings));
         OnPropertyChanged(nameof(Supports8x8Pattern));
         OnPropertyChanged(nameof(SupportsPixelPerfect));
+        OnPropertyChanged(nameof(SupportsSpraySettings));
         OnPropertyChanged(nameof(SupportsStabilizer));
     }
 

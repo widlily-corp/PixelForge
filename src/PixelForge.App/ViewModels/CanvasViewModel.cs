@@ -22,6 +22,15 @@ public partial class CanvasViewModel : ViewModelBase
     private bool _showGrid = true;
 
     [ObservableProperty]
+    private bool _showTileGrid = false;
+
+    [ObservableProperty]
+    private int _tileGridSize = 16;
+
+    [ObservableProperty]
+    private TileGridSettings _tileGridSettings = new();
+
+    [ObservableProperty]
     private bool _showSymmetryX = false;
 
     [ObservableProperty]
@@ -60,11 +69,47 @@ public partial class CanvasViewModel : ViewModelBase
 
     public string DimensionsText => $"{CanvasWidth} × {CanvasHeight} px";
 
+    public string TileGridText => $"{TileGridSize} × {TileGridSize} px";
+
     public CanvasViewModel(PixelCanvas canvas)
     {
         _canvas = canvas ?? throw new ArgumentNullException(nameof(canvas));
         _symmetryAxisX = canvas.Width / 2;
         _symmetryAxisY = canvas.Height / 2;
+        TileGridSettings.TileSize = TileGridSize;
+        TileGridSettings.IsVisible = ShowTileGrid;
+        TileGridSettings.PropertyChanged += OnTileGridSettingsPropertyChanged;
+    }
+
+    private void OnTileGridSettingsPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(TileGridSettings.TileSize) && TileGridSize != TileGridSettings.TileSize)
+        {
+            TileGridSize = TileGridSettings.TileSize;
+        }
+        else if (e.PropertyName == nameof(TileGridSettings.IsVisible) && ShowTileGrid != TileGridSettings.IsVisible)
+        {
+            ShowTileGrid = TileGridSettings.IsVisible;
+        }
+        else if (e.PropertyName != nameof(TileGridSettings.TileSize) && e.PropertyName != nameof(TileGridSettings.IsVisible))
+        {
+            OnPropertyChanged(nameof(TileGridSettings));
+        }
+    }
+
+    partial void OnTileGridSettingsChanged(TileGridSettings? oldValue, TileGridSettings newValue)
+    {
+        if (oldValue != null)
+        {
+            oldValue.PropertyChanged -= OnTileGridSettingsPropertyChanged;
+        }
+        if (newValue != null)
+        {
+            newValue.PropertyChanged += OnTileGridSettingsPropertyChanged;
+            TileGridSize = newValue.TileSize;
+            ShowTileGrid = newValue.IsVisible;
+        }
+        OnPropertyChanged(nameof(TileGridText));
     }
 
     public void SetCanvas(PixelCanvas newCanvas)
@@ -116,6 +161,17 @@ public partial class CanvasViewModel : ViewModelBase
         OnPropertyChanged(nameof(ZoomText));
     }
 
+    partial void OnTileGridSizeChanged(int value)
+    {
+        TileGridSettings.TileSize = value;
+        OnPropertyChanged(nameof(TileGridText));
+    }
+
+    partial void OnShowTileGridChanged(bool value)
+    {
+        TileGridSettings.IsVisible = value;
+    }
+
     [RelayCommand]
     public void ZoomIn()
     {
@@ -138,6 +194,18 @@ public partial class CanvasViewModel : ViewModelBase
     public void ToggleGrid()
     {
         ShowGrid = !ShowGrid;
+    }
+
+    [RelayCommand]
+    public void ToggleTileGrid()
+    {
+        ShowTileGrid = !ShowTileGrid;
+    }
+
+    [RelayCommand]
+    public void CycleTileGridSize()
+    {
+        TileGridSize = TileGridSettings.GetNextSize(TileGridSize);
     }
 
     [RelayCommand]

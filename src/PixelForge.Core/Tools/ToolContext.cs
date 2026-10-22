@@ -98,6 +98,26 @@ public class ToolContext
     public bool FillContiguous { get; set; } = true;
 
     /// <summary>
+    /// Gets or sets whether pixel-perfect line cleanup is enabled.
+    /// </summary>
+    public bool IsPixelPerfect { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets the spray radius in pixels (1 to 16).
+    /// </summary>
+    public int SprayRadius { get; set; } = 4;
+
+    /// <summary>
+    /// Gets or sets the spray particle density probability (0.0 to 1.0).
+    /// </summary>
+    public float SprayDensity { get; set; } = 0.25f;
+
+    /// <summary>
+    /// Gets or sets the active color ramp or palette for shading transitions.
+    /// </summary>
+    public IReadOnlyList<PixelColor>? ActiveColorRamp { get; set; }
+
+    /// <summary>
     /// Event triggered when the primary color is modified by a tool (e.g., eyedropper).
     /// </summary>
     public event Action<PixelColor>? PrimaryColorChanged;
@@ -117,7 +137,11 @@ public class ToolContext
         bool symmetryY = false,
         int? symmetryAxisX = null,
         int? symmetryAxisY = null,
-        SelectionModel? selection = null)
+        SelectionModel? selection = null,
+        bool isPixelPerfect = false,
+        int sprayRadius = 4,
+        float sprayDensity = 0.25f,
+        IReadOnlyList<PixelColor>? activeColorRamp = null)
     {
         Canvas = canvas ?? throw new ArgumentNullException(nameof(canvas));
         ActiveLayer = activeLayer ?? canvas.ActiveLayer ?? (canvas.Layers.Count > 0 ? canvas.Layers[0] : throw new InvalidOperationException("Canvas has no layers."));
@@ -129,6 +153,10 @@ public class ToolContext
         SymmetryAxisX = symmetryAxisX ?? (canvas.Width / 2);
         SymmetryAxisY = symmetryAxisY ?? (canvas.Height / 2);
         Selection = selection ?? new SelectionModel();
+        IsPixelPerfect = isPixelPerfect;
+        SprayRadius = sprayRadius;
+        SprayDensity = sprayDensity;
+        ActiveColorRamp = activeColorRamp;
     }
 
     /// <summary>

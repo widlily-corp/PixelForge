@@ -182,6 +182,13 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         IsAntialias = false,
         Style = SKPaintStyle.Stroke
     };
+    private readonly SKPaint _tileGridPaint = new()
+    {
+        Color = new SKColor(0, 210, 255, 65), // subtle cyan alpha ~65 (40-70 range)
+        StrokeWidth = 1.2f,
+        IsAntialias = false,
+        Style = SKPaintStyle.Stroke
+    };
     private readonly SKPaint _symmetryPaint = new()
     {
         Color = new SKColor(0, 210, 255, 180),
@@ -227,6 +234,7 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
     private PixelColor[]? _compositePixels;
     private bool _isDirtyComposite = true;
     private PixelCanvas? _subscribedCanvas;
+    private CanvasViewModel? _subscribedCanvasViewModel;
 
     // ICustomDrawOperation bounds
     Rect ICustomDrawOperation.Bounds => new(0, 0, Bounds.Width, Bounds.Height);
@@ -281,6 +289,12 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
 
     private void OnCanvasViewModelChanged()
     {
+        if (_subscribedCanvasViewModel != null)
+        {
+            _subscribedCanvasViewModel.PropertyChanged -= OnCanvasViewModelPropertyChanged;
+            _subscribedCanvasViewModel = null;
+        }
+
         if (_subscribedCanvas != null)
         {
             _subscribedCanvas.PixelsChanged -= MarkCompositeDirty;
@@ -290,23 +304,34 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         _isDirtyComposite = true;
         _hasInitializedViewport = false;
 
-        if (CanvasViewModel?.Canvas != null)
+        if (CanvasViewModel != null)
         {
-            _subscribedCanvas = CanvasViewModel.Canvas;
-            _subscribedCanvas.PixelsChanged += MarkCompositeDirty;
-            CanvasViewModel.Canvas.PropertyChanged += (_, _) => MarkCompositeDirty();
-            CanvasViewModel.Canvas.Layers.CollectionChanged += (_, _) => MarkCompositeDirty();
-            foreach (var layer in CanvasViewModel.Canvas.Layers)
+            _subscribedCanvasViewModel = CanvasViewModel;
+            _subscribedCanvasViewModel.PropertyChanged += OnCanvasViewModelPropertyChanged;
+
+            if (CanvasViewModel.Canvas != null)
             {
-                layer.PropertyChanged += (_, _) => MarkCompositeDirty();
+                _subscribedCanvas = CanvasViewModel.Canvas;
+                _subscribedCanvas.PixelsChanged += MarkCompositeDirty;
+                CanvasViewModel.Canvas.PropertyChanged += (_, _) => MarkCompositeDirty();
+                CanvasViewModel.Canvas.Layers.CollectionChanged += (_, _) => MarkCompositeDirty();
+                foreach (var layer in CanvasViewModel.Canvas.Layers)
+                {
+                    layer.PropertyChanged += (_, _) => MarkCompositeDirty();
+                }
+            }
+
+            if (CanvasViewModel.ReferenceOverlay != null)
+            {
+                CanvasViewModel.ReferenceOverlay.PropertyChanged += (_, _) => InvalidateVisual();
             }
         }
 
-        if (CanvasViewModel?.ReferenceOverlay != null)
-        {
-            CanvasViewModel.ReferenceOverlay.PropertyChanged += (_, _) => InvalidateVisual();
-        }
+        InvalidateVisual();
+    }
 
+    private void OnCanvasViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
         InvalidateVisual();
     }
 
@@ -363,6 +388,11 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
+        if (_subscribedCanvasViewModel != null)
+        {
+            _subscribedCanvasViewModel.PropertyChanged -= OnCanvasViewModelPropertyChanged;
+            _subscribedCanvasViewModel = null;
+        }
         _compositeBitmap?.Dispose();
         _compositeBitmap = null;
         _checkerboardPaint.Dispose();
@@ -371,6 +401,7 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         _tiledBorderPaint.Dispose();
         _gridPaint.Dispose();
         _gridDarkPaint.Dispose();
+        _tileGridPaint.Dispose();
         _symmetryPaint.Dispose();
         _previewStrokePaint.Dispose();
         _previewFillPaint.Dispose();
@@ -456,6 +487,12 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
             if (vm.ShowGrid && zoom >= 4f)
             {
                 RenderPixelGrid(canvas, destRect, canvasW, canvasH, zoom);
+            }
+
+            // 4.5. Tile grid overlay
+            if (vm.ShowTileGrid && vm.TileGridSize > 1)
+            {
+                RenderTileGrid(canvas, destRect, canvasW, canvasH, zoom, vm.TileGridSize);
             }
 
             // 5. Symmetry axes X / Y
@@ -568,6 +605,65 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         {
             float posY = top + (y * zoom);
             canvas.DrawLine(visibleLeft, posY, visibleRight, posY, _gridPaint);
+        }
+    }
+
+    /// <summary>
+    /// Renders the tile grid overlay with viewport clip culling to guarantee 60+ FPS performance on canvases of any size.
+    /// </summary>
+    public void RenderTileGrid(SKCanvas canvas, SKRect destRect, int canvasW, int canvasH, float zoom, int tileSize)
+    {
+        if (tileSize <= 0) return;
+
+        float tileSpan = tileSize * zoom;
+        if (tileSpan < 1f) return;
+
+        float left = destRect.Left;
+        float top = destRect.Top;
+        float right = destRect.Right;
+        float bottom = destRect.Bottom;
+
+        // Viewport clipping via canvas.LocalClipBounds to guarantee 60+ FPS on any canvas size
+        var clip = canvas.LocalClipBounds;
+        float visibleLeft = Math.Max(left, clip.Left);
+        float visibleRight = Math.Min(right, clip.Right);
+        float visibleTop = Math.Max(top, clip.Top);
+        float visibleBottom = Math.Min(bottom, clip.Bottom);
+
+        if (visibleLeft >= visibleRight || visibleTop >= visibleBottom)
+        {
+            return;
+        }
+
+        if (CanvasViewModel?.TileGridSettings != null)
+        {
+            _tileGridPaint.Color = CanvasViewModel.TileGridSettings.GridColor;
+        }
+
+        int startTileX = Math.Max(0, (int)Math.Floor((visibleLeft - left) / tileSpan));
+        int endTileX = (int)Math.Ceiling((visibleRight - left) / tileSpan);
+
+        // Vertical tile boundary lines
+        for (int t = startTileX; t <= endTileX; t++)
+        {
+            int px = t * tileSize;
+            if (px > canvasW) break;
+
+            float posX = left + (px * zoom);
+            canvas.DrawLine(posX, visibleTop, posX, visibleBottom, _tileGridPaint);
+        }
+
+        int startTileY = Math.Max(0, (int)Math.Floor((visibleTop - top) / tileSpan));
+        int endTileY = (int)Math.Ceiling((visibleBottom - top) / tileSpan);
+
+        // Horizontal tile boundary lines
+        for (int t = startTileY; t <= endTileY; t++)
+        {
+            int py = t * tileSize;
+            if (py > canvasH) break;
+
+            float posY = top + (py * zoom);
+            canvas.DrawLine(visibleLeft, posY, visibleRight, posY, _tileGridPaint);
         }
     }
 

@@ -97,6 +97,14 @@
                                 <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="P" /></Border>
                             </Grid>
                             <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="{Binding Loc[Dlg_Hotkeys_Shade]}" />
+                                <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="H" /></Border>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="{Binding Loc[Dlg_Hotkeys_Spray]}" />
+                                <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="A" /></Border>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
                                 <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="{Binding Loc[Dlg_Hotkeys_Fill]}" />
                                 <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="G" /></Border>
                             </Grid>
@@ -187,6 +195,16 @@
                                     <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="{Binding Loc[Dlg_Hotkeys_Grid]}" />
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
                                         <Border Classes="key-badge"><TextBlock Text="Ctrl" /></Border>
+                                        <TextBlock Classes="key-separator" Text="+" />
+                                        <Border Classes="key-badge"><TextBlock Text="G" /></Border>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="{Binding Loc[Dlg_Hotkeys_TileGrid]}" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                        <Border Classes="key-badge"><TextBlock Text="Ctrl" /></Border>
+                                        <TextBlock Classes="key-separator" Text="+" />
+                                        <Border Classes="key-badge"><TextBlock Text="Shift" /></Border>
                                         <TextBlock Classes="key-separator" Text="+" />
                                         <Border Classes="key-badge"><TextBlock Text="G" /></Border>
                                     </StackPanel>
