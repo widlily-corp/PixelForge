@@ -1,10 +1,10 @@
 <Project>
   <PropertyGroup>
     <!-- Central Solution Version (Single Source of Truth) -->
-    <Version>0.1.7</Version>
-    <AssemblyVersion>0.1.7.0</AssemblyVersion>
-    <FileVersion>0.1.7.0</FileVersion>
-    <InformationalVersion>0.1.7</InformationalVersion>
+    <Version>0.1.8</Version>
+    <AssemblyVersion>0.1.8.0</AssemblyVersion>
+    <FileVersion>0.1.8.0</FileVersion>
+    <InformationalVersion>0.1.8</InformationalVersion>
     <Company>widlily-corp</Company>
     <Product>PixelForge</Product>
     <Copyright>Copyright © 2026 widlily-corp</Copyright>

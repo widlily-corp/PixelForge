@@ -297,6 +297,8 @@ public class LocalizationService : INotifyPropertyChanged
 
         // Right Inspector: Live Preview
         ["Panel_LivePreview"] = "ПРЕДПРОСМОТР",
+        ["Panel_TogglePreview"] = "Свернуть / развернуть предпросмотр",
+        ["Preview_Scale"] = "Масштаб:",
 
         // Right Inspector: Color Picker & Palette
         ["Panel_ColorPicker"] = "ПАЛИТРА И ЦВЕТ",
@@ -490,6 +492,12 @@ public class LocalizationService : INotifyPropertyChanged
         ["Splash_Feature1"] = "Аппаратный SkiaSharp конвейер отрисовки (60+ FPS)",
         ["Splash_Feature2"] = "Полная загрузка рабочего набора в ОЗУ (Zero-latency)",
         ["Splash_Feature3"] = "Разреженная дельта-история Undo/Redo и поддержка слоёв",
+        ["Splash_TelemetryRam"] = "ОЗУ пул 1024 МБ",
+        ["Splash_TelemetryJit"] = "Pre-JIT компиляция",
+        ["Splash_TelemetrySkia"] = "SkiaSharp 60+ FPS",
+        ["Splash_TelemetryUndo"] = "Zero-Alloc дельта",
+        ["Splash_TelemetryOnline"] = "В СЕТИ",
+        ["Splash_SystemTag"] = "x64 • .NET 8 • Skia 2.88",
 
         // Dither Patterns
         ["Dither_None"] = "Без дизеринга",
@@ -701,6 +709,8 @@ public class LocalizationService : INotifyPropertyChanged
 
         // Right Inspector: Live Preview
         ["Panel_LivePreview"] = "LIVE PREVIEW",
+        ["Panel_TogglePreview"] = "Collapse / expand preview",
+        ["Preview_Scale"] = "Scale:",
 
         // Right Inspector: Color Picker & Palette
         ["Panel_ColorPicker"] = "PALETTE & COLOR",
@@ -894,6 +904,12 @@ public class LocalizationService : INotifyPropertyChanged
         ["Splash_Feature1"] = "Hardware-Accelerated 60+ FPS SkiaSharp Render Pipeline",
         ["Splash_Feature2"] = "Full RAM Working Set resident execution (Zero disk-paging latency)",
         ["Splash_Feature3"] = "Sparse delta Undo/Redo history and multi-layer compositing",
+        ["Splash_TelemetryRam"] = "RAM Pool 1024 MB",
+        ["Splash_TelemetryJit"] = "Pre-JIT Engine",
+        ["Splash_TelemetrySkia"] = "SkiaSharp 60+ FPS",
+        ["Splash_TelemetryUndo"] = "Zero-Alloc Delta",
+        ["Splash_TelemetryOnline"] = "ONLINE",
+        ["Splash_SystemTag"] = "x64 • .NET 8 • Skia 2.88",
 
         // Dither Patterns
         ["Dither_None"] = "No Dithering",

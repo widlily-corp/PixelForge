@@ -13,8 +13,11 @@ namespace PixelForge.App.Tests;
 /// Comprehensive unit tests verifying ShadeBrush, SprayBrush, ToolContext propagation,
 /// DitherPatternLocalizationConverter, and dynamic RU/EN localization.
 /// </summary>
+[Collection("LocalizationSharedState")]
 public class ToolViewModelNewToolsTests
 {
+    private static readonly object _locSyncLock = new();
+
     private static ToolContext CreateTestContext(int width = 16, int height = 16)
     {
         var canvas = new PixelCanvas(width, height);
@@ -102,51 +105,64 @@ public class ToolViewModelNewToolsTests
     [Fact]
     public void ActiveToolDisplayName_LocalizesCorrectlyForShadeAndSpray()
     {
-        // Arrange
-        var vm = new ToolViewModel();
-        var loc = LocalizationService.Instance;
-
-        try
+        lock (_locSyncLock)
         {
-            // Russian
-            loc.SetLanguage(AppLanguage.Russian);
-            vm.SelectTool(CanvasToolType.ShadeBrush);
-            vm.ActiveToolDisplayName.Should().Be("Кисть светотени");
+            // Arrange
+            var vm = new ToolViewModel();
+            var loc = LocalizationService.Instance;
 
-            vm.SelectTool(CanvasToolType.SprayBrush);
-            vm.ActiveToolDisplayName.Should().Be("Спрей / Шум");
+            try
+            {
+                // Russian
+                loc.SetLanguage(AppLanguage.Russian);
+                vm.SelectTool(CanvasToolType.ShadeBrush);
+                vm.ActiveToolDisplayName.Should().Be("Кисть светотени");
 
-            // English
-            loc.SetLanguage(AppLanguage.English);
-            vm.SelectTool(CanvasToolType.ShadeBrush);
-            vm.ActiveToolDisplayName.Should().Be("Shade Brush");
+                vm.SelectTool(CanvasToolType.SprayBrush);
+                vm.ActiveToolDisplayName.Should().Be("Спрей / Шум");
 
-            vm.SelectTool(CanvasToolType.SprayBrush);
-            vm.ActiveToolDisplayName.Should().Be("Spray / Noise Brush");
-        }
-        finally
-        {
-            loc.SetLanguage(AppLanguage.Russian);
+                // English
+                loc.SetLanguage(AppLanguage.English);
+                vm.SelectTool(CanvasToolType.ShadeBrush);
+                vm.ActiveToolDisplayName.Should().Be("Shade Brush");
+
+                vm.SelectTool(CanvasToolType.SprayBrush);
+                vm.ActiveToolDisplayName.Should().Be("Spray / Noise Brush");
+            }
+            finally
+            {
+                loc.SetLanguage(AppLanguage.Russian);
+            }
         }
     }
 
     [Fact]
     public void LanguageChange_RaisesPropertyChangedForActiveToolDisplayNameAndAvailablePatterns()
     {
-        // Arrange
-        var vm = new ToolViewModel();
-        var raised = new List<string>();
-        vm.PropertyChanged += (_, e) =>
+        lock (_locSyncLock)
         {
-            if (e.PropertyName != null) raised.Add(e.PropertyName);
-        };
+            // Arrange
+            var vm = new ToolViewModel();
+            var raised = new List<string>();
+            vm.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName != null) raised.Add(e.PropertyName);
+            };
 
-        // Act
-        LocalizationService.Instance.ToggleLanguage();
+            try
+            {
+                // Act
+                LocalizationService.Instance.ToggleLanguage();
 
-        // Assert
-        raised.Should().Contain(nameof(ToolViewModel.ActiveToolDisplayName));
-        raised.Should().Contain(nameof(ToolViewModel.AvailablePatterns));
+                // Assert
+                raised.Should().Contain(nameof(ToolViewModel.ActiveToolDisplayName));
+                raised.Should().Contain(nameof(ToolViewModel.AvailablePatterns));
+            }
+            finally
+            {
+                LocalizationService.Instance.SetLanguage(AppLanguage.Russian);
+            }
+        }
     }
 
     #endregion
@@ -311,23 +327,26 @@ public class ToolViewModelNewToolsTests
         DitherPattern pattern,
         string expectedRussian)
     {
-        // Arrange
-        var converter = DitherPatternLocalizationConverter.Instance;
-        var loc = LocalizationService.Instance;
-
-        try
+        lock (_locSyncLock)
         {
-            loc.SetLanguage(AppLanguage.Russian);
+            // Arrange
+            var converter = DitherPatternLocalizationConverter.Instance;
+            var loc = LocalizationService.Instance;
 
-            // Act
-            var result = converter.Convert(pattern, typeof(string), null, CultureInfo.InvariantCulture);
+            try
+            {
+                loc.SetLanguage(AppLanguage.Russian);
 
-            // Assert
-            result.Should().Be(expectedRussian);
-        }
-        finally
-        {
-            loc.SetLanguage(AppLanguage.Russian);
+                // Act
+                var result = converter.Convert(pattern, typeof(string), null, CultureInfo.InvariantCulture);
+
+                // Assert
+                result.Should().Be(expectedRussian);
+            }
+            finally
+            {
+                loc.SetLanguage(AppLanguage.Russian);
+            }
         }
     }
 
@@ -346,56 +365,62 @@ public class ToolViewModelNewToolsTests
         DitherPattern pattern,
         string expectedEnglish)
     {
-        // Arrange
-        var converter = DitherPatternLocalizationConverter.Instance;
-        var loc = LocalizationService.Instance;
-
-        try
+        lock (_locSyncLock)
         {
-            loc.SetLanguage(AppLanguage.English);
+            // Arrange
+            var converter = DitherPatternLocalizationConverter.Instance;
+            var loc = LocalizationService.Instance;
 
-            // Act
-            var result = converter.Convert(pattern, typeof(string), null, CultureInfo.InvariantCulture);
+            try
+            {
+                loc.SetLanguage(AppLanguage.English);
 
-            // Assert
-            result.Should().Be(expectedEnglish);
-        }
-        finally
-        {
-            loc.SetLanguage(AppLanguage.Russian);
+                // Act
+                var result = converter.Convert(pattern, typeof(string), null, CultureInfo.InvariantCulture);
+
+                // Assert
+                result.Should().Be(expectedEnglish);
+            }
+            finally
+            {
+                loc.SetLanguage(AppLanguage.Russian);
+            }
         }
     }
 
     [Fact]
     public void DitherPatternLocalizationConverter_HandlesStringAndFallbackInputs()
     {
-        // Arrange
-        var converter = DitherPatternLocalizationConverter.Instance;
-        var loc = LocalizationService.Instance;
-
-        try
+        lock (_locSyncLock)
         {
-            loc.SetLanguage(AppLanguage.English);
+            // Arrange
+            var converter = DitherPatternLocalizationConverter.Instance;
+            var loc = LocalizationService.Instance;
 
-            // String parsing
-            var strResult = converter.Convert("Bayer4x4", typeof(string), null, CultureInfo.InvariantCulture);
-            strResult.Should().Be("Bayer 4×4");
+            try
+            {
+                loc.SetLanguage(AppLanguage.English);
 
-            // Integer enum parsing
-            var intEnumResult = converter.Convert((int)DitherPattern.Bayer2x2, typeof(string), null, CultureInfo.InvariantCulture);
-            intEnumResult.Should().Be("Bayer 2×2");
+                // String parsing
+                var strResult = converter.Convert("Bayer4x4", typeof(string), null, CultureInfo.InvariantCulture);
+                strResult.Should().Be("Bayer 4×4");
 
-            // Null input
-            var nullResult = converter.Convert(null, typeof(string), null, CultureInfo.InvariantCulture);
-            nullResult.Should().Be(string.Empty);
+                // Integer enum parsing
+                var intEnumResult = converter.Convert((int)DitherPattern.Bayer2x2, typeof(string), null, CultureInfo.InvariantCulture);
+                intEnumResult.Should().Be("Bayer 2×2");
 
-            // Arbitrary object
-            var intResult = converter.Convert(12345, typeof(string), null, CultureInfo.InvariantCulture);
-            intResult.Should().Be("12345");
-        }
-        finally
-        {
-            loc.SetLanguage(AppLanguage.Russian);
+                // Null input
+                var nullResult = converter.Convert(null, typeof(string), null, CultureInfo.InvariantCulture);
+                nullResult.Should().Be(string.Empty);
+
+                // Arbitrary object
+                var intResult = converter.Convert(12345, typeof(string), null, CultureInfo.InvariantCulture);
+                intResult.Should().Be("12345");
+            }
+            finally
+            {
+                loc.SetLanguage(AppLanguage.Russian);
+            }
         }
     }
 

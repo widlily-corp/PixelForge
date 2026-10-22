@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:loc="clr-namespace:PixelForge.Core.Localization;assembly=PixelForge.Core"
              mc:Ignorable="d" d:DesignWidth="260" d:DesignHeight="260"
              x:Class="PixelForge.App.Views.LivePreviewControl">
 
@@ -9,26 +10,45 @@
             BorderBrush="{DynamicResource BorderSubtleBrush}"
             BorderThickness="1"
             CornerRadius="8"
-            Padding="12">
+            Padding="12,10">
         <Grid RowDefinitions="Auto,*,Auto">
-            <!-- Header -->
-            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+            <!-- Header with Dimension Badge and Collapse Toggle -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                     <PathIcon Data="{DynamicResource IconEye}" Width="14" Height="14"
                               Foreground="{DynamicResource AccentPrimaryBrush}" />
-                    <TextBlock Text="LIVE PREVIEW" FontSize="11" FontWeight="Bold"
+                    <TextBlock Text="{Binding [Panel_LivePreview], Source={x:Static loc:LocalizationService.Instance}}"
+                               FontSize="11" FontWeight="Bold"
                                Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                 </StackPanel>
 
-                <Border Grid.Column="1" Background="{DynamicResource SurfaceBaseBrush}"
-                        CornerRadius="4" Padding="6,2" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
-                    <TextBlock Name="DimensionBadge" Text="32 × 32" FontSize="11"
-                               Foreground="{DynamicResource TextSecondaryBrush}" FontWeight="SemiBold" />
-                </Border>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <Border Background="{DynamicResource SurfaceBaseBrush}"
+                            CornerRadius="4" Padding="6,2" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
+                        <TextBlock Name="DimensionBadge" Text="32 × 32" FontSize="11"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" FontWeight="SemiBold" />
+                    </Border>
+                    <ToggleButton Name="PreviewCollapseToggle"
+                                  Classes="action-btn"
+                                  Width="22" Height="22" Padding="2"
+                                  IsChecked="True"
+                                  ToolTip.Tip="{Binding [Panel_TogglePreview], Source={x:Static loc:LocalizationService.Instance}}">
+                        <Panel>
+                            <PathIcon Data="{DynamicResource IconArrowUp}" Width="10" Height="10"
+                                      IsVisible="{Binding #PreviewCollapseToggle.IsChecked}"
+                                      Foreground="{DynamicResource TextSecondaryBrush}" />
+                            <PathIcon Data="{DynamicResource IconArrowDown}" Width="10" Height="10"
+                                      IsVisible="{Binding !#PreviewCollapseToggle.IsChecked}"
+                                      Foreground="{DynamicResource TextSecondaryBrush}" />
+                        </Panel>
+                    </ToggleButton>
+                </StackPanel>
             </Grid>
 
             <!-- Preview Viewport with Checkerboard Background -->
             <Border Grid.Row="1"
+                    Margin="0,10,0,0"
+                    IsVisible="{Binding #PreviewCollapseToggle.IsChecked}"
                     Background="{DynamicResource SurfaceBaseBrush}"
                     BorderBrush="{DynamicResource BorderSubtleBrush}"
                     BorderThickness="1"
@@ -59,9 +79,10 @@
             </Border>
 
             <!-- Scale Selector Toolbar -->
-            <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto,Auto" Margin="0,8,0,0">
-                <TextBlock Grid.Column="0" Text="Масштаб:" FontSize="11"
-                           Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+            <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto,Auto" Margin="0,8,0,0"
+                  IsVisible="{Binding #PreviewCollapseToggle.IsChecked}">
+                <TextBlock Grid.Column="0" Text="{Binding [Preview_Scale], Source={x:Static loc:LocalizationService.Instance}}"
+                           FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                 <Button Name="Scale1xButton" Grid.Column="1" Content="1x" Margin="2,0" Padding="8,3"
                         FontSize="11" FontWeight="SemiBold" CornerRadius="4"
                         Background="{DynamicResource AccentPrimaryBrush}" Foreground="#0A0E17" />

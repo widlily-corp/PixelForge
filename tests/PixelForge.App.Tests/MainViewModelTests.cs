@@ -8,6 +8,7 @@ using Xunit;
 
 namespace PixelForge.App.Tests;
 
+[Collection("LocalizationSharedState")]
 public class MainViewModelTests
 {
     private class DummyFileDialogService : IFileDialogService
