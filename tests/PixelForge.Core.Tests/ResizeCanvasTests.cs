@@ -147,6 +147,38 @@ public class ResizeCanvasTests
     }
 
     [Fact]
+    public void ResizeCanvasCommand_ToArbitraryNonSquareDimensions_E_g_500x1000_ExecutesAndUndoesSuccessfully()
+    {
+        // Arrange: Start with a 10x10 canvas and place a marker pixel
+        var canvas = new PixelCanvas(10, 10);
+        var layer = canvas.ActiveLayer!;
+        var marker = new PixelColor(12, 34, 56, 255);
+        layer.SetPixel(0, 0, marker);
+
+        // Act: Resize to arbitrary 500 x 1000 dimensions with TopLeft anchor
+        var cmd = new ResizeCanvasCommand(canvas, 500, 1000, CanvasAnchor.TopLeft, ResizeMode.Anchor);
+        cmd.Execute();
+
+        // Assert
+        canvas.Width.Should().Be(500);
+        canvas.Height.Should().Be(1000);
+        layer.Width.Should().Be(500);
+        layer.Height.Should().Be(1000);
+        layer.GetPixel(0, 0).Should().Be(marker);
+        layer.GetPixel(499, 999).Should().Be(PixelColor.Transparent);
+
+        // Act: Undo
+        cmd.Undo();
+
+        // Assert
+        canvas.Width.Should().Be(10);
+        canvas.Height.Should().Be(10);
+        layer.Width.Should().Be(10);
+        layer.Height.Should().Be(10);
+        layer.GetPixel(0, 0).Should().Be(marker);
+    }
+
+    [Fact]
     public void ResizeCanvasCommand_ThrowsOnInvalidDimensions()
     {
         var canvas = new PixelCanvas(16, 16);

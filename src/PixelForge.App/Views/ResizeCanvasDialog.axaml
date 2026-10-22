@@ -63,7 +63,7 @@
                     <Grid ColumnDefinitions="*,16,*">
                         <StackPanel Grid.Column="0" Spacing="4">
                             <TextBlock Text="{Binding Loc[Dlg_ResizeWidth]}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
-                            <NumericUpDown Name="WidthInput" Value="32" Minimum="8" Maximum="1024" Increment="8"
+                            <NumericUpDown Name="WidthInput" Value="32" Minimum="1" Maximum="4096" Increment="8"
                                            FormatString="0"
                                            Background="{DynamicResource SurfaceCardBrush}"
                                            Foreground="{DynamicResource TextPrimaryBrush}"
@@ -72,7 +72,7 @@
 
                         <StackPanel Grid.Column="2" Spacing="4">
                             <TextBlock Text="{Binding Loc[Dlg_ResizeHeight]}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
-                            <NumericUpDown Name="HeightInput" Value="32" Minimum="8" Maximum="1024" Increment="8"
+                            <NumericUpDown Name="HeightInput" Value="32" Minimum="1" Maximum="4096" Increment="8"
                                            FormatString="0"
                                            Background="{DynamicResource SurfaceCardBrush}"
                                            Foreground="{DynamicResource TextPrimaryBrush}"
@@ -95,6 +95,8 @@
                     <Button Name="Preset64Button" Classes="preset-btn" Content="64 × 64" Margin="0,0,6,6" />
                     <Button Name="Preset128Button" Classes="preset-btn" Content="128 × 128" Margin="0,0,6,6" />
                     <Button Name="Preset256Button" Classes="preset-btn" Content="256 × 256" Margin="0,0,6,6" />
+                    <Button Name="Preset512Button" Classes="preset-btn" Content="512 × 512" Margin="0,0,6,6" />
+                    <Button Name="Preset1024Button" Classes="preset-btn" Content="1024 × 1024" Margin="0,0,6,6" />
                     <Button Name="ScaleHalfButton" Classes="preset-btn" Content="0.5× (÷2)" Margin="0,0,6,6" />
                     <Button Name="ScaleDoubleButton" Classes="preset-btn" Content="2.0× (×2)" Margin="0,0,6,6" />
                 </WrapPanel>

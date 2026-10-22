@@ -538,18 +538,36 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         float right = destRect.Right;
         float bottom = destRect.Bottom;
 
-        // Vertical lines
-        for (int x = 0; x <= canvasW; x++)
+        // Viewport culling: only draw grid lines within the visible clip bounds to guarantee 60+ FPS on large canvases (e.g. 500x1000, 4096)
+        var clip = canvas.LocalClipBounds;
+        float visibleLeft = Math.Max(left, clip.Left);
+        float visibleRight = Math.Min(right, clip.Right);
+        float visibleTop = Math.Max(top, clip.Top);
+        float visibleBottom = Math.Min(bottom, clip.Bottom);
+
+        if (visibleLeft >= visibleRight || visibleTop >= visibleBottom)
         {
-            float posX = left + (x * zoom);
-            canvas.DrawLine(posX, top, posX, bottom, _gridPaint);
+            return;
         }
 
+        int startX = Math.Max(0, (int)Math.Floor((visibleLeft - left) / zoom));
+        int endX = Math.Min(canvasW, (int)Math.Ceiling((visibleRight - left) / zoom));
+
+        // Vertical lines
+        for (int x = startX; x <= endX; x++)
+        {
+            float posX = left + (x * zoom);
+            canvas.DrawLine(posX, visibleTop, posX, visibleBottom, _gridPaint);
+        }
+
+        int startY = Math.Max(0, (int)Math.Floor((visibleTop - top) / zoom));
+        int endY = Math.Min(canvasH, (int)Math.Ceiling((visibleBottom - top) / zoom));
+
         // Horizontal lines
-        for (int y = 0; y <= canvasH; y++)
+        for (int y = startY; y <= endY; y++)
         {
             float posY = top + (y * zoom);
-            canvas.DrawLine(left, posY, right, posY, _gridPaint);
+            canvas.DrawLine(visibleLeft, posY, visibleRight, posY, _gridPaint);
         }
     }
 

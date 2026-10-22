@@ -9,8 +9,8 @@ namespace PixelForge.App.ViewModels;
 /// </summary>
 public partial class CanvasViewModel : ViewModelBase
 {
-    public const float MinZoom = 1.0f;
-    public const float MaxZoom = 32.0f;
+    public const float MinZoom = 0.05f;
+    public const float MaxZoom = 64.0f;
 
     [ObservableProperty]
     private PixelCanvas _canvas;
@@ -74,6 +74,15 @@ public partial class CanvasViewModel : ViewModelBase
         SymmetryAxisX = newCanvas.Width / 2;
         SymmetryAxisY = newCanvas.Height / 2;
         Selection.Clear();
+
+        if (newCanvas.Width >= 512 || newCanvas.Height >= 512)
+        {
+            Zoom = 1.0f;
+        }
+        else if (newCanvas.Width >= 128 || newCanvas.Height >= 128)
+        {
+            Zoom = 4.0f;
+        }
 
         OnPropertyChanged(nameof(CanvasWidth));
         OnPropertyChanged(nameof(CanvasHeight));

@@ -35,8 +35,8 @@ public partial class ResizeCanvasDialog : Window
     public ResizeCanvasDialog(int initialWidth, int initialHeight)
     {
         DataContext = this;
-        _initialWidth = Math.Clamp(initialWidth, 8, 1024);
-        _initialHeight = Math.Clamp(initialHeight, 8, 1024);
+        _initialWidth = Math.Clamp(initialWidth, 1, 4096);
+        _initialHeight = Math.Clamp(initialHeight, 1, 4096);
 
         InitializeComponent();
 
@@ -51,9 +51,11 @@ public partial class ResizeCanvasDialog : Window
         Preset64Button.Click += (_, _) => SetDimensions(64, 64);
         Preset128Button.Click += (_, _) => SetDimensions(128, 128);
         Preset256Button.Click += (_, _) => SetDimensions(256, 256);
+        Preset512Button.Click += (_, _) => SetDimensions(512, 512);
+        Preset1024Button.Click += (_, _) => SetDimensions(1024, 1024);
 
-        ScaleHalfButton.Click += (_, _) => SetDimensions(Math.Max(8, _initialWidth / 2), Math.Max(8, _initialHeight / 2));
-        ScaleDoubleButton.Click += (_, _) => SetDimensions(Math.Min(1024, _initialWidth * 2), Math.Min(1024, _initialHeight * 2));
+        ScaleHalfButton.Click += (_, _) => SetDimensions(Math.Max(1, _initialWidth / 2), Math.Max(1, _initialHeight / 2));
+        ScaleDoubleButton.Click += (_, _) => SetDimensions(Math.Min(4096, _initialWidth * 2), Math.Min(4096, _initialHeight * 2));
 
         // Aspect ratio tracking
         WidthInput.ValueChanged += OnWidthChanged;
@@ -88,8 +90,8 @@ public partial class ResizeCanvasDialog : Window
         _isUpdatingAspect = true;
         try
         {
-            WidthInput.Value = Math.Clamp(w, 8, 1024);
-            HeightInput.Value = Math.Clamp(h, 8, 1024);
+            WidthInput.Value = Math.Clamp(w, 1, 4096);
+            HeightInput.Value = Math.Clamp(h, 1, 4096);
         }
         finally
         {
@@ -108,7 +110,7 @@ public partial class ResizeCanvasDialog : Window
         try
         {
             float ratio = (float)_initialHeight / _initialWidth;
-            HeightInput.Value = Math.Clamp((int)Math.Round((double)WidthInput.Value.Value * ratio), 8, 1024);
+            HeightInput.Value = Math.Clamp((int)Math.Round((double)WidthInput.Value.Value * ratio), 1, 4096);
         }
         finally
         {
@@ -127,7 +129,7 @@ public partial class ResizeCanvasDialog : Window
         try
         {
             float ratio = (float)_initialWidth / _initialHeight;
-            WidthInput.Value = Math.Clamp((int)Math.Round((double)HeightInput.Value.Value * ratio), 8, 1024);
+            WidthInput.Value = Math.Clamp((int)Math.Round((double)HeightInput.Value.Value * ratio), 1, 4096);
         }
         finally
         {
@@ -218,7 +220,7 @@ public partial class ResizeCanvasDialog : Window
         int width = (int)(WidthInput.Value ?? _initialWidth);
         int height = (int)(HeightInput.Value ?? _initialHeight);
 
-        if (width < 8 || width > 1024 || height < 8 || height > 1024)
+        if (width < 1 || width > 4096 || height < 1 || height > 4096)
         {
             ErrorText.Text = Loc["Dlg_ResizeError"];
             return;

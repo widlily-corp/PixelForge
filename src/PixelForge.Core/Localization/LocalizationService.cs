@@ -351,18 +351,18 @@ public class LocalizationService : INotifyPropertyChanged
         ["Dlg_NewCanvasIcon"] = "Иконка",
         ["Dlg_NewCanvasSprite"] = "Спрайт",
         ["Dlg_NewCanvasDetailed"] = "Детальный арт",
-        ["Dlg_NewCanvasCustomSize"] = "ПРОИЗВОЛЬНЫЙ РАЗМЕР (16–256 px)",
+        ["Dlg_NewCanvasCustomSize"] = "ПРОИЗВОЛЬНЫЙ РАЗМЕР (1–4096 px)",
         ["Dlg_NewCanvasWidth"] = "Ширина (px)",
         ["Dlg_NewCanvasHeight"] = "Высота (px)",
         ["Dlg_NewCanvasCreate"] = "Создать холст",
         ["Dlg_NewCanvasCancel"] = "Отмена",
-        ["Dlg_NewCanvasError"] = "Размеры холста должны быть от 16 до 256 пикселей.",
+        ["Dlg_NewCanvasError"] = "Размеры холста должны быть от 1 до 4096 пикселей.",
 
         // Dialog: Resize Canvas
         ["Dlg_ResizeTitle"] = "Размер холста — PixelForge",
         ["Dlg_ResizeHeader"] = "Размер холста",
         ["Dlg_ResizeCurrent"] = "Текущий размер: {0} × {1} px",
-        ["Dlg_ResizeDimensions"] = "НОВЫЙ РАЗМЕР (8–1024 px)",
+        ["Dlg_ResizeDimensions"] = "НОВЫЙ РАЗМЕР (1–4096 px)",
         ["Dlg_ResizeWidth"] = "Ширина (px)",
         ["Dlg_ResizeHeight"] = "Высота (px)",
         ["Dlg_ResizeKeepAspect"] = "Сохранять пропорции (1:1)",
@@ -381,7 +381,7 @@ public class LocalizationService : INotifyPropertyChanged
         ["Dlg_ResizeAnchor_BottomRight"] = "Снизу-справа (расширение влево и вверх)",
         ["Dlg_ResizeApply"] = "Применить",
         ["Dlg_ResizeCancel"] = "Отмена",
-        ["Dlg_ResizeError"] = "Размеры холста должны быть от 8 до 1024 пикселей.",
+        ["Dlg_ResizeError"] = "Размеры холста должны быть от 1 до 4096 пикселей.",
 
         // Dialog: Hotkeys
         ["Dlg_HotkeysTitle"] = "Горячие клавиши PixelForge",
@@ -728,18 +728,18 @@ public class LocalizationService : INotifyPropertyChanged
         ["Dlg_NewCanvasIcon"] = "Icon",
         ["Dlg_NewCanvasSprite"] = "Sprite",
         ["Dlg_NewCanvasDetailed"] = "Detailed Art",
-        ["Dlg_NewCanvasCustomSize"] = "CUSTOM SIZE (16–256 px)",
+        ["Dlg_NewCanvasCustomSize"] = "CUSTOM SIZE (1–4096 px)",
         ["Dlg_NewCanvasWidth"] = "Width (px)",
         ["Dlg_NewCanvasHeight"] = "Height (px)",
         ["Dlg_NewCanvasCreate"] = "Create Canvas",
         ["Dlg_NewCanvasCancel"] = "Cancel",
-        ["Dlg_NewCanvasError"] = "Canvas dimensions must be between 16 and 256 pixels.",
+        ["Dlg_NewCanvasError"] = "Canvas dimensions must be between 1 and 4096 pixels.",
 
         // Dialog: Resize Canvas
         ["Dlg_ResizeTitle"] = "Canvas Size — PixelForge",
         ["Dlg_ResizeHeader"] = "Canvas Size",
         ["Dlg_ResizeCurrent"] = "Current size: {0} × {1} px",
-        ["Dlg_ResizeDimensions"] = "NEW SIZE (8–1024 px)",
+        ["Dlg_ResizeDimensions"] = "NEW SIZE (1–4096 px)",
         ["Dlg_ResizeWidth"] = "Width (px)",
         ["Dlg_ResizeHeight"] = "Height (px)",
         ["Dlg_ResizeKeepAspect"] = "Maintain aspect ratio (1:1)",
@@ -758,7 +758,7 @@ public class LocalizationService : INotifyPropertyChanged
         ["Dlg_ResizeAnchor_BottomRight"] = "Bottom-Right (expands left and up)",
         ["Dlg_ResizeApply"] = "Apply",
         ["Dlg_ResizeCancel"] = "Cancel",
-        ["Dlg_ResizeError"] = "Canvas dimensions must be between 8 and 1024 pixels.",
+        ["Dlg_ResizeError"] = "Canvas dimensions must be between 1 and 4096 pixels.",
 
         // Dialog: Hotkeys
         ["Dlg_HotkeysTitle"] = "PixelForge Hotkeys",

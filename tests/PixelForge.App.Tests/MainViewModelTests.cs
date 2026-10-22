@@ -81,6 +81,34 @@ public class MainViewModelTests
     }
 
     [Fact]
+    public void NewProject_WithArbitrarySize_E_g_500x1000_ConfiguresCanvasAndSupportsResizeUndo()
+    {
+        // Arrange
+        var vm = CreateMainViewModel();
+
+        // Act: Create 500x1000 project
+        vm.NewProject(500, 1000);
+
+        // Assert
+        vm.CanvasViewModel.CanvasWidth.Should().Be(500);
+        vm.CanvasViewModel.CanvasHeight.Should().Be(1000);
+        vm.CanvasViewModel.DimensionsText.Should().Be("500 × 1000 px");
+        vm.CanvasViewModel.Zoom.Should().Be(1.0f); // Auto-adapts to 1.0f for large dimensions
+
+        // Act: Resize canvas to 1200x600
+        vm.ResizeCanvas(1200, 600, CanvasAnchor.Center, ResizeMode.Anchor);
+        vm.CanvasViewModel.CanvasWidth.Should().Be(1200);
+        vm.CanvasViewModel.CanvasHeight.Should().Be(600);
+        vm.CanvasViewModel.DimensionsText.Should().Be("1200 × 600 px");
+
+        // Act: Undo resize
+        vm.HistoryViewModel.Undo();
+        vm.CanvasViewModel.CanvasWidth.Should().Be(500);
+        vm.CanvasViewModel.CanvasHeight.Should().Be(1000);
+        vm.CanvasViewModel.DimensionsText.Should().Be("500 × 1000 px");
+    }
+
+    [Fact]
     public void FlipActiveLayer_FlipsHorizontallyAndVertically()
     {
         // Arrange

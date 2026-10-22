@@ -24,6 +24,7 @@ public partial class NewCanvasDialog : Window
         Preset32Button.Click += (_, _) => SetPreset(32, 32);
         Preset64Button.Click += (_, _) => SetPreset(64, 64);
         Preset128Button.Click += (_, _) => SetPreset(128, 128);
+        Preset512Button.Click += (_, _) => SetPreset(512, 512);
 
         CancelButton.Click += OnCancelClick;
         CreateButton.Click += OnCreateClick;
@@ -47,7 +48,7 @@ public partial class NewCanvasDialog : Window
         int width = (int)Math.Round(WidthInput.Value ?? 32);
         int height = (int)Math.Round(HeightInput.Value ?? 32);
 
-        if (width < 16 || width > 256 || height < 16 || height > 256)
+        if (width < 1 || width > 4096 || height < 1 || height > 4096)
         {
             ErrorText.Text = Loc["Dlg_NewCanvasError"];
             return;

@@ -5,7 +5,7 @@
         mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="360"
         x:Class="PixelForge.App.Views.NewCanvasDialog"
         Title="{Binding Loc[Dlg_NewCanvasTitle]}"
-        Width="400" Height="360"
+        Width="430" Height="370"
         CanResize="False"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource SurfaceBaseBrush}">
@@ -21,9 +21,9 @@
             <!-- Presets Section -->
             <StackPanel Grid.Row="1" Spacing="8" Margin="0,0,0,16">
                 <TextBlock Text="{Binding Loc[Dlg_NewCanvasQuickPresets]}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
-                <Grid ColumnDefinitions="*,*,*">
-                    <Button Name="Preset32Button" Grid.Column="0" Margin="0,0,4,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                            Padding="8,10" Background="{DynamicResource SurfaceCardBrush}" Foreground="{DynamicResource TextPrimaryBrush}"
+                <Grid ColumnDefinitions="*,*,*,*">
+                    <Button Name="Preset32Button" Grid.Column="0" Margin="0,0,3,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            Padding="6,8" Background="{DynamicResource SurfaceCardBrush}" Foreground="{DynamicResource TextPrimaryBrush}"
                             BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6">
                         <StackPanel Spacing="2" HorizontalAlignment="Center">
                             <TextBlock Text="32 × 32" FontWeight="SemiBold" HorizontalAlignment="Center" />
@@ -31,8 +31,8 @@
                         </StackPanel>
                     </Button>
 
-                    <Button Name="Preset64Button" Grid.Column="1" Margin="4,0,4,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                            Padding="8,10" Background="{DynamicResource SurfaceCardBrush}" Foreground="{DynamicResource TextPrimaryBrush}"
+                    <Button Name="Preset64Button" Grid.Column="1" Margin="3,0,3,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            Padding="6,8" Background="{DynamicResource SurfaceCardBrush}" Foreground="{DynamicResource TextPrimaryBrush}"
                             BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6">
                         <StackPanel Spacing="2" HorizontalAlignment="Center">
                             <TextBlock Text="64 × 64" FontWeight="SemiBold" HorizontalAlignment="Center" />
@@ -40,12 +40,21 @@
                         </StackPanel>
                     </Button>
 
-                    <Button Name="Preset128Button" Grid.Column="2" Margin="4,0,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                            Padding="8,10" Background="{DynamicResource SurfaceCardBrush}" Foreground="{DynamicResource TextPrimaryBrush}"
+                    <Button Name="Preset128Button" Grid.Column="2" Margin="3,0,3,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            Padding="6,8" Background="{DynamicResource SurfaceCardBrush}" Foreground="{DynamicResource TextPrimaryBrush}"
                             BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6">
                         <StackPanel Spacing="2" HorizontalAlignment="Center">
                             <TextBlock Text="128 × 128" FontWeight="SemiBold" HorizontalAlignment="Center" />
                             <TextBlock Text="{Binding Loc[Dlg_NewCanvasDetailed]}" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Name="Preset512Button" Grid.Column="3" Margin="3,0,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            Padding="6,8" Background="{DynamicResource SurfaceCardBrush}" Foreground="{DynamicResource TextPrimaryBrush}"
+                            BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6">
+                        <StackPanel Spacing="2" HorizontalAlignment="Center">
+                            <TextBlock Text="512 × 512" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                            <TextBlock Text="HD / Large" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" />
                         </StackPanel>
                     </Button>
                 </Grid>
@@ -57,7 +66,7 @@
                 <Grid ColumnDefinitions="*,16,*">
                     <StackPanel Grid.Column="0" Spacing="4">
                         <TextBlock Text="{Binding Loc[Dlg_NewCanvasWidth]}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
-                        <NumericUpDown Name="WidthInput" Value="32" Minimum="16" Maximum="256" Increment="8"
+                        <NumericUpDown Name="WidthInput" Value="32" Minimum="1" Maximum="4096" Increment="8"
                                        FormatString="0"
                                        Background="{DynamicResource SurfaceCardBrush}"
                                        Foreground="{DynamicResource TextPrimaryBrush}"
@@ -66,7 +75,7 @@
 
                     <StackPanel Grid.Column="2" Spacing="4">
                         <TextBlock Text="{Binding Loc[Dlg_NewCanvasHeight]}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
-                        <NumericUpDown Name="HeightInput" Value="32" Minimum="16" Maximum="256" Increment="8"
+                        <NumericUpDown Name="HeightInput" Value="32" Minimum="1" Maximum="4096" Increment="8"
                                        FormatString="0"
                                        Background="{DynamicResource SurfaceCardBrush}"
                                        Foreground="{DynamicResource TextPrimaryBrush}"
