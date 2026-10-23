@@ -2,11 +2,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="460" d:DesignHeight="540"
+        mc:Ignorable="d" d:DesignWidth="490" d:DesignHeight="640"
         x:Class="PixelForge.App.Views.ResizeCanvasDialog"
         Title="{Binding Loc[Dlg_ResizeTitle]}"
-        Width="460" Height="540"
-        CanResize="False"
+        Width="490" Height="640"
+        MinWidth="440" MinHeight="460"
+        CanResize="True"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource SurfaceBaseBrush}">
 
@@ -47,123 +48,128 @@
         </Style>
     </Window.Styles>
 
-    <Border Padding="20">
-        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto">
-            <!-- 1. Header -->
-            <StackPanel Grid.Row="0" Spacing="2" Margin="0,0,0,14">
-                <TextBlock Text="{Binding Loc[Dlg_ResizeHeader]}" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
-                <TextBlock Name="CurrentDimensionsText" Text="32 × 32 px" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
-            </StackPanel>
-
-            <!-- 2. New Dimensions Inputs -->
-            <Border Grid.Row="1" Background="{DynamicResource SurfacePanelBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}"
-                    BorderThickness="1" CornerRadius="6" Padding="14,10" Margin="0,0,0,12">
-                <StackPanel Spacing="10">
-                    <TextBlock Text="{Binding Loc[Dlg_ResizeDimensions]}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
-                    <Grid ColumnDefinitions="*,16,*">
-                        <StackPanel Grid.Column="0" Spacing="4">
-                            <TextBlock Text="{Binding Loc[Dlg_ResizeWidth]}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
-                            <NumericUpDown Name="WidthInput" Value="32" Minimum="1" Maximum="4096" Increment="8"
-                                           FormatString="0"
-                                           Background="{DynamicResource SurfaceCardBrush}"
-                                           Foreground="{DynamicResource TextPrimaryBrush}"
-                                           BorderBrush="{DynamicResource BorderSubtleBrush}" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="2" Spacing="4">
-                            <TextBlock Text="{Binding Loc[Dlg_ResizeHeight]}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
-                            <NumericUpDown Name="HeightInput" Value="32" Minimum="1" Maximum="4096" Increment="8"
-                                           FormatString="0"
-                                           Background="{DynamicResource SurfaceCardBrush}"
-                                           Foreground="{DynamicResource TextPrimaryBrush}"
-                                           BorderBrush="{DynamicResource BorderSubtleBrush}" />
-                        </StackPanel>
-                    </Grid>
-
-                    <CheckBox Name="KeepAspectCheckBox" Content="{Binding Loc[Dlg_ResizeKeepAspect]}" FontSize="12"
-                              Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
+    <Grid RowDefinitions="*,Auto">
+        <!-- 1. Scrollable Settings Area -->
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="14" Margin="20,18,20,14">
+                <!-- Header -->
+                <StackPanel Spacing="2">
+                    <TextBlock Text="{Binding Loc[Dlg_ResizeHeader]}" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    <TextBlock Name="CurrentDimensionsText" Text="32 × 32 px" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
                 </StackPanel>
-            </Border>
 
-            <!-- 3. Presets & Quick Scales -->
-            <StackPanel Grid.Row="2" Spacing="6" Margin="0,0,0,12">
-                <TextBlock Text="{Binding Loc[Dlg_ResizePresets]}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
-                <WrapPanel Orientation="Horizontal">
-                    <Button Name="Preset16Button" Classes="preset-btn" Content="16 × 16" Margin="0,0,6,6" />
-                    <Button Name="Preset32Button" Classes="preset-btn" Content="32 × 32" Margin="0,0,6,6" />
-                    <Button Name="Preset48Button" Classes="preset-btn" Content="48 × 48" Margin="0,0,6,6" />
-                    <Button Name="Preset64Button" Classes="preset-btn" Content="64 × 64" Margin="0,0,6,6" />
-                    <Button Name="Preset128Button" Classes="preset-btn" Content="128 × 128" Margin="0,0,6,6" />
-                    <Button Name="Preset256Button" Classes="preset-btn" Content="256 × 256" Margin="0,0,6,6" />
-                    <Button Name="Preset512Button" Classes="preset-btn" Content="512 × 512" Margin="0,0,6,6" />
-                    <Button Name="Preset1024Button" Classes="preset-btn" Content="1024 × 1024" Margin="0,0,6,6" />
-                    <Button Name="ScaleHalfButton" Classes="preset-btn" Content="0.5× (÷2)" Margin="0,0,6,6" />
-                    <Button Name="ScaleDoubleButton" Classes="preset-btn" Content="2.0× (×2)" Margin="0,0,6,6" />
-                </WrapPanel>
-            </StackPanel>
+                <!-- New Dimensions Inputs -->
+                <Border Background="{DynamicResource SurfacePanelBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}"
+                        BorderThickness="1" CornerRadius="6" Padding="14,10">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="{Binding Loc[Dlg_ResizeDimensions]}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
+                        <Grid ColumnDefinitions="*,16,*">
+                            <StackPanel Grid.Column="0" Spacing="4">
+                                <TextBlock Text="{Binding Loc[Dlg_ResizeWidth]}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                <NumericUpDown Name="WidthInput" Value="32" Minimum="1" Maximum="4096" Increment="8"
+                                               FormatString="0"
+                                               Background="{DynamicResource SurfaceCardBrush}"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"
+                                               BorderBrush="{DynamicResource BorderSubtleBrush}" />
+                            </StackPanel>
 
-            <!-- 4. Mode Selection -->
-            <StackPanel Grid.Row="3" Spacing="6" Margin="0,0,0,12">
-                <TextBlock Text="{Binding Loc[Dlg_ResizePresets]}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
-                <Grid ColumnDefinitions="*,*">
-                    <RadioButton Name="AnchorModeRadio" Grid.Column="0" Content="{Binding Loc[Dlg_ResizeAnchorMode]}"
-                                 IsChecked="True" GroupName="ResizeModeGroup" FontSize="12"
-                                 Foreground="{DynamicResource TextPrimaryBrush}" />
-                    <RadioButton Name="ScaleModeRadio" Grid.Column="1" Content="{Binding Loc[Dlg_ResizeScaleMode]}"
-                                 GroupName="ResizeModeGroup" FontSize="12"
-                                 Foreground="{DynamicResource TextPrimaryBrush}" />
-                </Grid>
-            </StackPanel>
+                            <StackPanel Grid.Column="2" Spacing="4">
+                                <TextBlock Text="{Binding Loc[Dlg_ResizeHeight]}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                <NumericUpDown Name="HeightInput" Value="32" Minimum="1" Maximum="4096" Increment="8"
+                                               FormatString="0"
+                                               Background="{DynamicResource SurfaceCardBrush}"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"
+                                               BorderBrush="{DynamicResource BorderSubtleBrush}" />
+                            </StackPanel>
+                        </Grid>
 
-            <!-- 5. 3x3 Anchor Selection Grid -->
-            <Border Name="AnchorPanel" Grid.Row="4" Background="{DynamicResource SurfacePanelBrush}"
-                    BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1"
-                    CornerRadius="6" Padding="12,10" Margin="0,0,0,12">
-                <Grid ColumnDefinitions="*,Auto">
-                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="4">
-                        <TextBlock Text="{Binding Loc[Dlg_ResizeAnchorPoint]}" FontSize="12" FontWeight="SemiBold"
-                                   Foreground="{DynamicResource TextPrimaryBrush}" />
-                        <TextBlock Name="AnchorDescriptionText" Text="•"
-                                   FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
+                        <CheckBox Name="KeepAspectCheckBox" Content="{Binding Loc[Dlg_ResizeKeepAspect]}" FontSize="12"
+                                  Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
                     </StackPanel>
+                </Border>
 
-                    <!-- 3x3 Grid Buttons -->
-                    <Grid Grid.Column="1" RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,Auto,Auto">
-                        <Button Name="AnchorTopLeft" Grid.Row="0" Grid.Column="0" Classes="anchor-btn" Content="↖" Margin="2" />
-                        <Button Name="AnchorTopCenter" Grid.Row="0" Grid.Column="1" Classes="anchor-btn" Content="↑" Margin="2" />
-                        <Button Name="AnchorTopRight" Grid.Row="0" Grid.Column="2" Classes="anchor-btn" Content="↗" Margin="2" />
+                <!-- Presets & Quick Scales -->
+                <StackPanel Spacing="6">
+                    <TextBlock Text="{Binding Loc[Dlg_ResizePresets]}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
+                    <WrapPanel Orientation="Horizontal">
+                        <Button Name="Preset16Button" Classes="preset-btn" Content="16 × 16" Margin="0,0,6,6" />
+                        <Button Name="Preset32Button" Classes="preset-btn" Content="32 × 32" Margin="0,0,6,6" />
+                        <Button Name="Preset48Button" Classes="preset-btn" Content="48 × 48" Margin="0,0,6,6" />
+                        <Button Name="Preset64Button" Classes="preset-btn" Content="64 × 64" Margin="0,0,6,6" />
+                        <Button Name="Preset128Button" Classes="preset-btn" Content="128 × 128" Margin="0,0,6,6" />
+                        <Button Name="Preset256Button" Classes="preset-btn" Content="256 × 256" Margin="0,0,6,6" />
+                        <Button Name="Preset512Button" Classes="preset-btn" Content="512 × 512" Margin="0,0,6,6" />
+                        <Button Name="Preset1024Button" Classes="preset-btn" Content="1024 × 1024" Margin="0,0,6,6" />
+                        <Button Name="ScaleHalfButton" Classes="preset-btn" Content="0.5× (÷2)" Margin="0,0,6,6" />
+                        <Button Name="ScaleDoubleButton" Classes="preset-btn" Content="2.0× (×2)" Margin="0,0,6,6" />
+                    </WrapPanel>
+                </StackPanel>
 
-                        <Button Name="AnchorMiddleLeft" Grid.Row="1" Grid.Column="0" Classes="anchor-btn" Content="←" Margin="2" />
-                        <Button Name="AnchorCenter" Grid.Row="1" Grid.Column="1" Classes="anchor-btn" Content="•" Margin="2" />
-                        <Button Name="AnchorMiddleRight" Grid.Row="1" Grid.Column="2" Classes="anchor-btn" Content="→" Margin="2" />
-
-                        <Button Name="AnchorBottomLeft" Grid.Row="2" Grid.Column="0" Classes="anchor-btn" Content="↙" Margin="2" />
-                        <Button Name="AnchorBottomCenter" Grid.Row="2" Grid.Column="1" Classes="anchor-btn" Content="↓" Margin="2" />
-                        <Button Name="AnchorBottomRight" Grid.Row="2" Grid.Column="2" Classes="anchor-btn" Content="↘" Margin="2" />
+                <!-- Mode Selection -->
+                <StackPanel Spacing="6">
+                    <TextBlock Text="{Binding Loc[Dlg_ResizeMode]}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" />
+                    <Grid ColumnDefinitions="*,*">
+                        <RadioButton Name="AnchorModeRadio" Grid.Column="0" Content="{Binding Loc[Dlg_ResizeAnchorMode]}"
+                                     IsChecked="True" GroupName="ResizeModeGroup" FontSize="12"
+                                     Foreground="{DynamicResource TextPrimaryBrush}" />
+                        <RadioButton Name="ScaleModeRadio" Grid.Column="1" Content="{Binding Loc[Dlg_ResizeScaleMode]}"
+                                     GroupName="ResizeModeGroup" FontSize="12"
+                                     Foreground="{DynamicResource TextPrimaryBrush}" />
                     </Grid>
-                </Grid>
-            </Border>
+                </StackPanel>
 
-            <!-- 6. Spacer -->
-            <Panel Grid.Row="5" />
+                <!-- 3x3 Anchor Selection Grid -->
+                <Border Name="AnchorPanel" Background="{DynamicResource SurfacePanelBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1"
+                        CornerRadius="6" Padding="14,10">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="4" Margin="0,0,10,0">
+                            <TextBlock Text="{Binding Loc[Dlg_ResizeAnchorPoint]}" FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <TextBlock Name="AnchorDescriptionText" Text="•"
+                                       FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
 
-            <!-- 7. Action Buttons -->
-            <Grid Grid.Row="6" ColumnDefinitions="*,Auto,8,Auto">
+                        <!-- 3x3 Grid Buttons -->
+                        <Grid Grid.Column="1" RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,Auto,Auto">
+                            <Button Name="AnchorTopLeft" Grid.Row="0" Grid.Column="0" Classes="anchor-btn" Content="↖" Margin="2" />
+                            <Button Name="AnchorTopCenter" Grid.Row="0" Grid.Column="1" Classes="anchor-btn" Content="↑" Margin="2" />
+                            <Button Name="AnchorTopRight" Grid.Row="0" Grid.Column="2" Classes="anchor-btn" Content="↗" Margin="2" />
+
+                            <Button Name="AnchorMiddleLeft" Grid.Row="1" Grid.Column="0" Classes="anchor-btn" Content="←" Margin="2" />
+                            <Button Name="AnchorCenter" Grid.Row="1" Grid.Column="1" Classes="anchor-btn" Content="•" Margin="2" />
+                            <Button Name="AnchorMiddleRight" Grid.Row="1" Grid.Column="2" Classes="anchor-btn" Content="→" Margin="2" />
+
+                            <Button Name="AnchorBottomLeft" Grid.Row="2" Grid.Column="0" Classes="anchor-btn" Content="↙" Margin="2" />
+                            <Button Name="AnchorBottomCenter" Grid.Row="2" Grid.Column="1" Classes="anchor-btn" Content="↓" Margin="2" />
+                            <Button Name="AnchorBottomRight" Grid.Row="2" Grid.Column="2" Classes="anchor-btn" Content="↘" Margin="2" />
+                        </Grid>
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- 2. Sticky Bottom Action Bar -->
+        <Border Grid.Row="1" Background="{DynamicResource SurfacePanelBrush}"
+                BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,1,0,0"
+                Padding="20,12">
+            <Grid ColumnDefinitions="*,Auto,10,Auto">
                 <TextBlock Name="ErrorText" Grid.Column="0" VerticalAlignment="Center"
-                           Foreground="{DynamicResource AccentDangerBrush}" FontSize="12" TextWrapping="Wrap" />
+                           Foreground="{DynamicResource AccentDangerBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,0,10,0" />
 
                 <Button Name="CancelButton" Grid.Column="1" Content="{Binding Loc[Dlg_ResizeCancel]}"
-                        Padding="16,8" CornerRadius="6"
+                        Padding="18,8" CornerRadius="6"
                         Background="{DynamicResource SurfaceCardBrush}"
                         Foreground="{DynamicResource TextPrimaryBrush}"
                         BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" />
 
                 <Button Name="ApplyButton" Grid.Column="3" Content="{Binding Loc[Dlg_ResizeApply]}"
-                        Padding="20,8" CornerRadius="6"
+                        Padding="24,8" CornerRadius="6"
                         Background="{DynamicResource AccentPrimaryBrush}"
                         Foreground="#0A0E17" FontWeight="SemiBold"
                         IsDefault="True" />
             </Grid>
-        </Grid>
-    </Border>
+        </Border>
+    </Grid>
 </Window>

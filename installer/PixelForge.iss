@@ -70,3 +70,4 @@ Root: HKA; Subkey: "Software\Classes\Applications\PixelForge.App.exe\shell\open\
 
 [Run]
 Filename: "{app}\PixelForge.App.exe"; Description: "{cm:LaunchProgram,PixelForge}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\PixelForge.App.exe"; Flags: nowait runasoriginaluser; Check: WizardSilent

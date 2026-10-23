@@ -132,15 +132,58 @@ public class UpdateService : IUpdateService
 
             progress?.Report(1.0);
 
-            // Execute Inno Setup installer silently and restart application
-            var psi = new ProcessStartInfo
+            if (OperatingSystem.IsWindows())
             {
-                FileName = installerPath,
-                Arguments = "/SILENT /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS",
-                UseShellExecute = true
-            };
+                string targetExe = Environment.ProcessPath
+                    ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PixelForge.App.exe");
 
-            Process.Start(psi);
+                string scriptPath = Path.Combine(tempDir, $"PixelForge_Updater_{Guid.NewGuid():N}.cmd");
+                string scriptContent = $@"@echo off
+setlocal
+set ""INSTALLER={installerPath}""
+set ""TARGET_EXE={targetExe}""
+
+:: Run Inno Setup installer silently and wait for it to finish
+""%INSTALLER%"" /SILENT /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS
+
+:: Wait 2 seconds for Inno Setup to finish post-install
+ping 127.0.0.1 -n 3 >nul
+
+:: Check if PixelForge.App.exe is already running
+tasklist /fi ""imagename eq PixelForge.App.exe"" 2>nul | find /i ""PixelForge.App.exe"" >nul
+if errorlevel 1 (
+    start """" ""%TARGET_EXE%""
+)
+
+:: Brief pause before cleaning up temporary files
+ping 127.0.0.1 -n 4 >nul
+del ""%INSTALLER%"" 2>nul
+(goto) 2>nul & del ""%~f0""
+";
+
+                await File.WriteAllTextAsync(scriptPath, scriptContent, cancellationToken).ConfigureAwait(false);
+
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/c \"\"{scriptPath}\"\"",
+                    CreateNoWindow = true,
+                    UseShellExecute = true,
+                    WindowStyle = ProcessWindowStyle.Hidden
+                };
+
+                Process.Start(psi);
+            }
+            else
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = installerPath,
+                    UseShellExecute = true
+                };
+
+                Process.Start(psi);
+            }
 
             // Exit this process so Inno Setup can update files cleanly
             Environment.Exit(0);
