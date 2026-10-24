@@ -9,12 +9,12 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.1.9-blue.svg" alt="Version 0.1.5" />
+  <img src="https://img.shields.io/badge/version-0.1.10-blue.svg" alt="Version 0.1.10" />
   <img src="https://img.shields.io/badge/.NET-8.0-purple.svg" alt=".NET 8.0" />
   <img src="https://img.shields.io/badge/Avalonia-11.1.3-informational.svg" alt="Avalonia 11" />
   <img src="https://img.shields.io/badge/Rendering-SkiaSharp-orange.svg" alt="SkiaSharp" />
   <img src="https://img.shields.io/badge/Installer-Inno%20Setup%20LZMA2-brightgreen.svg" alt="Inno Setup LZMA2" />
-  <img src="https://img.shields.io/badge/Tests-435%20passed-success.svg" alt="Tests 435 passed" />
+  <img src="https://img.shields.io/badge/Tests-451%20passed-success.svg" alt="Tests 435 passed" />
   <img src="https://img.shields.io/badge/License-Apache--2.0-green.svg" alt="Apache 2.0 License" />
   <img src="https://img.shields.io/badge/Platform-Windows%20x64-lightgrey.svg" alt="Windows x64" />
 </p>
@@ -240,3 +240,4 @@ powershell -ExecutionPolicy Bypass -File .agents/scripts/pack-release.ps1 -Versi
 Р СџРЎР‚Р С•Р ВµР С”РЎвЂљ РЎР‚Р В°РЎРѓР С—РЎР‚Р С•РЎРѓРЎвЂљРЎР‚Р В°Р Р…РЎРЏР ВµРЎвЂљРЎРѓРЎРЏ Р С—Р С•Р Т‘ РЎРѓР Р†Р С•Р В±Р С•Р Т‘Р Р…Р С•Р в„– Р В»Р С‘РЎвЂ Р ВµР Р…Р В·Р С‘Р ВµР в„– **Apache-2.0**. Р СџР С•Р Т‘РЎР‚Р С•Р В±Р Р…Р С•РЎРѓРЎвЂљР С‘ Р Р† РЎвЂћР В°Р в„–Р В»Р Вµ [LICENSE](LICENSE).
 
 Copyright Р’В© 2026 widlily-corp.
+

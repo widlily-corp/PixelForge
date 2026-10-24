@@ -1,7 +1,7 @@
 {
-    "version":  "0.1.9",
-    "releaseNotes":  "PixelForge v0.1.9: Canvas resize dialog UX fix: sticky footer with apply button, scrollable settings, window resizing, and automated application launch after silent OTA updates",
-    "downloadUrl":  "https://github.com/widlily-corp/PixelForge/releases/download/v0.1.9/PixelForge_0.1.9_x64-setup.exe",
-    "installerSizeMb":  35.38,
-    "pub_date":  "2026-10-23T10:35:15Z"
+    "version":  "0.1.10",
+    "releaseNotes":  "PixelForge v0.1.10: Dynamic status bar with interactive mode capsules, selection dimensions badge with one-click clear, live cursor coordinate and color swatch, interactive zoom cycler, micro-animations, expanded hotkeys, and zero-alloc cursor tracking",
+    "downloadUrl":  "https://github.com/widlily-corp/PixelForge/releases/download/v0.1.10/PixelForge_0.1.10_x64-setup.exe",
+    "installerSizeMb":  35.5,
+    "pub_date":  "2026-10-24T08:40:00Z"
 }
