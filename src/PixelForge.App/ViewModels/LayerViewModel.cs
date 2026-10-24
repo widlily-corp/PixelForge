@@ -40,10 +40,20 @@ public partial class LayerViewModel : ViewModelBase
             {
                 _canvas.ActiveLayer = value;
                 OnPropertyChanged();
+                UpdateActiveLayerSubscription();
                 UpdateCommandStates();
             }
         }
     }
+
+    public bool IsActiveLayerAlphaLocked => ActiveLayer?.IsAlphaLocked == true;
+
+    /// <summary>
+    /// Occurs when a layer operation requests a user feedback status message to be displayed.
+    /// </summary>
+    public event EventHandler<string>? StatusRequested;
+
+    private Layer? _subscribedActiveLayer;
 
     public bool CanRemoveLayer => _canvas.Layers.Count > 1;
 
@@ -92,6 +102,8 @@ public partial class LayerViewModel : ViewModelBase
             OnPropertyChanged(nameof(Layers));
             UpdateCommandStates();
         };
+
+        UpdateActiveLayerSubscription();
     }
 
     public void SetCanvas(PixelCanvas newCanvas)
@@ -113,7 +125,33 @@ public partial class LayerViewModel : ViewModelBase
         OnPropertyChanged(nameof(Canvas));
         OnPropertyChanged(nameof(Layers));
         OnPropertyChanged(nameof(ActiveLayer));
+        UpdateActiveLayerSubscription();
         UpdateCommandStates();
+    }
+
+    private void UpdateActiveLayerSubscription()
+    {
+        if (_subscribedActiveLayer != null)
+        {
+            _subscribedActiveLayer.PropertyChanged -= OnActiveLayerPropertyChanged;
+            _subscribedActiveLayer = null;
+        }
+
+        if (ActiveLayer != null)
+        {
+            _subscribedActiveLayer = ActiveLayer;
+            _subscribedActiveLayer.PropertyChanged += OnActiveLayerPropertyChanged;
+        }
+
+        OnPropertyChanged(nameof(IsActiveLayerAlphaLocked));
+    }
+
+    private void OnActiveLayerPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(Layer.IsAlphaLocked))
+        {
+            OnPropertyChanged(nameof(IsActiveLayerAlphaLocked));
+        }
     }
 
     private void OnCanvasPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -121,6 +159,7 @@ public partial class LayerViewModel : ViewModelBase
         if (e.PropertyName == nameof(PixelCanvas.ActiveLayer))
         {
             OnPropertyChanged(nameof(ActiveLayer));
+            UpdateActiveLayerSubscription();
             UpdateCommandStates();
         }
     }
@@ -133,6 +172,7 @@ public partial class LayerViewModel : ViewModelBase
         var command = new AddLayerCommand(_canvas, newLayer, _canvas.Layers.Count, $"Add {name}");
         _undoRedoService.ExecuteCommand(command);
         ActiveLayer = newLayer;
+        StatusRequested?.Invoke(this, $"Created {name} (Ctrl+Shift+N)");
     }
 
     [RelayCommand(CanExecute = nameof(CanRemoveLayer))]
@@ -146,6 +186,7 @@ public partial class LayerViewModel : ViewModelBase
 
         var command = new RemoveLayerCommand(_canvas, target, $"Remove {target.Name}");
         _undoRedoService.ExecuteCommand(command);
+        StatusRequested?.Invoke(this, $"Removed {target.Name}");
     }
 
     [RelayCommand]
@@ -157,8 +198,10 @@ public partial class LayerViewModel : ViewModelBase
             return;
         }
 
-        var command = new SetLayerVisibilityCommand(target, !target.IsVisible, $"Toggle {target.Name} visibility");
+        bool nextVisible = !target.IsVisible;
+        var command = new SetLayerVisibilityCommand(target, nextVisible, $"Toggle {target.Name} visibility");
         _undoRedoService.ExecuteCommand(command);
+        StatusRequested?.Invoke(this, $"{target.Name} is now {(nextVisible ? "visible" : "hidden")} (Shift+L)");
     }
 
     /// <summary>
@@ -175,6 +218,8 @@ public partial class LayerViewModel : ViewModelBase
         }
 
         target.IsAlphaLocked = !target.IsAlphaLocked;
+        OnPropertyChanged(nameof(IsActiveLayerAlphaLocked));
+        StatusRequested?.Invoke(this, $"{target.Name} Alpha Lock: {(target.IsAlphaLocked ? "enabled" : "disabled")}");
     }
 
     [RelayCommand(CanExecute = nameof(CanMergeDown))]
@@ -191,8 +236,10 @@ public partial class LayerViewModel : ViewModelBase
             return;
         }
 
-        var command = new MergeLayerDownCommand(_canvas, index, $"Merge {ActiveLayer.Name} Down");
+        string layerName = ActiveLayer.Name;
+        var command = new MergeLayerDownCommand(_canvas, index, $"Merge {layerName} Down");
         _undoRedoService.ExecuteCommand(command);
+        StatusRequested?.Invoke(this, $"Merged {layerName} Down (Ctrl+E)");
     }
 
     [RelayCommand]
@@ -210,6 +257,7 @@ public partial class LayerViewModel : ViewModelBase
         var command = new AddLayerCommand(_canvas, clone, index, $"Duplicate {target.Name}");
         _undoRedoService.ExecuteCommand(command);
         ActiveLayer = clone;
+        StatusRequested?.Invoke(this, $"Duplicated {target.Name} (Ctrl+J)");
     }
 
     [RelayCommand(CanExecute = nameof(CanMoveUp))]

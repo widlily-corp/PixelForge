@@ -911,7 +911,11 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         _currentHoverPixelY = py;
         _isHovering = isInside;
 
-        CanvasViewModel?.UpdateCursor(px, py, isInside);
+        PixelColor hoveredColor = (isInside && CanvasViewModel?.Canvas.ActiveLayer != null)
+            ? CanvasViewModel.Canvas.ActiveLayer.GetPixel(px, py)
+            : PixelColor.Transparent;
+
+        CanvasViewModel?.UpdateCursor(px, py, isInside, hoveredColor);
 
         if (_isDrawing && isInside && ToolViewModel != null && PaletteViewModel != null)
         {
@@ -1051,6 +1055,10 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
                 if (PaletteViewModel != null)
                 {
                     PaletteViewModel.PrimaryColor = picked;
+                }
+                if (DataContext is MainViewModel mainVm)
+                {
+                    mainVm.StatusMessage = mainVm.Loc.Format("Msg_EyedropperPicked", picked.ToHex(picked.A < 255));
                 }
                 break;
 

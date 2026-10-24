@@ -263,6 +263,8 @@ public partial class ToolViewModel : ViewModelBase
         }
     }
 
+    public bool IsPixelPerfectActive => SupportsPixelPerfect && IsPixelPerfect;
+
     partial void OnIsPixelPerfectChanged(bool value)
     {
         PatternBrushTool.PixelPerfect = value;
@@ -270,6 +272,7 @@ public partial class ToolViewModel : ViewModelBase
         {
             ActiveToolContext.IsPixelPerfect = value;
         }
+        OnPropertyChanged(nameof(IsPixelPerfectActive));
     }
 
     partial void OnSelectedPatternPresetChanged(PatternPreset value)
@@ -342,6 +345,7 @@ public partial class ToolViewModel : ViewModelBase
         OnPropertyChanged(nameof(SupportsGradientSettings));
         OnPropertyChanged(nameof(Supports8x8Pattern));
         OnPropertyChanged(nameof(SupportsPixelPerfect));
+        OnPropertyChanged(nameof(IsPixelPerfectActive));
         OnPropertyChanged(nameof(SupportsSpraySettings));
         OnPropertyChanged(nameof(SupportsStabilizer));
     }

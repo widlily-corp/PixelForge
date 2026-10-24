@@ -24,6 +24,11 @@ public partial class PaletteViewModel : ViewModelBase
 
     public IReadOnlyList<Palette> Presets => PalettePresets.AllPresets;
 
+    /// <summary>
+    /// Occurs when a palette operation requests a status feedback message.
+    /// </summary>
+    public event EventHandler<string>? StatusRequested;
+
     public PaletteViewModel()
     {
         _currentPalette = PalettePresets.Default32.Clone();
@@ -40,6 +45,27 @@ public partial class PaletteViewModel : ViewModelBase
     public void SwapColors()
     {
         (PrimaryColor, SecondaryColor) = (SecondaryColor, PrimaryColor);
+        StatusRequested?.Invoke(this, "Colors swapped (X)");
+    }
+
+    [RelayCommand]
+    public void SelectNextColor()
+    {
+        if (Colors.Count == 0) return;
+        int index = Colors.IndexOf(PrimaryColor);
+        int nextIndex = index >= 0 ? (index + 1) % Colors.Count : 0;
+        SelectPrimaryColor(Colors[nextIndex]);
+        StatusRequested?.Invoke(this, $"Palette: {Colors[nextIndex].ToHex(Colors[nextIndex].A < 255)} (key .)");
+    }
+
+    [RelayCommand]
+    public void SelectPreviousColor()
+    {
+        if (Colors.Count == 0) return;
+        int index = Colors.IndexOf(PrimaryColor);
+        int prevIndex = index > 0 ? index - 1 : Colors.Count - 1;
+        SelectPrimaryColor(Colors[prevIndex]);
+        StatusRequested?.Invoke(this, $"Palette: {Colors[prevIndex].ToHex(Colors[prevIndex].A < 255)} (key ,)");
     }
 
     [RelayCommand]

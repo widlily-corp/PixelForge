@@ -129,6 +129,10 @@ public partial class MainViewModel : ViewModelBase
         _paletteViewModel = new PaletteViewModel();
         _historyViewModel = new HistoryViewModel(_undoRedoService);
 
+        // Forward status feedback from layers and palette
+        _layerViewModel.StatusRequested += (_, msg) => StatusMessage = msg;
+        _paletteViewModel.StatusRequested += (_, msg) => StatusMessage = msg;
+
         // Mark dirty when undo/redo changes
         _undoRedoService.PropertyChanged += (_, e) =>
         {
@@ -694,14 +698,14 @@ public partial class MainViewModel : ViewModelBase
         var layer = CanvasViewModel.Canvas.ActiveLayer;
         if (layer == null) return;
         CanvasViewModel.Selection.Select(new SkiaSharp.SKRectI(0, 0, layer.Width, layer.Height));
-        StatusMessage = "Выделен весь холст (Ctrl+A)";
+        StatusMessage = Loc["Msg_SelectAll"];
     }
 
     [RelayCommand]
     public void Deselect()
     {
         CanvasViewModel.Selection.Clear();
-        StatusMessage = "Выделение снято (Ctrl+D)";
+        StatusMessage = Loc["Msg_Deselect"];
     }
 
     [RelayCommand]
@@ -738,7 +742,7 @@ public partial class MainViewModel : ViewModelBase
             }
 
             selection.Clear();
-            StatusMessage = "Выделенная область удалена";
+            StatusMessage = Loc["Msg_DeleteSelection"];
         }
         else
         {

@@ -176,11 +176,39 @@
                                     <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="X" /></Border>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="{Binding Loc[Dlg_Hotkeys_PaletteCycle]}" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                        <Border Classes="key-badge"><TextBlock Text="," /></Border>
+                                        <TextBlock Classes="key-separator" Text="/" />
+                                        <Border Classes="key-badge"><TextBlock Text="." /></Border>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto">
                                     <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="{Binding Loc[Dlg_Hotkeys_BrushSize]}" />
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
                                         <Border Classes="key-badge"><TextBlock Text="[" /></Border>
                                         <TextBlock Classes="key-separator" Text="/" />
                                         <Border Classes="key-badge"><TextBlock Text="]" /></Border>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="{Binding Loc[Dlg_Hotkeys_BrushPresets]}" />
+                                    <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="1 .. 8" /></Border>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="{Binding Loc[Dlg_Hotkeys_SymmetryX]}" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                        <Border Classes="key-badge"><TextBlock Text="Shift" /></Border>
+                                        <TextBlock Classes="key-separator" Text="+" />
+                                        <Border Classes="key-badge"><TextBlock Text="X" /></Border>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="{Binding Loc[Dlg_Hotkeys_SymmetryY]}" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                        <Border Classes="key-badge"><TextBlock Text="Shift" /></Border>
+                                        <TextBlock Classes="key-separator" Text="+" />
+                                        <Border Classes="key-badge"><TextBlock Text="Y" /></Border>
                                     </StackPanel>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto">
@@ -205,6 +233,14 @@
                                         <Border Classes="key-badge"><TextBlock Text="Ctrl" /></Border>
                                         <TextBlock Classes="key-separator" Text="+" />
                                         <Border Classes="key-badge"><TextBlock Text="Shift" /></Border>
+                                        <TextBlock Classes="key-separator" Text="+" />
+                                        <Border Classes="key-badge"><TextBlock Text="G" /></Border>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="{Binding Loc[Dlg_Hotkeys_CycleTileGrid]}" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                        <Border Classes="key-badge"><TextBlock Text="Alt" /></Border>
                                         <TextBlock Classes="key-separator" Text="+" />
                                         <Border Classes="key-badge"><TextBlock Text="G" /></Border>
                                     </StackPanel>
@@ -238,10 +274,14 @@
                                         <Border Classes="key-badge"><TextBlock Text="Колесо" /></Border>
                                     </StackPanel>
                                 </Grid>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="{Binding Loc[Dlg_Hotkeys_ZoomPresets]}" />
+                                    <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="Ctrl + 1..4" /></Border>
+                                </Grid>
                             </StackPanel>
                         </Border>
 
-                        <!-- 4) Проект и история -->
+                        <!-- 4) Проект, слои и история -->
                         <Border Classes="hotkey-card">
                             <StackPanel Spacing="6">
                                 <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,0,0,4">
@@ -251,6 +291,26 @@
                                                Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                                 </StackPanel>
 
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="{Binding Loc[Dlg_Hotkeys_LayerNew]}" />
+                                    <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="Ctrl+Shift+N" /></Border>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="{Binding Loc[Dlg_Hotkeys_LayerDuplicate]}" />
+                                    <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="Ctrl+J" /></Border>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="{Binding Loc[Dlg_Hotkeys_LayerMerge]}" />
+                                    <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="Ctrl+E" /></Border>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="{Binding Loc[Dlg_Hotkeys_LayerVisibility]}" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                        <Border Classes="key-badge"><TextBlock Text="Shift" /></Border>
+                                        <TextBlock Classes="key-separator" Text="+" />
+                                        <Border Classes="key-badge"><TextBlock Text="L" /></Border>
+                                    </StackPanel>
+                                </Grid>
                                 <Grid ColumnDefinitions="*,Auto">
                                     <TextBlock Grid.Column="0" Classes="hotkey-desc" Text="{Binding Loc[Dlg_Hotkeys_Undo]}" />
                                     <Border Grid.Column="1" Classes="key-badge"><TextBlock Text="Ctrl+Z" /></Border>

@@ -24,6 +24,7 @@
     <Window.Resources>
         <views:ToolToIconGeometryConverter x:Key="ToolToIconConverter" />
         <converters:DitherPatternLocalizationConverter x:Key="DitherLocalizationConverter" />
+        <converters:PixelColorToBrushConverter x:Key="PixelColorConverter" />
     </Window.Resources>
 
     <Window.Styles>
@@ -42,16 +43,22 @@
             <Setter Property="ToolTip.Placement" Value="Right" />
             <Setter Property="ToolTip.HorizontalOffset" Value="10" />
             <Setter Property="ToolTip.ShowDelay" Value="200" />
+            <Setter Property="RenderTransform" Value="none" />
             <Setter Property="Transitions">
                 <Transitions>
                     <BrushTransition Property="Background" Duration="0:0:0.15" />
                     <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.12" Easing="CubicEaseOut" />
                 </Transitions>
             </Setter>
         </Style>
         <Style Selector="Button.tool-btn:pointerover">
             <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+            <Setter Property="RenderTransform" Value="scale(1.06)" />
+        </Style>
+        <Style Selector="Button.tool-btn:pressed">
+            <Setter Property="RenderTransform" Value="scale(0.95)" />
         </Style>
         <Style Selector="Button.tool-btn.active">
             <Setter Property="Background" Value="{DynamicResource AccentGlowBrush}" />
@@ -80,10 +87,12 @@
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="RenderTransform" Value="none" />
             <Setter Property="Transitions">
                 <Transitions>
                     <BrushTransition Property="Background" Duration="0:0:0.1" />
                     <BrushTransition Property="BorderBrush" Duration="0:0:0.1" />
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1" Easing="CubicEaseOut" />
                 </Transitions>
             </Setter>
         </Style>
@@ -91,6 +100,10 @@
             <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
             <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+            <Setter Property="RenderTransform" Value="scale(1.1)" />
+        </Style>
+        <Style Selector="Button.size-btn:pressed">
+            <Setter Property="RenderTransform" Value="scale(0.92)" />
         </Style>
 
         <!-- Quick Size Preset Button Style -->
@@ -108,10 +121,12 @@
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="RenderTransform" Value="none" />
             <Setter Property="Transitions">
                 <Transitions>
                     <BrushTransition Property="Background" Duration="0:0:0.1" />
                     <BrushTransition Property="BorderBrush" Duration="0:0:0.1" />
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1" Easing="CubicEaseOut" />
                 </Transitions>
             </Setter>
         </Style>
@@ -119,6 +134,10 @@
             <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
             <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+            <Setter Property="RenderTransform" Value="scale(1.12)" />
+        </Style>
+        <Style Selector="Button.size-preset-btn:pressed">
+            <Setter Property="RenderTransform" Value="scale(0.92)" />
         </Style>
 
         <!-- Context Bar Chip / Capsule Border Style -->
@@ -161,16 +180,22 @@
             <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
             <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="RenderTransform" Value="none" />
             <Setter Property="Transitions">
                 <Transitions>
-                    <BrushTransition Property="Background" Duration="0:0:0.1" />
-                    <BrushTransition Property="BorderBrush" Duration="0:0:0.1" />
+                    <BrushTransition Property="Background" Duration="0:0:0.12" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.12" />
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.12" Easing="CubicEaseOut" />
                 </Transitions>
             </Setter>
         </Style>
         <Style Selector="Button.status-capsule-btn:pointerover">
             <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+            <Setter Property="RenderTransform" Value="scale(1.03)" />
+        </Style>
+        <Style Selector="Button.status-capsule-btn:pressed">
+            <Setter Property="RenderTransform" Value="scale(0.97)" />
         </Style>
 
         <!-- Status Bar Capsule Badge Style -->
@@ -193,10 +218,23 @@
             <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="RenderTransform" Value="none" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.12" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.12" />
+                    <BrushTransition Property="Foreground" Duration="0:0:0.12" />
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1" Easing="CubicEaseOut" />
+                </Transitions>
+            </Setter>
         </Style>
         <Style Selector="Button.action-btn:pointerover">
             <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+            <Setter Property="RenderTransform" Value="scale(1.06)" />
+        </Style>
+        <Style Selector="Button.action-btn:pressed">
+            <Setter Property="RenderTransform" Value="scale(0.94)" />
         </Style>
 
         <!-- Quick Action Icon Toggle Button Style -->
@@ -212,16 +250,47 @@
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="RenderTransform" Value="none" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.12" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.12" />
+                    <BrushTransition Property="Foreground" Duration="0:0:0.12" />
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1" Easing="CubicEaseOut" />
+                </Transitions>
+            </Setter>
         </Style>
         <Style Selector="ToggleButton.action-toggle-btn:pointerover">
             <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
             <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+            <Setter Property="RenderTransform" Value="scale(1.06)" />
+        </Style>
+        <Style Selector="ToggleButton.action-toggle-btn:pressed">
+            <Setter Property="RenderTransform" Value="scale(0.94)" />
         </Style>
         <Style Selector="ToggleButton.action-toggle-btn:checked">
-            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}" />
+            <Setter Property="Background" Value="{DynamicResource AccentGlowBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
             <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+        </Style>
+
+        <!-- Layers ListBoxItem Style -->
+        <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="4,2" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Margin" Value="0,1" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.12" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="ListBoxItem:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+        </Style>
+        <Style Selector="ListBoxItem:selected">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardSelectedBrush}" />
         </Style>
     </Window.Styles>
 
@@ -1007,21 +1076,75 @@
             </Border>
         </Grid>
 
-        <!-- 5. Bottom: StatusBar (Modern Capsule Design) -->
+        <!-- 5. Bottom: StatusBar (Modern Capsule Design with Active Modes & Enhanced Indicators) -->
         <Border Grid.Row="4" Background="{DynamicResource SurfacePanelBrush}"
                 BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,1,0,0"
                 Height="30" Padding="10,0">
-            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto,Auto">
-                <!-- Status Message with ready indicator -->
+            <Grid ColumnDefinitions="*,Auto,Auto">
+                <!-- Left: Status Message & Active Mode Indicators -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <!-- Status dot + message -->
                     <Border Width="6" Height="6" CornerRadius="3" Background="{DynamicResource AccentSuccessBrush}"
                             VerticalAlignment="Center" ToolTip.Tip="{Binding Loc[Status_Ready]}" />
                     <TextBlock Text="{Binding StatusMessage}"
                                VerticalAlignment="Center" FontSize="11"
-                               Foreground="{DynamicResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                               Foreground="{DynamicResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" MaxWidth="280" />
+
+                    <!-- Active Mode Indicators (Capsules) -->
+                    <!-- Tiled Mode (F10) -->
+                    <Button Classes="status-capsule-btn"
+                            IsVisible="{Binding IsTiledMode}"
+                            Command="{Binding ToggleTiledModeCommand}"
+                            Background="{DynamicResource AccentGlowBrush}"
+                            BorderBrush="{DynamicResource AccentPrimaryBrush}"
+                            Height="22" Padding="6,1" VerticalAlignment="Center"
+                            ToolTip.Tip="{Binding Loc[Status_TiledActiveTip]}">
+                        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                            <PathIcon Data="{DynamicResource IconTiled}" Width="11" Height="11" Foreground="{DynamicResource AccentPrimaryBrush}" />
+                            <TextBlock Text="TILED 3×3" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Symmetry Mode (Shift+X / Shift+Y) -->
+                    <Button Classes="status-capsule-btn"
+                            IsVisible="{Binding CanvasViewModel.HasActiveSymmetry}"
+                            Command="{Binding CanvasViewModel.ToggleSymmetryXCommand}"
+                            Background="{DynamicResource AccentGlowBrush}"
+                            BorderBrush="{DynamicResource AccentSecondaryBrush}"
+                            Height="22" Padding="6,1" VerticalAlignment="Center"
+                            ToolTip.Tip="{Binding Loc[Status_SymmetryTip]}">
+                        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                            <PathIcon Data="{DynamicResource IconSymmetryX}" Width="11" Height="11" Foreground="{DynamicResource AccentSecondaryBrush}" />
+                            <TextBlock Text="{Binding CanvasViewModel.SymmetryStatusText}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource AccentSecondaryBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Pixel-Perfect Mode (Shift+P) -->
+                    <Button Classes="status-capsule-btn"
+                            IsVisible="{Binding ToolViewModel.IsPixelPerfectActive}"
+                            Command="{Binding ToolViewModel.TogglePixelPerfectCommand}"
+                            Height="22" Padding="6,1" VerticalAlignment="Center"
+                            ToolTip.Tip="{Binding Loc[Status_PixelPerfectTip]}">
+                        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                            <PathIcon Data="{DynamicResource IconPixelPerfect}" Width="11" Height="11" Foreground="{DynamicResource AccentPrimaryBrush}" />
+                            <TextBlock Text="PIXEL-PERFECT" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Alpha-Lock on Active Layer -->
+                    <Button Classes="status-capsule-btn"
+                            IsVisible="{Binding LayerViewModel.IsActiveLayerAlphaLocked}"
+                            Command="{Binding LayerViewModel.ToggleAlphaLockCommand}"
+                            Height="22" Padding="6,1" VerticalAlignment="Center"
+                            ToolTip.Tip="{Binding Loc[Status_AlphaLockTip]}">
+                        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                            <PathIcon Data="{DynamicResource IconLock}" Width="10" Height="10" Foreground="{DynamicResource AccentPrimaryBrush}" />
+                            <TextBlock Text="ALPHA-LOCK" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
 
-                <!-- Mouse Shortcuts Hint Capsule (Docked in StatusBar - Non-Obtrusive) -->
+                <!-- Center: Mouse Shortcuts Hint Capsule -->
                 <Border Grid.Column="1" Margin="4,0" Padding="8,2" VerticalAlignment="Center" Height="22"
                         Classes="status-capsule-badge" IsHitTestVisible="False">
                     <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
@@ -1065,73 +1188,98 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Canvas Dimensions Capsule (Interactive Button -> opens ResizeCanvasDialog) -->
-                <Button Name="StatusDimensionsButton" Grid.Column="2" Margin="4,0" Padding="8,2" VerticalAlignment="Center"
-                        Height="22" Classes="status-capsule-btn"
-                        ToolTip.Tip="{Binding Loc[Status_DimensionsTip]}">
-                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                        <PathIcon Data="{DynamicResource IconCrop}" Width="12" Height="12" Foreground="{DynamicResource AccentPrimaryBrush}" />
-                        <TextBlock Text="{Binding CanvasViewModel.DimensionsText}" FontSize="11" FontWeight="SemiBold"
-                                   Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
-                    </StackPanel>
-                </Button>
-
-                <!-- Tile Grid Capsule: Toggle & Cycle Size -->
-                <Border Grid.Column="3" Margin="3,0" Padding="4,1" VerticalAlignment="Center" Height="22"
-                        Classes="status-capsule-badge">
-                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                        <ToggleButton IsChecked="{Binding CanvasViewModel.ShowTileGrid, Mode=TwoWay}"
-                                      Background="Transparent" BorderThickness="0" Padding="4,1" Height="20"
-                                      CornerRadius="3"
-                                      ToolTip.Tip="{Binding Loc[Tip_TileGrid]}">
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <PathIcon Data="{DynamicResource IconTileGrid}" Width="11" Height="11"
-                                          Foreground="{DynamicResource AccentPrimaryBrush}" />
-                                <TextBlock Text="{Binding Loc[Context_TileGrid]}" FontSize="10" VerticalAlignment="Center" />
-                            </StackPanel>
-                        </ToggleButton>
-                        <Separator Width="1" Height="12" Background="{DynamicResource BorderSubtleBrush}" />
-                        <Button Command="{Binding CanvasViewModel.CycleTileGridSizeCommand}"
-                                Background="Transparent" BorderThickness="0" Padding="4,1" Height="20"
-                                CornerRadius="3"
-                                ToolTip.Tip="{Binding Loc[Context_TileSize]}">
-                            <TextBlock Text="{Binding CanvasViewModel.TileGridText}" FontSize="10" FontWeight="SemiBold"
+                <!-- Right: Dimensions, Tile Grid, Zoom, Language, Selection, Coordinates -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                    <!-- Selection Indicator Capsule (Active when canvas selection exists) -->
+                    <Button Classes="status-capsule-btn"
+                            IsVisible="{Binding CanvasViewModel.HasActiveSelection}"
+                            Command="{Binding DeselectCommand}"
+                            Height="22" Padding="7,2" VerticalAlignment="Center"
+                            ToolTip.Tip="{Binding Loc[Status_SelectionTip]}">
+                        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                            <PathIcon Data="{DynamicResource IconSelection}" Width="11" Height="11" Foreground="{DynamicResource AccentPrimaryBrush}" />
+                            <TextBlock Text="{Binding CanvasViewModel.SelectionShortText, StringFormat='{}Sel: {0}'}" FontSize="11" FontWeight="SemiBold"
                                        Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" />
-                        </Button>
-                    </StackPanel>
-                </Border>
+                            <TextBlock Text="✕" FontSize="9" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" Margin="2,0,0,0" />
+                        </StackPanel>
+                    </Button>
 
-                <!-- Zoom Level Capsule Badge -->
-                <Border Grid.Column="4" Margin="3,0" Padding="8,2" VerticalAlignment="Center" Height="22"
-                        Classes="status-capsule-badge">
-                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding Loc[Status_Zoom]}" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
-                        <TextBlock Text="{Binding CanvasViewModel.ZoomText}" FontSize="11" FontWeight="SemiBold"
-                                   Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
-                    </StackPanel>
-                </Border>
+                    <!-- Canvas Dimensions Capsule (Interactive Button -> opens ResizeCanvasDialog) -->
+                    <Button Name="StatusDimensionsButton" Padding="8,2" VerticalAlignment="Center"
+                            Height="22" Classes="status-capsule-btn"
+                            ToolTip.Tip="{Binding Loc[Status_DimensionsTip]}">
+                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                            <PathIcon Data="{DynamicResource IconCrop}" Width="12" Height="12" Foreground="{DynamicResource AccentPrimaryBrush}" />
+                            <TextBlock Text="{Binding CanvasViewModel.DimensionsText}" FontSize="11" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
 
-                <!-- Language Switcher Capsule Button -->
-                <Button Grid.Column="5" Margin="3,0" Padding="8,2" VerticalAlignment="Center" Height="22"
-                        Classes="status-capsule-btn"
-                        Command="{Binding ToggleLanguageCommand}"
-                        ToolTip.Tip="{Binding Loc[Status_LangButtonTip]}">
-                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                        <TextBlock Text="🌐" FontSize="10" VerticalAlignment="Center" />
-                        <TextBlock Text="{Binding Loc[Status_LangButton]}" FontSize="10" FontWeight="Bold"
-                                   Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" />
-                    </StackPanel>
-                </Button>
+                    <!-- Tile Grid Capsule: Toggle & Cycle Size -->
+                    <Border Padding="4,1" VerticalAlignment="Center" Height="22"
+                            Classes="status-capsule-badge">
+                        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                            <ToggleButton IsChecked="{Binding CanvasViewModel.ShowTileGrid, Mode=TwoWay}"
+                                          Background="Transparent" BorderThickness="0" Padding="4,1" Height="20"
+                                          CornerRadius="3"
+                                          ToolTip.Tip="{Binding Loc[Tip_TileGrid]}">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <PathIcon Data="{DynamicResource IconTileGrid}" Width="11" Height="11"
+                                              Foreground="{DynamicResource AccentPrimaryBrush}" />
+                                    <TextBlock Text="{Binding Loc[Context_TileGrid]}" FontSize="10" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </ToggleButton>
+                            <Separator Width="1" Height="12" Background="{DynamicResource BorderSubtleBrush}" />
+                            <Button Command="{Binding CanvasViewModel.CycleTileGridSizeCommand}"
+                                    Background="Transparent" BorderThickness="0" Padding="4,1" Height="20"
+                                    CornerRadius="3"
+                                    ToolTip.Tip="{Binding Loc[Context_TileSize]}">
+                                <TextBlock Text="{Binding CanvasViewModel.TileGridText}" FontSize="10" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" />
+                            </Button>
+                        </StackPanel>
+                    </Border>
 
-                <!-- Cursor Coordinates Capsule Badge -->
-                <Border Grid.Column="6" Margin="3,0,0,0" Padding="8,2" VerticalAlignment="Center" Height="22"
-                        Classes="status-capsule-badge">
-                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                        <TextBlock Text="✛" FontSize="11" Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" />
-                        <TextBlock Text="{Binding CanvasViewModel.CursorCoordinatesText}" FontSize="11" FontWeight="SemiBold"
-                                   Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" />
-                    </StackPanel>
-                </Border>
+                    <!-- Zoom Level Interactive Capsule Button (Click to cycle preset zoom levels) -->
+                    <Button Classes="status-capsule-btn" Padding="8,2" VerticalAlignment="Center" Height="22"
+                            Command="{Binding CanvasViewModel.CycleZoomPresetCommand}"
+                            ToolTip.Tip="{Binding Loc[Status_ZoomTip]}">
+                        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Loc[Status_Zoom]}" FontSize="10" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding CanvasViewModel.ZoomText}" FontSize="11" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Language Switcher Capsule Button -->
+                    <Button Padding="8,2" VerticalAlignment="Center" Height="22"
+                            Classes="status-capsule-btn"
+                            Command="{Binding ToggleLanguageCommand}"
+                            ToolTip.Tip="{Binding Loc[Status_LangButtonTip]}">
+                        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                            <TextBlock Text="🌐" FontSize="10" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Loc[Status_LangButton]}" FontSize="10" FontWeight="Bold"
+                                       Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Cursor Coordinates & Color under cursor Capsule Badge -->
+                    <Border Padding="8,2" VerticalAlignment="Center" Height="22"
+                            Classes="status-capsule-badge"
+                            ToolTip.Tip="{Binding CanvasViewModel.HoveredColorHex}">
+                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                            <TextBlock Text="✛" FontSize="11" Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding CanvasViewModel.CursorCoordinatesText}" FontSize="11" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" />
+                            <!-- Hovered Pixel Color Preview Dot (Visible when hovering over canvas) -->
+                            <Border Width="10" Height="10" CornerRadius="3"
+                                    IsVisible="{Binding CanvasViewModel.HasHoveredColor}"
+                                    Background="{Binding CanvasViewModel.HoveredColor, Converter={StaticResource PixelColorConverter}}"
+                                    BorderBrush="{DynamicResource BorderStrongBrush}" BorderThickness="1"
+                                    VerticalAlignment="Center" Margin="1,0,0,0" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
             </Grid>
         </Border>
     </Grid>

@@ -57,6 +57,11 @@
             <Setter Property="BorderThickness" Value="2" />
             <Setter Property="BoxShadow" Value="0 0 6 1 #6000D2FF" />
         </Style>
+        <Style Selector="Border.palette-swatch.secondary-active">
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentSecondaryBrush}" />
+            <Setter Property="BorderThickness" Value="1.5" />
+            <Setter Property="BoxShadow" Value="0 0 5 1 #40818CF8" />
+        </Style>
 
         <!-- Action / Swap Button Style -->
         <Style Selector="Button.swap-btn">

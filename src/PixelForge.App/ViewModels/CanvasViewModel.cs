@@ -52,6 +52,14 @@ public partial class CanvasViewModel : ViewModelBase
     private bool _isCursorInside = false;
 
     [ObservableProperty]
+    private PixelColor _hoveredColor = PixelColor.Transparent;
+
+    [ObservableProperty]
+    private bool _hasHoveredColor = false;
+
+    public string HoveredColorHex => HasHoveredColor ? HoveredColor.ToHex(HoveredColor.A < 255) : string.Empty;
+
+    [ObservableProperty]
     private SelectionModel _selection = new();
 
     [ObservableProperty]
@@ -61,15 +69,28 @@ public partial class CanvasViewModel : ViewModelBase
 
     public int CanvasHeight => Canvas.Height;
 
-    public string CursorCoordinatesText => IsCursorInside && CursorX >= 0 && CursorY >= 0
-        ? $"X: {CursorX}, Y: {CursorY}"
-        : "—";
+    private string _cursorCoordinatesText = "—";
+    public string CursorCoordinatesText => _cursorCoordinatesText;
 
     public string ZoomText => $"{MathF.Round(Zoom * 100f)}%";
 
     public string DimensionsText => $"{CanvasWidth} × {CanvasHeight} px";
 
     public string TileGridText => $"{TileGridSize} × {TileGridSize} px";
+
+    public bool HasActiveSelection => Selection.IsActive && Selection.Bounds.Width > 0 && Selection.Bounds.Height > 0;
+
+    public string SelectionText => HasActiveSelection
+        ? $"{Selection.Bounds.Width} × {Selection.Bounds.Height} px ({Selection.Bounds.Left}, {Selection.Bounds.Top})"
+        : string.Empty;
+
+    public string SelectionShortText => HasActiveSelection
+        ? $"{Selection.Bounds.Width} × {Selection.Bounds.Height}"
+        : string.Empty;
+
+    public bool HasActiveSymmetry => ShowSymmetryX || ShowSymmetryY;
+
+    public string SymmetryStatusText => (ShowSymmetryX && ShowSymmetryY) ? "SYM XY" : (ShowSymmetryX ? "SYM X" : "SYM Y");
 
     public CanvasViewModel(PixelCanvas canvas)
     {
@@ -79,6 +100,29 @@ public partial class CanvasViewModel : ViewModelBase
         TileGridSettings.TileSize = TileGridSize;
         TileGridSettings.IsVisible = ShowTileGrid;
         TileGridSettings.PropertyChanged += OnTileGridSettingsPropertyChanged;
+        _selection.PropertyChanged += OnSelectionPropertyChanged;
+    }
+
+    private void OnSelectionPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        OnPropertyChanged(nameof(HasActiveSelection));
+        OnPropertyChanged(nameof(SelectionText));
+        OnPropertyChanged(nameof(SelectionShortText));
+    }
+
+    partial void OnSelectionChanged(SelectionModel? oldValue, SelectionModel newValue)
+    {
+        if (oldValue != null)
+        {
+            oldValue.PropertyChanged -= OnSelectionPropertyChanged;
+        }
+        if (newValue != null)
+        {
+            newValue.PropertyChanged += OnSelectionPropertyChanged;
+        }
+        OnPropertyChanged(nameof(HasActiveSelection));
+        OnPropertyChanged(nameof(SelectionText));
+        OnPropertyChanged(nameof(SelectionShortText));
     }
 
     private void OnTileGridSettingsPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -148,17 +192,45 @@ public partial class CanvasViewModel : ViewModelBase
         OnPropertyChanged(nameof(DimensionsText));
     }
 
-    public void UpdateCursor(int x, int y, bool isInside)
+    /// <summary>
+    /// Updates the cursor position and hovered pixel color with zero allocation if the pixel hasn't changed.
+    /// </summary>
+    public void UpdateCursor(int x, int y, bool isInside, PixelColor hoveredColor = default)
     {
+        if (CursorX == x && CursorY == y && IsCursorInside == isInside && HoveredColor == hoveredColor)
+        {
+            return;
+        }
+
         CursorX = x;
         CursorY = y;
         IsCursorInside = isInside;
+        HoveredColor = hoveredColor;
+        HasHoveredColor = isInside && x >= 0 && y >= 0 && hoveredColor.A > 0;
+
+        _cursorCoordinatesText = isInside && x >= 0 && y >= 0
+            ? $"X: {x}, Y: {y}"
+            : "—";
+
         OnPropertyChanged(nameof(CursorCoordinatesText));
+        OnPropertyChanged(nameof(HoveredColorHex));
     }
 
     partial void OnZoomChanged(float value)
     {
         OnPropertyChanged(nameof(ZoomText));
+    }
+
+    partial void OnShowSymmetryXChanged(bool value)
+    {
+        OnPropertyChanged(nameof(HasActiveSymmetry));
+        OnPropertyChanged(nameof(SymmetryStatusText));
+    }
+
+    partial void OnShowSymmetryYChanged(bool value)
+    {
+        OnPropertyChanged(nameof(HasActiveSymmetry));
+        OnPropertyChanged(nameof(SymmetryStatusText));
     }
 
     partial void OnTileGridSizeChanged(int value)
@@ -170,6 +242,31 @@ public partial class CanvasViewModel : ViewModelBase
     partial void OnShowTileGridChanged(bool value)
     {
         TileGridSettings.IsVisible = value;
+    }
+
+    private static readonly float[] ZoomPresets = [1.0f, 2.0f, 4.0f, 8.0f, 16.0f];
+
+    [RelayCommand]
+    public void CycleZoomPreset()
+    {
+        int currentIndex = -1;
+        for (int i = 0; i < ZoomPresets.Length; i++)
+        {
+            if (MathF.Abs(Zoom - ZoomPresets[i]) < 0.05f)
+            {
+                currentIndex = i;
+                break;
+            }
+        }
+
+        int nextIndex = (currentIndex + 1) % ZoomPresets.Length;
+        Zoom = ZoomPresets[nextIndex];
+    }
+
+    [RelayCommand]
+    public void SetZoom(float value)
+    {
+        Zoom = Math.Clamp(value, MinZoom, MaxZoom);
     }
 
     [RelayCommand]

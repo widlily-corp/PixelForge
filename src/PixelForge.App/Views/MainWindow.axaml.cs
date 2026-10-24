@@ -464,6 +464,38 @@ public partial class MainWindow : Window
             return;
         }
 
+        // Shift + X: Toggle Symmetry X
+        if (!ctrl && !alt && shift && MatchesKey(e, Key.X, PhysicalKey.X, 'ч'))
+        {
+            e.Handled = true;
+            ViewModel.CanvasViewModel.ToggleSymmetryX();
+            return;
+        }
+
+        // Shift + Y: Toggle Symmetry Y
+        if (!ctrl && !alt && shift && MatchesKey(e, Key.Y, PhysicalKey.Y, 'н'))
+        {
+            e.Handled = true;
+            ViewModel.CanvasViewModel.ToggleSymmetryY();
+            return;
+        }
+
+        // Shift + L: Toggle Active Layer Visibility
+        if (!ctrl && !alt && shift && MatchesKey(e, Key.L, PhysicalKey.L, 'д'))
+        {
+            e.Handled = true;
+            ViewModel.LayerViewModel.ToggleVisibility(null);
+            return;
+        }
+
+        // Alt + G: Cycle Tile Grid size
+        if (alt && !ctrl && !shift && MatchesKey(e, Key.G, PhysicalKey.G, 'п'))
+        {
+            e.Handled = true;
+            ViewModel.CanvasViewModel.CycleTileGridSize();
+            return;
+        }
+
         // Do not intercept Space key so canvas panning can handle it cleanly
         if (!ctrl && !alt && !shift && (e.Key == Key.Space || e.PhysicalKey == PhysicalKey.Space))
         {
@@ -475,6 +507,14 @@ public partial class MainWindow : Window
         {
             e.Handled = true;
             OnResizeCanvasClick(this, new RoutedEventArgs());
+            return;
+        }
+
+        // Ctrl + Shift + N: New Layer
+        if (ctrl && shift && MatchesKey(e, Key.N, PhysicalKey.N, 'т'))
+        {
+            e.Handled = true;
+            ViewModel.LayerViewModel.AddLayer();
             return;
         }
 
@@ -536,6 +576,19 @@ public partial class MainWindow : Window
                 e.Handled = true;
                 await ViewModel.PasteAsync();
             }
+            else if (MatchesKey(e, Key.E, PhysicalKey.E, 'у'))
+            {
+                e.Handled = true;
+                if (ViewModel.LayerViewModel.CanMergeDown)
+                {
+                    ViewModel.LayerViewModel.MergeDown();
+                }
+            }
+            else if (MatchesKey(e, Key.J, PhysicalKey.J, 'о'))
+            {
+                e.Handled = true;
+                ViewModel.LayerViewModel.DuplicateLayer();
+            }
             else if (MatchesKey(e, Key.A, PhysicalKey.A, 'ф'))
             {
                 e.Handled = true;
@@ -557,6 +610,30 @@ public partial class MainWindow : Window
                 {
                     ViewModel.CanvasViewModel.ToggleGrid();
                 }
+            }
+            else if (MatchesKey(e, Key.D1, PhysicalKey.Digit1, '1') || e.Key == Key.NumPad1 || e.PhysicalKey == PhysicalKey.NumPad1)
+            {
+                e.Handled = true;
+                ViewModel.CanvasViewModel.Zoom = 1.0f;
+                ViewModel.StatusMessage = ViewModel.Loc.Format("Msg_ZoomSet", 100);
+            }
+            else if (MatchesKey(e, Key.D2, PhysicalKey.Digit2, '2') || e.Key == Key.NumPad2 || e.PhysicalKey == PhysicalKey.NumPad2)
+            {
+                e.Handled = true;
+                ViewModel.CanvasViewModel.Zoom = 2.0f;
+                ViewModel.StatusMessage = ViewModel.Loc.Format("Msg_ZoomSet", 200);
+            }
+            else if (MatchesKey(e, Key.D3, PhysicalKey.Digit3, '3') || e.Key == Key.NumPad3 || e.PhysicalKey == PhysicalKey.NumPad3)
+            {
+                e.Handled = true;
+                ViewModel.CanvasViewModel.Zoom = 4.0f;
+                ViewModel.StatusMessage = ViewModel.Loc.Format("Msg_ZoomSet", 400);
+            }
+            else if (MatchesKey(e, Key.D4, PhysicalKey.Digit4, '4') || e.Key == Key.NumPad4 || e.PhysicalKey == PhysicalKey.NumPad4)
+            {
+                e.Handled = true;
+                ViewModel.CanvasViewModel.Zoom = 8.0f;
+                ViewModel.StatusMessage = ViewModel.Loc.Format("Msg_ZoomSet", 800);
             }
             else if (MatchesKey(e, Key.OemPlus, PhysicalKey.Equal) || e.Key == Key.Add || e.PhysicalKey == PhysicalKey.NumPadAdd || e.KeySymbol == "+")
             {
@@ -672,6 +749,46 @@ public partial class MainWindow : Window
             {
                 e.Handled = true;
                 ViewModel.ToolViewModel.IncreaseBrushSize();
+            }
+            else if (MatchesKey(e, Key.OemComma, PhysicalKey.Comma, 'б') || e.KeySymbol == "," || e.KeySymbol == "<")
+            {
+                e.Handled = true;
+                ViewModel.PaletteViewModel.SelectPreviousColor();
+            }
+            else if (MatchesKey(e, Key.OemPeriod, PhysicalKey.Period, 'ю') || e.KeySymbol == "." || e.KeySymbol == ">")
+            {
+                e.Handled = true;
+                ViewModel.PaletteViewModel.SelectNextColor();
+            }
+            else if (!shift && (MatchesKey(e, Key.D1, PhysicalKey.Digit1, '1') || e.Key == Key.NumPad1))
+            {
+                e.Handled = true;
+                ViewModel.ToolViewModel.SetBrushSize(1);
+            }
+            else if (!shift && (MatchesKey(e, Key.D2, PhysicalKey.Digit2, '2') || e.Key == Key.NumPad2))
+            {
+                e.Handled = true;
+                ViewModel.ToolViewModel.SetBrushSize(2);
+            }
+            else if (!shift && (MatchesKey(e, Key.D3, PhysicalKey.Digit3, '3') || e.Key == Key.NumPad3))
+            {
+                e.Handled = true;
+                ViewModel.ToolViewModel.SetBrushSize(3);
+            }
+            else if (!shift && (MatchesKey(e, Key.D4, PhysicalKey.Digit4, '4') || e.Key == Key.NumPad4))
+            {
+                e.Handled = true;
+                ViewModel.ToolViewModel.SetBrushSize(4);
+            }
+            else if (!shift && (MatchesKey(e, Key.D5, PhysicalKey.Digit5, '5') || e.Key == Key.NumPad5))
+            {
+                e.Handled = true;
+                ViewModel.ToolViewModel.SetBrushSize(5);
+            }
+            else if (!shift && (MatchesKey(e, Key.D8, PhysicalKey.Digit8, '8') || e.Key == Key.NumPad8))
+            {
+                e.Handled = true;
+                ViewModel.ToolViewModel.SetBrushSize(8);
             }
             else if (e.Key == Key.Delete || e.PhysicalKey == PhysicalKey.Delete || e.Key == Key.Back || e.PhysicalKey == PhysicalKey.Backspace)
             {

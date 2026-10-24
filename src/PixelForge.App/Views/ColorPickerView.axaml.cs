@@ -421,6 +421,8 @@ public partial class ColorPickerView : UserControl
             UpdateHexTextFromColor(color);
         }
 
+        UpdateActiveSwatchHighlight();
+
         SecondaryColorChanged?.Invoke(this, color);
         SyncToDataContext();
     }
@@ -511,6 +513,7 @@ public partial class ColorPickerView : UserControl
             if (child is Border swatch && swatch.Tag is PixelColor color)
             {
                 swatch.Classes.Set("active", color == _primaryColor);
+                swatch.Classes.Set("secondary-active", color == _secondaryColor && color != _primaryColor);
             }
         }
     }
