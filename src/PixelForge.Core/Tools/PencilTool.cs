@@ -238,6 +238,11 @@ public class PencilTool : ITool
         if (_visited.Add(index))
         {
             var oldColor = ctx.ActiveLayer.GetPixel(px, py);
+            if (ctx.ActiveLayer.IsAlphaLocked && oldColor.A == 0)
+            {
+                return;
+            }
+
             if (oldColor != ctx.PrimaryColor)
             {
                 _deltas.Add(new PixelDelta(px, py, oldColor, ctx.PrimaryColor));

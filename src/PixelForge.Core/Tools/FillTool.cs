@@ -45,6 +45,11 @@ public class FillTool : ITool
             }
 
             var targetColor = ctx.ActiveLayer.GetPixel(seedX, seedY);
+            if (ctx.ActiveLayer.IsAlphaLocked && targetColor.A == 0)
+            {
+                continue;
+            }
+
             var replacementColor = ctx.PrimaryColor;
 
             if (tolerance == 0 && targetColor == replacementColor && ctx.ActiveDitherPattern == DitherPattern.None)
@@ -69,6 +74,11 @@ public class FillTool : ITool
                         visited[gIndex] = true;
 
                         var curColor = ctx.ActiveLayer.GetPixel(gx, gy);
+                        if (ctx.ActiveLayer.IsAlphaLocked && curColor.A == 0)
+                        {
+                            continue;
+                        }
+
                         if (MatchesColor(curColor, targetColor, tolerance))
                         {
                             var finalColor = ctx.ActiveDitherPattern != DitherPattern.None
@@ -104,6 +114,11 @@ public class FillTool : ITool
                 int cy = current / width;
 
                 var currentColor = ctx.ActiveLayer.GetPixel(cx, cy);
+                if (ctx.ActiveLayer.IsAlphaLocked && currentColor.A == 0)
+                {
+                    continue;
+                }
+
                 if (!MatchesColor(currentColor, targetColor, tolerance))
                 {
                     continue;
@@ -185,6 +200,11 @@ public class FillTool : ITool
         SelectionModel selection)
     {
         if (selection.IsActive && !selection.Contains(x, y))
+        {
+            return;
+        }
+
+        if (layer.IsAlphaLocked && layer.GetPixel(x, y).A == 0)
         {
             return;
         }

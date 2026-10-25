@@ -291,6 +291,11 @@ public class PatternBrushTool : ITool
         var newColor = isSet ? _currentCtx.PrimaryColor : _currentCtx.SecondaryColor;
         var oldColor = _currentCtx.ActiveLayer.GetPixel(px, py);
 
+        if (_currentCtx.ActiveLayer.IsAlphaLocked && oldColor.A == 0)
+        {
+            return;
+        }
+
         if (oldColor != newColor)
         {
             _deltas.Add(new PixelDelta(px, py, oldColor, newColor));

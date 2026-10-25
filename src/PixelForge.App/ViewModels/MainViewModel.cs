@@ -259,6 +259,22 @@ public partial class MainViewModel : ViewModelBase
 
     public void FlipActiveLayer(FlipDirection direction)
     {
+        if (CanvasViewModel.Selection.IsFloating)
+        {
+            var floatingCmd = new FlipFloatingSelectionCommand(
+                CanvasViewModel.Selection,
+                direction,
+                () =>
+                {
+                    IsDirty = true;
+                    OnPropertyChanged(nameof(Title));
+                });
+
+            _undoRedoService.ExecuteCommand(floatingCmd);
+            StatusMessage = $"Выделение отражено {(direction == FlipDirection.Horizontal ? "по горизонтали" : "по вертикали")}";
+            return;
+        }
+
         var activeLayer = CanvasViewModel.Canvas.ActiveLayer;
         if (activeLayer == null) return;
 
@@ -290,6 +306,30 @@ public partial class MainViewModel : ViewModelBase
 
     public void RotateActiveLayer(RotationAngle angle)
     {
+        string angleStr = angle switch
+        {
+            RotationAngle.Rotate90CW => "на 90° по часовой",
+            RotationAngle.Rotate90CCW => "на 90° против часовой",
+            RotationAngle.Rotate180 => "на 180°",
+            _ => ""
+        };
+
+        if (CanvasViewModel.Selection.IsFloating)
+        {
+            var floatingCmd = new RotateFloatingSelectionCommand(
+                CanvasViewModel.Selection,
+                angle,
+                () =>
+                {
+                    IsDirty = true;
+                    OnPropertyChanged(nameof(Title));
+                });
+
+            _undoRedoService.ExecuteCommand(floatingCmd);
+            StatusMessage = $"Выделение повёрнуто {angleStr}";
+            return;
+        }
+
         var activeLayer = CanvasViewModel.Canvas.ActiveLayer;
         if (activeLayer == null) return;
 
@@ -306,13 +346,6 @@ public partial class MainViewModel : ViewModelBase
             selectionRect);
 
         _undoRedoService.ExecuteCommand(cmd);
-        string angleStr = angle switch
-        {
-            RotationAngle.Rotate90CW => "на 90° по часовой",
-            RotationAngle.Rotate90CCW => "на 90° против часовой",
-            RotationAngle.Rotate180 => "на 180°",
-            _ => ""
-        };
         string target = selectionRect.HasValue ? "Выделение" : $"Слой '{activeLayer.Name}'";
         StatusMessage = $"{target} повёрнут {angleStr}";
     }

@@ -292,6 +292,22 @@
         <Style Selector="ListBoxItem:selected">
             <Setter Property="Background" Value="{DynamicResource SurfaceCardSelectedBrush}" />
         </Style>
+
+        <!-- Inspector Card Header ToggleButton Style -->
+        <Style Selector="ToggleButton.inspector-card-header">
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="Padding" Value="6,2" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="ToggleButton.inspector-card-header:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+        </Style>
     </Window.Styles>
 
     <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
@@ -407,8 +423,8 @@
 
         <!-- 2. Quick Action Toolbar -->
         <Border Grid.Row="1" Background="{DynamicResource SurfaceCardBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,0,0,1" Padding="8,4">
-            <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto">
-                <!-- File Shortcuts -->
+            <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,*,Auto">
+                <!-- 1. File Shortcuts & Quick Export -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4">
                     <Button Name="QuickNewButton" Classes="action-btn" ToolTip.Tip="{Binding Loc[Tip_NewCanvas]}">
                         <PathIcon Data="{DynamicResource IconNewFile}" Width="16" Height="16" Foreground="{DynamicResource TextPrimaryBrush}" />
@@ -424,10 +440,28 @@
                     </Button>
                 </StackPanel>
 
-                <Separator Grid.Column="1" Width="1" Height="20" Margin="8,0" Background="{DynamicResource BorderSubtleBrush}" />
+                <Separator Grid.Column="1" Width="1" Height="20" Margin="6,0" Background="{DynamicResource BorderSubtleBrush}" />
 
-                <!-- History (Undo/Redo) -->
+                <!-- 2. Quick Export Dropdown -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
+                    <Button Classes="action-btn" ToolTip.Tip="{Binding Loc[Tip_QuickExport]}">
+                        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                            <PathIcon Data="{DynamicResource IconExport}" Width="15" Height="15" Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <TextBlock Text="▾" FontSize="9" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <Button.Flyout>
+                            <MenuFlyout Placement="Bottom">
+                                <MenuItem Header="{Binding Loc[Menu_ExportPng]}" Command="{Binding ExportPngCommand}" />
+                                <MenuItem Header="{Binding Loc[Menu_ExportBmp]}" Command="{Binding ExportBmpCommand}" />
+                            </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
+                </StackPanel>
+
+                <Separator Grid.Column="3" Width="1" Height="20" Margin="6,0" Background="{DynamicResource BorderSubtleBrush}" />
+
+                <!-- 3. History (Undo/Redo) -->
+                <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="4">
                     <Button Classes="action-btn" Command="{Binding HistoryViewModel.UndoCommand}" ToolTip.Tip="{Binding Loc[Tip_Undo]}">
                         <PathIcon Data="{DynamicResource IconUndo}" Width="16" Height="16" Foreground="{DynamicResource TextPrimaryBrush}" />
                     </Button>
@@ -436,10 +470,25 @@
                     </Button>
                 </StackPanel>
 
-                <Separator Grid.Column="3" Width="1" Height="20" Margin="8,0" Background="{DynamicResource BorderSubtleBrush}" />
+                <Separator Grid.Column="5" Width="1" Height="20" Margin="6,0" Background="{DynamicResource BorderSubtleBrush}" />
 
-                <!-- Overlays: Grid & Symmetry & Tiled Mode (Compact Professional Icon Buttons) -->
-                <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="4">
+                <!-- 4. Quick Layer Transforms (Flip H, Flip V, Rotate CW) -->
+                <StackPanel Grid.Column="6" Orientation="Horizontal" Spacing="3">
+                    <Button Classes="action-btn" Command="{Binding FlipActiveLayerHorizontalCommand}" ToolTip.Tip="{Binding Loc[Tip_FlipH]}">
+                        <PathIcon Data="{DynamicResource IconFlipH}" Width="15" Height="15" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    </Button>
+                    <Button Classes="action-btn" Command="{Binding FlipActiveLayerVerticalCommand}" ToolTip.Tip="{Binding Loc[Tip_FlipV]}">
+                        <PathIcon Data="{DynamicResource IconFlipV}" Width="15" Height="15" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    </Button>
+                    <Button Classes="action-btn" Command="{Binding RotateActiveLayerCWCommand}" ToolTip.Tip="{Binding Loc[Tip_RotateCW]}">
+                        <PathIcon Data="{DynamicResource IconRotateCW}" Width="14" Height="14" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    </Button>
+                </StackPanel>
+
+                <Separator Grid.Column="7" Width="1" Height="20" Margin="6,0" Background="{DynamicResource BorderSubtleBrush}" />
+
+                <!-- 5. Overlays: Grid, Symmetry, Tiled & Smart Tools Dropdown -->
+                <StackPanel Grid.Column="8" Orientation="Horizontal" Spacing="4">
                     <ToggleButton Name="GridToggle" IsChecked="{Binding CanvasViewModel.ShowGrid, Mode=TwoWay}"
                                   Classes="action-toggle-btn"
                                   ToolTip.Tip="{Binding Loc[Tip_Grid]}">
@@ -469,10 +518,30 @@
                                   ToolTip.Tip="{Binding Loc[Tip_TileGrid]}">
                         <PathIcon Data="{DynamicResource IconTileGrid}" Width="15" Height="15" />
                     </ToggleButton>
+
+                    <Separator Width="1" Height="18" Margin="3,0" Background="{DynamicResource BorderSubtleBrush}" />
+
+                    <!-- Smart Tools FX Button -->
+                    <Button Classes="action-btn" ToolTip.Tip="{Binding Loc[Tip_SmartTools]}">
+                        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                            <PathIcon Data="{DynamicResource IconMagicWand}" Width="14" Height="14" Foreground="{DynamicResource AccentPrimaryBrush}" />
+                            <TextBlock Text="FX" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text="▾" FontSize="9" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <Button.Flyout>
+                            <MenuFlyout Placement="Bottom">
+                                <MenuItem Header="{Binding Loc[Menu_AddOutline]}" Command="{Binding AddOutlineCommand}" />
+                                <MenuItem Header="{Binding Loc[Menu_AddShadow]}" Command="{Binding AddShadowCommand}" />
+                                <MenuItem Header="{Binding Loc[Menu_ReplaceColor]}" Command="{Binding ReplaceColorCommand}" />
+                                <Separator />
+                                <MenuItem Header="{Binding Loc[Menu_ColorRamp]}" Command="{Binding OpenColorRampDialogCommand}" />
+                            </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
                 </StackPanel>
 
-                <!-- Zoom Controls & Theme Toggle -->
-                <StackPanel Grid.Column="6" Orientation="Horizontal" Spacing="4">
+                <!-- 6. Zoom Controls & Theme Toggle -->
+                <StackPanel Grid.Column="10" Orientation="Horizontal" Spacing="4">
                     <Button Classes="action-btn" Command="{Binding CanvasViewModel.ZoomOutCommand}" ToolTip.Tip="{Binding Loc[Tip_ZoomOut]}">
                         <PathIcon Data="{DynamicResource IconZoomOut}" Width="14" Height="14" Foreground="{DynamicResource TextPrimaryBrush}" />
                     </Button>
@@ -521,8 +590,8 @@
             </Grid>
         </Border>
 
-        <!-- 4. Three-Column Workspace Area -->
-        <Grid Grid.Row="3" ColumnDefinitions="58,*,310">
+        <!-- 4. Workspace Area with Splitter -->
+        <Grid Grid.Row="3" ColumnDefinitions="58,*,4,320">
             <!-- Left: Tools Palette Column -->
             <Border Grid.Column="0" Background="{DynamicResource SurfacePanelBrush}"
                     BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,0,1,0"
@@ -697,10 +766,10 @@
                             BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,0,0,1"
                             Padding="8,4" MinHeight="38">
                         <Grid ColumnDefinitions="*">
-                            <!-- Tool Context Chips in Horizontal ScrollViewer -->
+                            <!-- Tool Context Chips in Adaptive WrapPanel with ScrollViewer Fallback -->
                             <ScrollViewer Grid.Column="0"
-                                          HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                          HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" MaxHeight="78">
+                                <WrapPanel Orientation="Horizontal" Margin="0,2">
                                     <!-- 1. Tool Capsule: Icon + Tool Name -->
                                     <Border Classes="context-chip">
                                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
@@ -889,14 +958,14 @@
                                                   Content="{Binding Loc[Context_ShapeFill]}" FontSize="11"
                                                   Foreground="{DynamicResource TextPrimaryBrush}" />
                                     </Border>
-                                </StackPanel>
+                                </WrapPanel>
                             </ScrollViewer>
                         </Grid>
                     </Border>
 
                     <!-- Canvas Area (Clean, Unobstructed Viewport) -->
                     <Grid Grid.Row="1">
-                        <!-- Interactive SkiaSharp Canvas Control -->
+                        <!-- Interactive SkiaSharp Canvas Control with ContextMenu -->
                         <controls:PixelCanvasControl Name="MainCanvasControl"
                                                     CanvasViewModel="{Binding CanvasViewModel}"
                                                     ToolViewModel="{Binding ToolViewModel}"
@@ -904,36 +973,109 @@
                                                     HistoryViewModel="{Binding HistoryViewModel}"
                                                     IsTiledMode="{Binding IsTiledMode, Mode=TwoWay}"
                                                     HorizontalAlignment="Stretch"
-                                                    VerticalAlignment="Stretch" />
+                                                    VerticalAlignment="Stretch">
+                            <controls:PixelCanvasControl.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="{Binding Loc[Menu_Cut]}" HotKey="Ctrl+X" Command="{Binding CutCommand}" />
+                                    <MenuItem Header="{Binding Loc[Menu_Copy]}" HotKey="Ctrl+C" Command="{Binding CopyCommand}" />
+                                    <MenuItem Header="{Binding Loc[Menu_Paste]}" HotKey="Ctrl+V" Command="{Binding PasteCommand}" />
+                                    <Separator />
+                                    <MenuItem Header="{Binding Loc[Menu_SelectAll]}" HotKey="Ctrl+A" Command="{Binding SelectAllCommand}" />
+                                    <MenuItem Header="{Binding Loc[Menu_Deselect]}" HotKey="Ctrl+D" Command="{Binding DeselectCommand}" />
+                                    <MenuItem Header="{Binding Loc[Menu_DeleteSelection]}" HotKey="Delete" Command="{Binding DeleteSelectionOrClearLayerCommand}" />
+                                    <Separator />
+                                    <MenuItem Header="{Binding Loc[Menu_FlipLayerH]}" Command="{Binding FlipActiveLayerHorizontalCommand}" />
+                                    <MenuItem Header="{Binding Loc[Menu_FlipLayerV]}" Command="{Binding FlipActiveLayerVerticalCommand}" />
+                                    <MenuItem Header="{Binding Loc[Menu_RotateLayerCW]}" Command="{Binding RotateActiveLayerCWCommand}" />
+                                    <Separator />
+                                    <MenuItem Header="{Binding Loc[Menu_AddOutline]}" Command="{Binding AddOutlineCommand}" />
+                                    <MenuItem Header="{Binding Loc[Menu_AddShadow]}" Command="{Binding AddShadowCommand}" />
+                                </ContextMenu>
+                            </controls:PixelCanvasControl.ContextMenu>
+                        </controls:PixelCanvasControl>
                     </Grid>
                 </Grid>
             </Border>
 
-            <!-- Right: Inspector Column (Live Preview 1x, ColorPicker, Layer Manager) -->
-            <Border Grid.Column="2" Background="{DynamicResource SurfacePanelBrush}"
+            <!-- Column 2: GridSplitter between Canvas and Inspector -->
+            <GridSplitter Grid.Column="2" Width="4" Background="Transparent"
+                          ResizeDirection="Columns" ShowsPreview="False" />
+
+            <!-- Column 3: Right Inspector Column (Collapsible Accordion Panels & Independent Layers List) -->
+            <Border Grid.Column="3" Background="{DynamicResource SurfacePanelBrush}"
                     BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1,0,0,0"
-                    Padding="10">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                    <StackPanel Spacing="10">
-                        <!-- Top: Live Preview 1x Control -->
-                        <views:LivePreviewControl CanvasSource="{Binding CanvasViewModel.Canvas}" />
-
-                        <!-- Center: ColorPicker & Palette View -->
-                        <views:ColorPickerView DataContext="{Binding PaletteViewModel}" />
-
-                        <!-- Middle: Reference Image Overlay Panel -->
-                        <Border Background="{DynamicResource SurfaceCardBrush}"
-                                BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1"
-                                CornerRadius="8" Padding="10,8">
-                            <Grid RowDefinitions="Auto,Auto">
-                                <!-- Reference Header -->
-                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                    MinWidth="260" MaxWidth="500" Padding="8">
+                <Grid RowDefinitions="Auto,Auto,Auto,*">
+                    <!-- 1. Live Preview Collapsible Card -->
+                    <Border Grid.Row="0" Background="{DynamicResource SurfaceCardBrush}"
+                            BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1"
+                            CornerRadius="8" Padding="6" Margin="0,0,0,6">
+                        <Grid RowDefinitions="Auto,Auto">
+                            <ToggleButton Name="PreviewCardToggle" IsChecked="True" Classes="inspector-card-header">
+                                <Grid ColumnDefinitions="*,Auto">
                                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                        <PathIcon Data="{DynamicResource IconEye}" Width="13" Height="13" Foreground="{DynamicResource AccentPrimaryBrush}" />
-                                        <TextBlock Text="{Binding Loc[Panel_Reference]}" FontSize="10" FontWeight="Bold"
+                                        <PathIcon Data="{DynamicResource IconCrop}" Width="12" Height="12" Foreground="{DynamicResource AccentPrimaryBrush}" />
+                                        <TextBlock Text="{Binding Loc[Panel_LivePreview], FallbackValue='ПРЕДПРОСМОТР 1X'}" FontSize="10" FontWeight="Bold"
                                                    Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                                     </StackPanel>
+                                    <Panel Grid.Column="1">
+                                        <TextBlock Text="▾" IsVisible="{Binding #PreviewCardToggle.IsChecked}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
+                                        <TextBlock Text="▸" IsVisible="{Binding !#PreviewCardToggle.IsChecked}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
+                                    </Panel>
+                                </Grid>
+                            </ToggleButton>
+                            <Panel Grid.Row="1" IsVisible="{Binding #PreviewCardToggle.IsChecked}" Margin="0,4,0,0">
+                                <views:LivePreviewControl CanvasSource="{Binding CanvasViewModel.Canvas}" />
+                            </Panel>
+                        </Grid>
+                    </Border>
 
+                    <!-- 2. Color Picker & Palette Collapsible Card -->
+                    <Border Grid.Row="1" Background="{DynamicResource SurfaceCardBrush}"
+                            BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1"
+                            CornerRadius="8" Padding="6" Margin="0,0,0,6">
+                        <Grid RowDefinitions="Auto,Auto">
+                            <ToggleButton Name="PaletteCardToggle" IsChecked="True" Classes="inspector-card-header">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                        <PathIcon Data="{DynamicResource IconPalette}" Width="12" Height="12" Foreground="{DynamicResource AccentPrimaryBrush}" />
+                                        <TextBlock Text="{Binding Loc[Panel_ColorPicker], FallbackValue='ЦВЕТ И ПАЛИТРА'}" FontSize="10" FontWeight="Bold"
+                                                   Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <Panel Grid.Column="1">
+                                        <TextBlock Text="▾" IsVisible="{Binding #PaletteCardToggle.IsChecked}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
+                                        <TextBlock Text="▸" IsVisible="{Binding !#PaletteCardToggle.IsChecked}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
+                                    </Panel>
+                                </Grid>
+                            </ToggleButton>
+                            <Panel Grid.Row="1" IsVisible="{Binding #PaletteCardToggle.IsChecked}" Margin="0,4,0,0">
+                                <views:ColorPickerView DataContext="{Binding PaletteViewModel}" />
+                            </Panel>
+                        </Grid>
+                    </Border>
+
+                    <!-- 3. Reference Image Overlay Collapsible Card -->
+                    <Border Grid.Row="2" Background="{DynamicResource SurfaceCardBrush}"
+                            BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1"
+                            CornerRadius="8" Padding="6" Margin="0,0,0,6">
+                        <Grid RowDefinitions="Auto,Auto">
+                            <ToggleButton Name="ReferenceCardToggle" IsChecked="{Binding CanvasViewModel.ReferenceOverlay.HasImage}" Classes="inspector-card-header">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                        <PathIcon Data="{DynamicResource IconEye}" Width="12" Height="12" Foreground="{DynamicResource AccentPrimaryBrush}" />
+                                        <TextBlock Text="{Binding Loc[Panel_Reference], FallbackValue='РЕФЕРЕНС'}" FontSize="10" FontWeight="Bold"
+                                                   Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <Panel Grid.Column="1">
+                                        <TextBlock Text="▾" IsVisible="{Binding #ReferenceCardToggle.IsChecked}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
+                                        <TextBlock Text="▸" IsVisible="{Binding !#ReferenceCardToggle.IsChecked}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
+                                    </Panel>
+                                </Grid>
+                            </ToggleButton>
+                            <Grid Grid.Row="1" RowDefinitions="Auto,Auto" IsVisible="{Binding #ReferenceCardToggle.IsChecked}" Margin="4,4,4,2">
+                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Text="{Binding Loc[Ref_Overlay]}" FontSize="10"
+                                               Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
                                         <ToggleButton IsChecked="{Binding CanvasViewModel.ReferenceOverlay.IsVisible, Mode=TwoWay}"
                                                       Classes="action-btn" Padding="4"
@@ -958,8 +1100,6 @@
                                         </Button>
                                     </StackPanel>
                                 </Grid>
-
-                                <!-- Opacity Slider (Only visible when image is loaded) -->
                                 <Grid Grid.Row="1" ColumnDefinitions="Auto,*,36" Margin="0,6,0,0"
                                       IsVisible="{Binding CanvasViewModel.ReferenceOverlay.HasImage}">
                                     <TextBlock Grid.Column="0" Text="{Binding Loc[Ref_Opacity]}" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0" />
@@ -969,110 +1109,122 @@
                                                FontSize="10" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}" />
                                 </Grid>
                             </Grid>
-                        </Border>
+                        </Grid>
+                    </Border>
 
-                        <!-- Bottom: Layers Manager Panel -->
-                        <Border Background="{DynamicResource SurfaceCardBrush}"
-                                BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1"
-                                CornerRadius="8" Padding="12"
-                                MinHeight="220">
-                            <Grid RowDefinitions="Auto,Auto,*">
-                                <!-- Layer Manager Header -->
-                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
-                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                        <PathIcon Data="{DynamicResource IconLayers}" Width="14" Height="14" Foreground="{DynamicResource AccentPrimaryBrush}" />
-                                        <TextBlock Text="{Binding Loc[Panel_Layers]}" FontSize="11" FontWeight="Bold"
-                                                   Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
-                                    </StackPanel>
+                    <!-- 4. Layers Manager Panel (Takes All Remaining Height) -->
+                    <Border Grid.Row="3" Background="{DynamicResource SurfaceCardBrush}"
+                            BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1"
+                            CornerRadius="8" Padding="10"
+                            MinHeight="180">
+                        <Grid RowDefinitions="Auto,Auto,*">
+                            <!-- Layer Manager Header -->
+                            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <PathIcon Data="{DynamicResource IconLayers}" Width="14" Height="14" Foreground="{DynamicResource AccentPrimaryBrush}" />
+                                    <TextBlock Text="{Binding Loc[Panel_Layers]}" FontSize="11" FontWeight="Bold"
+                                               Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
 
-                                    <!-- Layer Actions -->
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
-                                        <Button Classes="action-btn" Command="{Binding LayerViewModel.AddLayerCommand}" ToolTip.Tip="{Binding Loc[Layer_AddTip]}">
-                                            <PathIcon Data="{DynamicResource IconAdd}" Width="13" Height="13" Foreground="{DynamicResource TextPrimaryBrush}" />
-                                        </Button>
-                                        <Button Classes="action-btn" Command="{Binding LayerViewModel.DuplicateLayerCommand}" ToolTip.Tip="{Binding Loc[Layer_DuplicateTip]}">
-                                            <PathIcon Data="{DynamicResource IconNewFile}" Width="13" Height="13" Foreground="{DynamicResource TextPrimaryBrush}" />
-                                        </Button>
-                                        <Button Classes="action-btn" Command="{Binding LayerViewModel.MoveUpCommand}" ToolTip.Tip="{Binding Loc[Layer_MoveUpTip]}">
-                                            <PathIcon Data="{DynamicResource IconArrowUp}" Width="13" Height="13" Foreground="{DynamicResource TextPrimaryBrush}" />
-                                        </Button>
-                                        <Button Classes="action-btn" Command="{Binding LayerViewModel.MoveDownCommand}" ToolTip.Tip="{Binding Loc[Layer_MoveDownTip]}">
-                                            <PathIcon Data="{DynamicResource IconArrowDown}" Width="13" Height="13" Foreground="{DynamicResource TextPrimaryBrush}" />
-                                        </Button>
-                                        <Button Classes="action-btn" Command="{Binding LayerViewModel.MergeDownCommand}" ToolTip.Tip="{Binding Loc[Layer_MergeDownTip]}">
-                                            <PathIcon Data="{DynamicResource IconMergeDown}" Width="13" Height="13" Foreground="{DynamicResource TextPrimaryBrush}" />
-                                        </Button>
-                                        <Button Classes="action-btn" Command="{Binding LayerViewModel.RemoveLayerCommand}" ToolTip.Tip="{Binding Loc[Layer_DeleteTip]}">
-                                            <PathIcon Data="{DynamicResource IconDelete}" Width="13" Height="13" Foreground="{DynamicResource AccentDangerBrush}" />
-                                        </Button>
-                                    </StackPanel>
-                                </Grid>
-
-                                <!-- Layer Opacity Slider -->
-                                <Grid Grid.Row="1" ColumnDefinitions="Auto,*,36" Margin="0,0,0,8">
-                                    <TextBlock Grid.Column="0" Text="{Binding Loc[Layer_Opacity]}" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
-                                    <Slider Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding LayerViewModel.ActiveLayer.Opacity, FallbackValue=1}"
-                                            VerticalAlignment="Center" Margin="0,0,4,0" />
-                                    <TextBlock Grid.Column="2" Text="{Binding LayerViewModel.ActiveLayer.Opacity, StringFormat='{}{0:P0}', FallbackValue='100%'}"
-                                               FontSize="10" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}" />
-                                </Grid>
-
-                                <!-- Layers ListBox -->
-                                <ListBox Grid.Row="2" ItemsSource="{Binding LayerViewModel.Layers}"
-                                         SelectedItem="{Binding LayerViewModel.ActiveLayer, Mode=TwoWay}"
-                                         Background="Transparent" BorderThickness="0">
-                                    <ListBox.ItemTemplate>
-                                        <DataTemplate x:DataType="models:Layer">
-                                            <Grid ColumnDefinitions="Auto,Auto,*,Auto" Height="28">
-                                                <!-- Visibility Toggle Button -->
-                                                <Button Grid.Column="0" Classes="action-btn" Padding="4"
-                                                        Command="{Binding #RootWindow.DataContext.LayerViewModel.ToggleVisibilityCommand}"
-                                                        CommandParameter="{Binding}"
-                                                        ToolTip.Tip="{Binding #RootWindow.DataContext.Loc[Layer_VisibilityTip]}">
-                                                    <Panel>
-                                                        <PathIcon Data="{DynamicResource IconEye}" Width="13" Height="13"
-                                                                  IsVisible="{Binding IsVisible}"
-                                                                  Foreground="{DynamicResource AccentPrimaryBrush}" />
-                                                        <PathIcon Data="{DynamicResource IconEyeOff}" Width="13" Height="13"
-                                                                  IsVisible="{Binding !IsVisible}"
-                                                                  Foreground="{DynamicResource TextMutedBrush}" />
-                                                    </Panel>
-                                                </Button>
-
-                                                <!-- Alpha Lock Toggle Button -->
-                                                <Button Grid.Column="1" Classes="action-btn" Padding="4" Margin="2,0,0,0"
-                                                        Command="{Binding #RootWindow.DataContext.LayerViewModel.ToggleAlphaLockCommand}"
-                                                        CommandParameter="{Binding}"
-                                                        ToolTip.Tip="{Binding #RootWindow.DataContext.Loc[Layer_AlphaLockTip]}">
-                                                    <Panel>
-                                                        <PathIcon Data="{DynamicResource IconLock}" Width="13" Height="13"
-                                                                  IsVisible="{Binding IsAlphaLocked}"
-                                                                  Foreground="{DynamicResource AccentPrimaryBrush}" />
-                                                        <PathIcon Data="{DynamicResource IconLock}" Width="13" Height="13"
-                                                                  IsVisible="{Binding !IsAlphaLocked}"
-                                                                  Foreground="{DynamicResource TextMutedBrush}"
-                                                                  Opacity="0.4" />
-                                                    </Panel>
-                                                </Button>
-
-                                                <!-- Layer Name -->
-                                                <TextBlock Grid.Column="2" Text="{Binding Name}" Margin="8,0"
-                                                           VerticalAlignment="Center" FontSize="11"
-                                                           Foreground="{DynamicResource TextPrimaryBrush}"
-                                                           TextTrimming="CharacterEllipsis" />
-
-                                                <!-- Opacity text -->
-                                                <TextBlock Grid.Column="3" Text="{Binding Opacity, StringFormat='{}{0:P0}'}"
-                                                           VerticalAlignment="Center" FontSize="10"
-                                                           Foreground="{DynamicResource TextMutedBrush}" />
-                                            </Grid>
-                                        </DataTemplate>
-                                    </ListBox.ItemTemplate>
-                                </ListBox>
+                                <!-- Layer Actions -->
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="3">
+                                    <Button Classes="action-btn" Command="{Binding LayerViewModel.AddLayerCommand}" ToolTip.Tip="{Binding Loc[Layer_AddTip]}">
+                                        <PathIcon Data="{DynamicResource IconAdd}" Width="13" Height="13" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    </Button>
+                                    <Button Classes="action-btn" Command="{Binding LayerViewModel.DuplicateLayerCommand}" ToolTip.Tip="{Binding Loc[Layer_DuplicateTip]}">
+                                        <PathIcon Data="{DynamicResource IconNewFile}" Width="13" Height="13" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    </Button>
+                                    <Button Classes="action-btn" Command="{Binding LayerViewModel.MoveUpCommand}" ToolTip.Tip="{Binding Loc[Layer_MoveUpTip]}">
+                                        <PathIcon Data="{DynamicResource IconArrowUp}" Width="13" Height="13" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    </Button>
+                                    <Button Classes="action-btn" Command="{Binding LayerViewModel.MoveDownCommand}" ToolTip.Tip="{Binding Loc[Layer_MoveDownTip]}">
+                                        <PathIcon Data="{DynamicResource IconArrowDown}" Width="13" Height="13" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    </Button>
+                                    <Button Classes="action-btn" Command="{Binding LayerViewModel.MergeDownCommand}" ToolTip.Tip="{Binding Loc[Layer_MergeDownTip]}">
+                                        <PathIcon Data="{DynamicResource IconMergeDown}" Width="13" Height="13" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    </Button>
+                                    <Button Classes="action-btn" Command="{Binding LayerViewModel.RemoveLayerCommand}" ToolTip.Tip="{Binding Loc[Layer_DeleteTip]}">
+                                        <PathIcon Data="{DynamicResource IconDelete}" Width="13" Height="13" Foreground="{DynamicResource AccentDangerBrush}" />
+                                    </Button>
+                                </StackPanel>
                             </Grid>
-                        </Border>
-                    </StackPanel>
-                </ScrollViewer>
+
+                            <!-- Layer Opacity Slider -->
+                            <Grid Grid.Row="1" ColumnDefinitions="Auto,*,36" Margin="0,0,0,6">
+                                <TextBlock Grid.Column="0" Text="{Binding Loc[Layer_Opacity]}" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                <Slider Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding LayerViewModel.ActiveLayer.Opacity, FallbackValue=1}"
+                                        VerticalAlignment="Center" Margin="0,0,4,0" />
+                                <TextBlock Grid.Column="2" Text="{Binding LayerViewModel.ActiveLayer.Opacity, StringFormat='{}{0:P0}', FallbackValue='100%'}"
+                                           FontSize="10" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}" />
+                            </Grid>
+
+                            <!-- Layers ListBox with Virtualization & Independent ScrollViewer -->
+                            <ListBox Grid.Row="2" ItemsSource="{Binding LayerViewModel.Layers}"
+                                     SelectedItem="{Binding LayerViewModel.ActiveLayer, Mode=TwoWay}"
+                                     Background="Transparent" BorderThickness="0"
+                                     ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate x:DataType="models:Layer">
+                                        <Grid ColumnDefinitions="Auto,Auto,*,Auto" Height="28">
+                                            <!-- Visibility Toggle Button -->
+                                            <Button Grid.Column="0" Classes="action-btn" Padding="4"
+                                                    Command="{Binding #RootWindow.DataContext.LayerViewModel.ToggleVisibilityCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    ToolTip.Tip="{Binding #RootWindow.DataContext.Loc[Layer_VisibilityTip]}">
+                                                <Panel>
+                                                    <PathIcon Data="{DynamicResource IconEye}" Width="13" Height="13"
+                                                              IsVisible="{Binding IsVisible}"
+                                                              Foreground="{DynamicResource AccentPrimaryBrush}" />
+                                                    <PathIcon Data="{DynamicResource IconEyeOff}" Width="13" Height="13"
+                                                              IsVisible="{Binding !IsVisible}"
+                                                              Foreground="{DynamicResource TextMutedBrush}" />
+                                                </Panel>
+                                            </Button>
+
+                                            <!-- Alpha Lock Toggle Button -->
+                                            <Button Grid.Column="1" Classes="action-btn" Padding="4" Margin="2,0,0,0"
+                                                    Command="{Binding #RootWindow.DataContext.LayerViewModel.ToggleAlphaLockCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    ToolTip.Tip="{Binding #RootWindow.DataContext.Loc[Layer_AlphaLockTip]}">
+                                                <Panel>
+                                                    <PathIcon Data="{DynamicResource IconLock}" Width="13" Height="13"
+                                                              IsVisible="{Binding IsAlphaLocked}"
+                                                              Foreground="{DynamicResource AccentPrimaryBrush}" />
+                                                    <PathIcon Data="{DynamicResource IconLock}" Width="13" Height="13"
+                                                              IsVisible="{Binding !IsAlphaLocked}"
+                                                              Foreground="{DynamicResource TextMutedBrush}"
+                                                              Opacity="0.4" />
+                                                </Panel>
+                                            </Button>
+
+                                            <!-- Layer Name View Mode -->
+                                            <TextBlock Grid.Column="2" Text="{Binding Name}" Margin="8,0"
+                                                       VerticalAlignment="Center" FontSize="11"
+                                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       IsVisible="{Binding !IsRenaming}"
+                                                       DoubleTapped="OnLayerNameDoubleTapped"
+                                                       ToolTip.Tip="Двойной клик для переименования" />
+
+                                            <!-- Layer Name Inline Edit Mode -->
+                                            <TextBox Grid.Column="2" Text="{Binding Name, Mode=TwoWay}" Margin="4,0"
+                                                     Height="24" FontSize="11" Padding="4,1"
+                                                     VerticalAlignment="Center"
+                                                     IsVisible="{Binding IsRenaming}"
+                                                     LostFocus="OnLayerNameTextBoxLostFocus"
+                                                     KeyDown="OnLayerNameTextBoxKeyDown" />
+
+                                            <!-- Opacity text -->
+                                            <TextBlock Grid.Column="3" Text="{Binding Opacity, StringFormat='{}{0:P0}'}"
+                                                       VerticalAlignment="Center" FontSize="10"
+                                                       Foreground="{DynamicResource TextMutedBrush}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Grid>
+                    </Border>
+                </Grid>
             </Border>
         </Grid>
 
@@ -1088,7 +1240,7 @@
                             VerticalAlignment="Center" ToolTip.Tip="{Binding Loc[Status_Ready]}" />
                     <TextBlock Text="{Binding StatusMessage}"
                                VerticalAlignment="Center" FontSize="11"
-                               Foreground="{DynamicResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" MaxWidth="280" />
+                               Foreground="{DynamicResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" MaxWidth="180" />
 
                     <!-- Active Mode Indicators (Capsules) -->
                     <!-- Tiled Mode (F10) -->
@@ -1144,8 +1296,8 @@
                     </Button>
                 </StackPanel>
 
-                <!-- Center: Mouse Shortcuts Hint Capsule -->
-                <Border Grid.Column="1" Margin="4,0" Padding="8,2" VerticalAlignment="Center" Height="22"
+                <!-- Center: Mouse Shortcuts Hint Capsule (Responsive hiding on narrow screens) -->
+                <Border Name="MouseHintsBadge" Grid.Column="1" Margin="4,0" Padding="8,2" VerticalAlignment="Center" Height="22"
                         Classes="status-capsule-badge" IsHitTestVisible="False">
                     <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                         <!-- LMB -->

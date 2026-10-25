@@ -18,8 +18,11 @@ public class FlipLayerCommand : IUndoableCommand
     private readonly PixelColor[] _oldPixels;
     private readonly PixelColor[] _newPixels;
     private readonly Action? _onFlipped;
+    private readonly FlipFloatingSelectionCommand? _floatingCommand;
 
-    public string Description => $"Flip {_layer.Name} {(_direction == FlipDirection.Horizontal ? "Horizontal" : "Vertical")}";
+    public string Description => _floatingCommand != null
+        ? _floatingCommand.Description
+        : $"Flip {_layer.Name} {(_direction == FlipDirection.Horizontal ? "Horizontal" : "Vertical")}";
 
     public FlipLayerCommand(Layer layer, FlipDirection direction, Action? onFlipped = null, SkiaSharp.SKRectI? selectionRect = null)
     {
@@ -72,8 +75,23 @@ public class FlipLayerCommand : IUndoableCommand
         }
     }
 
+    public FlipLayerCommand(Layer layer, FlipDirection direction, Action? onFlipped, SelectionModel? selection)
+        : this(layer, direction, onFlipped, selection?.IsActive == true && !selection.IsFloating ? selection.Bounds : (SkiaSharp.SKRectI?)null)
+    {
+        if (selection?.IsFloating == true)
+        {
+            _floatingCommand = new FlipFloatingSelectionCommand(selection, direction, onFlipped);
+        }
+    }
+
     public void Execute()
     {
+        if (_floatingCommand != null)
+        {
+            _floatingCommand.Execute();
+            return;
+        }
+
         Array.Copy(_newPixels, _layer.Pixels, _newPixels.Length);
         _layer.Invalidate();
         _onFlipped?.Invoke();
@@ -81,6 +99,12 @@ public class FlipLayerCommand : IUndoableCommand
 
     public void Undo()
     {
+        if (_floatingCommand != null)
+        {
+            _floatingCommand.Undo();
+            return;
+        }
+
         Array.Copy(_oldPixels, _layer.Pixels, _oldPixels.Length);
         _layer.Invalidate();
         _onFlipped?.Invoke();

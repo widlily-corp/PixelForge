@@ -13,7 +13,10 @@ public class LineTool : ITool
     private int _startY;
     private int _currentX;
     private int _currentY;
-    private List<(int X, int Y, PixelColor Color)> _previewPixels = new();
+    private readonly List<(int X, int Y, PixelColor Color)> _previewPixels = new();
+    private readonly HashSet<int> _previewVisited = new();
+    private readonly List<PixelDelta> _deltas = new();
+    private readonly HashSet<int> _drawVisited = new();
 
     public string Name => "Line";
     public string Shortcut => "L";
@@ -58,34 +61,22 @@ public class LineTool : ITool
         _currentX = x;
         _currentY = y;
 
-        var deltas = new List<PixelDelta>();
-        var visited = new HashSet<int>();
+        _deltas.Clear();
+        _drawVisited.Clear();
 
-        BresenhamLine(_startX, _startY, _currentX, _currentY, (lx, ly) =>
-        {
-            ctx.ForEachSymmetricPoint(lx, ly, (px, py) =>
-            {
-                int index = py * ctx.Canvas.Width + px;
-                if (visited.Add(index))
-                {
-                    var oldColor = ctx.ActiveLayer.GetPixel(px, py);
-                    if (oldColor != ctx.PrimaryColor)
-                    {
-                        deltas.Add(new PixelDelta(px, py, oldColor, ctx.PrimaryColor));
-                        ctx.ActiveLayer.SetPixel(px, py, ctx.PrimaryColor);
-                    }
-                }
-            });
-        });
+        DrawLinePoints(ctx, _startX, _startY, _currentX, _currentY, isPreview: false);
 
-        if (deltas.Count > 0)
+        if (_deltas.Count > 0)
         {
-            var command = new DrawPixelsCommand(ctx.ActiveLayer, deltas.ToArray(), "Draw Line");
+            var command = new DrawPixelsCommand(ctx.ActiveLayer, _deltas.ToArray(), "Draw Line");
             ctx.History.ExecuteCommand(command);
         }
 
         _isDragging = false;
         _previewPixels.Clear();
+        _previewVisited.Clear();
+        _deltas.Clear();
+        _drawVisited.Clear();
     }
 
     public IReadOnlyList<(int X, int Y, PixelColor Color)> GetPreviewPixels(ToolContext ctx)
@@ -95,25 +86,13 @@ public class LineTool : ITool
 
     private void UpdatePreview(ToolContext ctx)
     {
-        var preview = new List<(int X, int Y, PixelColor Color)>();
-        var visited = new HashSet<int>();
+        _previewPixels.Clear();
+        _previewVisited.Clear();
 
-        BresenhamLine(_startX, _startY, _currentX, _currentY, (lx, ly) =>
-        {
-            ctx.ForEachSymmetricPoint(lx, ly, (px, py) =>
-            {
-                int index = py * ctx.Canvas.Width + px;
-                if (visited.Add(index))
-                {
-                    preview.Add((px, py, ctx.PrimaryColor));
-                }
-            });
-        });
-
-        _previewPixels = preview;
+        DrawLinePoints(ctx, _startX, _startY, _currentX, _currentY, isPreview: true);
     }
 
-    private static void BresenhamLine(int x0, int y0, int x1, int y1, Action<int, int> plot)
+    private void DrawLinePoints(ToolContext ctx, int x0, int y0, int x1, int y1, bool isPreview)
     {
         int dx = Math.Abs(x1 - x0);
         int sx = x0 < x1 ? 1 : -1;
@@ -123,7 +102,7 @@ public class LineTool : ITool
 
         while (true)
         {
-            plot(x0, y0);
+            PlotPoint(ctx, x0, y0, isPreview);
 
             if (x0 == x1 && y0 == y1)
             {
@@ -141,6 +120,81 @@ public class LineTool : ITool
             {
                 err += dx;
                 y0 += sy;
+            }
+        }
+    }
+
+    private void PlotPoint(ToolContext ctx, int x, int y, bool isPreview)
+    {
+        PlotSingle(ctx, x, y, isPreview);
+
+        if (!ctx.SymmetryX && !ctx.SymmetryY)
+        {
+            return;
+        }
+
+        int sx = ctx.SymmetryX ? ctx.GetSymmetricX(x) : x;
+        int sy = ctx.SymmetryY ? ctx.GetSymmetricY(y) : y;
+
+        bool validSx = ctx.SymmetryX && sx >= 0 && sx < ctx.Canvas.Width && sx != x;
+        bool validSy = ctx.SymmetryY && sy >= 0 && sy < ctx.Canvas.Height && sy != y;
+
+        if (validSx)
+        {
+            PlotSingle(ctx, sx, y, isPreview);
+        }
+
+        if (validSy)
+        {
+            PlotSingle(ctx, x, sy, isPreview);
+        }
+
+        if (validSx && validSy)
+        {
+            PlotSingle(ctx, sx, sy, isPreview);
+        }
+    }
+
+    private void PlotSingle(ToolContext ctx, int px, int py, bool isPreview)
+    {
+        if ((uint)px >= (uint)ctx.Canvas.Width || (uint)py >= (uint)ctx.Canvas.Height)
+        {
+            return;
+        }
+
+        if (ctx.Selection.IsActive && !ctx.Selection.Contains(px, py))
+        {
+            return;
+        }
+
+        int index = py * ctx.Canvas.Width + px;
+        if (isPreview)
+        {
+            if (_previewVisited.Add(index))
+            {
+                if (ctx.ActiveLayer.IsAlphaLocked && ctx.ActiveLayer.GetPixel(px, py).A == 0)
+                {
+                    return;
+                }
+
+                _previewPixels.Add((px, py, ctx.PrimaryColor));
+            }
+        }
+        else
+        {
+            if (_drawVisited.Add(index))
+            {
+                var oldColor = ctx.ActiveLayer.GetPixel(px, py);
+                if (ctx.ActiveLayer.IsAlphaLocked && oldColor.A == 0)
+                {
+                    return;
+                }
+
+                if (oldColor != ctx.PrimaryColor)
+                {
+                    _deltas.Add(new PixelDelta(px, py, oldColor, ctx.PrimaryColor));
+                    ctx.ActiveLayer.SetPixel(px, py, ctx.PrimaryColor);
+                }
             }
         }
     }

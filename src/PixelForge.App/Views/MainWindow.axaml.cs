@@ -8,8 +8,10 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
+using Avalonia.VisualTree;
 using PixelForge.App.ViewModels;
 using PixelForge.Core.Localization;
+using PixelForge.Core.Models;
 
 namespace PixelForge.App.Views;
 
@@ -22,6 +24,7 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         Loaded += OnWindowLoaded;
+        SizeChanged += OnMainWindowSizeChanged;
         AddHandler(InputElement.KeyDownEvent, OnWindowKeyDown, RoutingStrategies.Tunnel, handledEventsToo: true);
 
         // Menu handlers
@@ -422,13 +425,58 @@ public partial class MainWindow : Window
         return false;
     }
 
+    private void OnMainWindowSizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        if (MouseHintsBadge != null)
+        {
+            MouseHintsBadge.IsVisible = e.NewSize.Width >= 1200;
+        }
+    }
+
+    private void OnLayerNameDoubleTapped(object? sender, TappedEventArgs e)
+    {
+        if (sender is Control c && c.DataContext is Layer layer)
+        {
+            layer.IsRenaming = true;
+            e.Handled = true;
+        }
+    }
+
+    private void OnLayerNameTextBoxLostFocus(object? sender, RoutedEventArgs e)
+    {
+        if (sender is TextBox tb && tb.DataContext is Layer layer)
+        {
+            layer.IsRenaming = false;
+        }
+    }
+
+    private void OnLayerNameTextBoxKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key is Key.Enter or Key.Escape)
+        {
+            if (sender is TextBox tb && tb.DataContext is Layer layer)
+            {
+                layer.IsRenaming = false;
+                e.Handled = true;
+            }
+        }
+    }
+
     private async void OnWindowKeyDown(object? sender, KeyEventArgs e)
     {
-        // Don't trigger shortcuts if user is typing in a TextBox or editable text element
+        // Don't trigger shortcuts if user is typing in a TextBox, NumericUpDown or editable text element
         var focused = FocusManager?.GetFocusedElement();
-        if (focused is TextBox or AutoCompleteBox)
+        if (focused is Visual v)
         {
-            return;
+            var current = v;
+            while (current != null)
+            {
+                if (current is TextBox or AutoCompleteBox or NumericUpDown)
+                {
+                    return;
+                }
+                current = current.GetVisualParent();
+            }
         }
 
         if (ViewModel == null)
@@ -439,6 +487,17 @@ public partial class MainWindow : Window
         bool ctrl = e.KeyModifiers.HasFlag(KeyModifiers.Control);
         bool shift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
         bool alt = e.KeyModifiers.HasFlag(KeyModifiers.Alt);
+
+        // Escape: Deselect active selection or cancel active drag
+        if (!ctrl && !alt && !shift && (e.Key == Key.Escape || e.PhysicalKey == PhysicalKey.Escape))
+        {
+            if (ViewModel.CanvasViewModel.HasActiveSelection)
+            {
+                e.Handled = true;
+                ViewModel.Deselect();
+                return;
+            }
+        }
 
         // F1: Hotkeys cheat sheet dialog
         if (!ctrl && !alt && !shift && (e.Key == Key.F1 || e.PhysicalKey == PhysicalKey.F1))

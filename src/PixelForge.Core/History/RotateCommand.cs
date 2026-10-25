@@ -23,14 +23,17 @@ public class RotateLayerCommand : IUndoableCommand
     private readonly PixelColor[] _oldPixels;
     private readonly PixelColor[] _newPixels;
     private readonly Action? _onRotated;
+    private readonly RotateFloatingSelectionCommand? _floatingCommand;
 
-    public string Description => $"Rotate {_layer.Name} {_angle switch
-    {
-        RotationAngle.Rotate90CW => "90° CW",
-        RotationAngle.Rotate90CCW => "90° CCW",
-        RotationAngle.Rotate180 => "180°",
-        _ => ""
-    }}";
+    public string Description => _floatingCommand != null
+        ? _floatingCommand.Description
+        : $"Rotate {_layer.Name} {_angle switch
+        {
+            RotationAngle.Rotate90CW => "90° CW",
+            RotationAngle.Rotate90CCW => "90° CCW",
+            RotationAngle.Rotate180 => "180°",
+            _ => ""
+        }}";
 
     public RotateLayerCommand(Layer layer, RotationAngle angle, Action? onRotated = null, SKRectI? selectionRect = null)
     {
@@ -184,8 +187,23 @@ public class RotateLayerCommand : IUndoableCommand
         }
     }
 
+    public RotateLayerCommand(Layer layer, RotationAngle angle, Action? onRotated, SelectionModel? selection)
+        : this(layer, angle, onRotated, selection?.IsActive == true && !selection.IsFloating ? selection.Bounds : (SKRectI?)null)
+    {
+        if (selection?.IsFloating == true)
+        {
+            _floatingCommand = new RotateFloatingSelectionCommand(selection, angle, onRotated);
+        }
+    }
+
     public void Execute()
     {
+        if (_floatingCommand != null)
+        {
+            _floatingCommand.Execute();
+            return;
+        }
+
         Array.Copy(_newPixels, _layer.Pixels, _newPixels.Length);
         _layer.Invalidate();
         _onRotated?.Invoke();
@@ -193,6 +211,12 @@ public class RotateLayerCommand : IUndoableCommand
 
     public void Undo()
     {
+        if (_floatingCommand != null)
+        {
+            _floatingCommand.Undo();
+            return;
+        }
+
         Array.Copy(_oldPixels, _layer.Pixels, _oldPixels.Length);
         _layer.Invalidate();
         _onRotated?.Invoke();

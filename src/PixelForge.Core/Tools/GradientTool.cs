@@ -144,6 +144,11 @@ public class GradientTool : ITool
                 PixelColor newColor = EvaluateColor(Stops, t, pattern, px, py, ctx.PrimaryColor, ctx.SecondaryColor);
 
                 var oldColor = ctx.ActiveLayer.GetPixel(px, py);
+                if (ctx.ActiveLayer.IsAlphaLocked && oldColor.A == 0)
+                {
+                    continue;
+                }
+
                 if (oldColor != newColor)
                 {
                     deltas.Add(new PixelDelta(px, py, oldColor, newColor));

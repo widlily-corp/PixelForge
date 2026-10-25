@@ -239,4 +239,36 @@ public class UXPolishAndStatusFeedbackTests
         brush.Color.B.Should().Be(128);
         brush.Color.A.Should().Be(200);
     }
+
+    [Fact]
+    public void Layer_IsRenaming_NotifiesPropertyChanged()
+    {
+        // Arrange
+        var layer = new Layer("Background", 16, 16);
+        bool notified = false;
+        layer.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(Layer.IsRenaming)) notified = true;
+        };
+
+        // Act & Assert
+        layer.IsRenaming.Should().BeFalse();
+        layer.IsRenaming = true;
+        notified.Should().BeTrue();
+        layer.IsRenaming.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Localization_NewToolbarKeys_ExistAndAreNonEmpty()
+    {
+        // Arrange
+        var loc = PixelForge.Core.Localization.LocalizationService.Instance;
+
+        // Act & Assert
+        loc.Get("Tip_QuickExport").Should().NotBeNullOrWhiteSpace();
+        loc.Get("Tip_FlipH").Should().NotBeNullOrWhiteSpace();
+        loc.Get("Tip_FlipV").Should().NotBeNullOrWhiteSpace();
+        loc.Get("Tip_RotateCW").Should().NotBeNullOrWhiteSpace();
+        loc.Get("Tip_SmartTools").Should().NotBeNullOrWhiteSpace();
+    }
 }

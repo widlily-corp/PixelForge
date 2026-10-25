@@ -114,18 +114,61 @@ public class EraserTool : ITool
 
     private void ErasePoint(ToolContext ctx, int x, int y)
     {
-        ctx.ForEachSymmetricPoint(x, y, (px, py) =>
+        EraseSingle(ctx, x, y);
+
+        if (!ctx.SymmetryX && !ctx.SymmetryY)
         {
-            int index = py * ctx.Canvas.Width + px;
-            if (_visited.Add(index))
+            return;
+        }
+
+        int sx = ctx.SymmetryX ? ctx.GetSymmetricX(x) : x;
+        int sy = ctx.SymmetryY ? ctx.GetSymmetricY(y) : y;
+
+        bool validSx = ctx.SymmetryX && sx >= 0 && sx < ctx.Canvas.Width && sx != x;
+        bool validSy = ctx.SymmetryY && sy >= 0 && sy < ctx.Canvas.Height && sy != y;
+
+        if (validSx)
+        {
+            EraseSingle(ctx, sx, y);
+        }
+
+        if (validSy)
+        {
+            EraseSingle(ctx, x, sy);
+        }
+
+        if (validSx && validSy)
+        {
+            EraseSingle(ctx, sx, sy);
+        }
+    }
+
+    private void EraseSingle(ToolContext ctx, int px, int py)
+    {
+        if ((uint)px >= (uint)ctx.Canvas.Width || (uint)py >= (uint)ctx.Canvas.Height)
+        {
+            return;
+        }
+
+        if (ctx.Selection.IsActive && !ctx.Selection.Contains(px, py))
+        {
+            return;
+        }
+
+        int index = py * ctx.Canvas.Width + px;
+        if (_visited.Add(index))
+        {
+            var oldColor = ctx.ActiveLayer.GetPixel(px, py);
+            if (ctx.ActiveLayer.IsAlphaLocked && oldColor.A == 0)
             {
-                var oldColor = ctx.ActiveLayer.GetPixel(px, py);
-                if (oldColor != PixelColor.Transparent)
-                {
-                    _deltas.Add(new PixelDelta(px, py, oldColor, PixelColor.Transparent));
-                    ctx.ActiveLayer.SetPixel(px, py, PixelColor.Transparent);
-                }
+                return;
             }
-        });
+
+            if (oldColor != PixelColor.Transparent)
+            {
+                _deltas.Add(new PixelDelta(px, py, oldColor, PixelColor.Transparent));
+                ctx.ActiveLayer.SetPixel(px, py, PixelColor.Transparent);
+            }
+        }
     }
 }

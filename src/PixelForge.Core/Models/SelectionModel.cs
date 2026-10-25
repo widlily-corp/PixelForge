@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using PixelForge.Core.History;
 using SkiaSharp;
 
 namespace PixelForge.Core.Models;
@@ -159,5 +160,77 @@ public partial class SelectionModel : ObservableObject
             : Bounds;
 
         return rect.Contains(x, y);
+    }
+
+    /// <summary>
+    /// Flips the floating selection pixel buffer horizontally or vertically.
+    /// </summary>
+    public void Flip(FlipDirection direction)
+    {
+        if (!IsFloating || Pixels.Length == 0 || Bounds.Width <= 0 || Bounds.Height <= 0)
+        {
+            return;
+        }
+
+        int w = Bounds.Width;
+        int h = Bounds.Height;
+        var newPixels = new PixelColor[w * h];
+
+        for (int y = 0; y < h; y++)
+        {
+            for (int x = 0; x < w; x++)
+            {
+                int srcX = direction == FlipDirection.Horizontal ? (w - 1 - x) : x;
+                int srcY = direction == FlipDirection.Vertical ? (h - 1 - y) : y;
+                newPixels[y * w + x] = Pixels[srcY * w + srcX];
+            }
+        }
+
+        Pixels = newPixels;
+    }
+
+    /// <summary>
+    /// Rotates the floating selection pixel buffer by 90 CW, 90 CCW, or 180 degrees, updating bounds dimensions.
+    /// </summary>
+    public void Rotate(RotationAngle angle)
+    {
+        if (!IsFloating || Pixels.Length == 0 || Bounds.Width <= 0 || Bounds.Height <= 0)
+        {
+            return;
+        }
+
+        int w = Bounds.Width;
+        int h = Bounds.Height;
+
+        if (angle == RotationAngle.Rotate180)
+        {
+            var newPixels = new PixelColor[w * h];
+            for (int y = 0; y < h; y++)
+            {
+                for (int x = 0; x < w; x++)
+                {
+                    newPixels[y * w + x] = Pixels[(h - 1 - y) * w + (w - 1 - x)];
+                }
+            }
+            Pixels = newPixels;
+            return;
+        }
+
+        int newW = h;
+        int newH = w;
+        var rotatedPixels = new PixelColor[newW * newH];
+
+        for (int ny = 0; ny < newH; ny++)
+        {
+            for (int nx = 0; nx < newW; nx++)
+            {
+                int srcX = angle == RotationAngle.Rotate90CW ? ny : (w - 1 - ny);
+                int srcY = angle == RotationAngle.Rotate90CW ? (h - 1 - nx) : nx;
+                rotatedPixels[ny * newW + nx] = Pixels[srcY * w + srcX];
+            }
+        }
+
+        Pixels = rotatedPixels;
+        Bounds = new SKRectI(Bounds.Left, Bounds.Top, Bounds.Left + newW, Bounds.Top + newH);
     }
 }

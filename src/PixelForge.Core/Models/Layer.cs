@@ -11,6 +11,7 @@ public partial class Layer : ObservableObject
     private bool _isVisible;
     private float _opacity;
     private bool _isAlphaLocked;
+    private bool _isRenaming;
 
     /// <summary>
     /// Event raised when the pixel buffer of this layer is modified.
@@ -51,6 +52,15 @@ public partial class Layer : ObservableObject
     {
         get => _isAlphaLocked;
         set => SetProperty(ref _isAlphaLocked, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether inline name renaming mode is active in the UI.
+    /// </summary>
+    public bool IsRenaming
+    {
+        get => _isRenaming;
+        set => SetProperty(ref _isRenaming, value);
     }
 
     public Layer(string name, int width, int height, Guid? id = null)

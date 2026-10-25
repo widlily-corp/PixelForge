@@ -116,24 +116,62 @@ public class DitherBrushTool : ITool
     {
         var pattern = ctx.ActiveDitherPattern == DitherPattern.None ? DitherPattern.Bayer4x4 : ctx.ActiveDitherPattern;
 
-        ctx.ForEachSymmetricPoint(x, y, (px, py) =>
+        PlotSingle(ctx, x, y, pattern);
+
+        if (!ctx.SymmetryX && !ctx.SymmetryY)
         {
-            if (ctx.Selection.IsActive && !ctx.Selection.Contains(px, py))
+            return;
+        }
+
+        int sx = ctx.SymmetryX ? ctx.GetSymmetricX(x) : x;
+        int sy = ctx.SymmetryY ? ctx.GetSymmetricY(y) : y;
+
+        bool validSx = ctx.SymmetryX && sx >= 0 && sx < ctx.Canvas.Width && sx != x;
+        bool validSy = ctx.SymmetryY && sy >= 0 && sy < ctx.Canvas.Height && sy != y;
+
+        if (validSx)
+        {
+            PlotSingle(ctx, sx, y, pattern);
+        }
+
+        if (validSy)
+        {
+            PlotSingle(ctx, x, sy, pattern);
+        }
+
+        if (validSx && validSy)
+        {
+            PlotSingle(ctx, sx, sy, pattern);
+        }
+    }
+
+    private void PlotSingle(ToolContext ctx, int px, int py, DitherPattern pattern)
+    {
+        if ((uint)px >= (uint)ctx.Canvas.Width || (uint)py >= (uint)ctx.Canvas.Height)
+        {
+            return;
+        }
+
+        if (ctx.Selection.IsActive && !ctx.Selection.Contains(px, py))
+        {
+            return;
+        }
+
+        int index = py * ctx.Canvas.Width + px;
+        if (_visited.Add(index))
+        {
+            var oldColor = ctx.ActiveLayer.GetPixel(px, py);
+            if (ctx.ActiveLayer.IsAlphaLocked && oldColor.A == 0)
             {
                 return;
             }
 
-            int index = py * ctx.Canvas.Width + px;
-            if (_visited.Add(index))
+            var color = DitherHelper.EvaluateDitherColor(px, py, ctx.PrimaryColor, ctx.SecondaryColor, pattern, ctx.DitherIntensity);
+            if (oldColor != color)
             {
-                var color = DitherHelper.EvaluateDitherColor(px, py, ctx.PrimaryColor, ctx.SecondaryColor, pattern, ctx.DitherIntensity);
-                var oldColor = ctx.ActiveLayer.GetPixel(px, py);
-                if (oldColor != color)
-                {
-                    _deltas.Add(new PixelDelta(px, py, oldColor, color));
-                    ctx.ActiveLayer.SetPixel(px, py, color);
-                }
+                _deltas.Add(new PixelDelta(px, py, oldColor, color));
+                ctx.ActiveLayer.SetPixel(px, py, color);
             }
-        });
+        }
     }
 }

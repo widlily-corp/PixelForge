@@ -133,6 +133,56 @@ public class MainViewModelTests
     }
 
     [Fact]
+    public void FlipAndRotateActiveLayer_WhenFloatingSelection_TransformsSelectionBuffer_AndDoesNotTouchLayer()
+    {
+        // Arrange
+        var vm = CreateMainViewModel();
+        var layer = vm.CanvasViewModel.Canvas.ActiveLayer!;
+        var layerColor = new PixelColor(10, 20, 30, 255);
+        layer.SetPixel(0, 0, layerColor);
+
+        var selection = vm.CanvasViewModel.Selection;
+        int w = 3;
+        int h = 2;
+        var pixels = new PixelColor[]
+        {
+            PixelColor.Red, PixelColor.Green, PixelColor.Blue,
+            PixelColor.Yellow, PixelColor.Cyan, PixelColor.Magenta
+        };
+        selection.Select(new SkiaSharp.SKRectI(2, 2, 2 + w, 2 + h), pixels);
+        selection.IsFloating = true;
+
+        // Act - Flip Horizontal
+        vm.FlipActiveLayerHorizontal();
+
+        // Layer under it must NOT be touched
+        layer.GetPixel(0, 0).Should().Be(layerColor);
+
+        // Selection buffer must be flipped horizontally
+        selection.Pixels[0].Should().Be(PixelColor.Blue);
+        selection.Pixels[1].Should().Be(PixelColor.Green);
+        selection.Pixels[2].Should().Be(PixelColor.Red);
+
+        // Undo
+        vm.HistoryViewModel.Undo();
+        selection.Pixels[0].Should().Be(PixelColor.Red);
+        selection.Pixels[2].Should().Be(PixelColor.Blue);
+
+        // Act - Rotate CW
+        vm.RotateActiveLayerCW();
+        selection.Bounds.Width.Should().Be(2);
+        selection.Bounds.Height.Should().Be(3);
+        selection.Pixels[0].Should().Be(PixelColor.Yellow);
+        selection.Pixels[1].Should().Be(PixelColor.Red);
+
+        // Undo
+        vm.HistoryViewModel.Undo();
+        selection.Bounds.Width.Should().Be(3);
+        selection.Bounds.Height.Should().Be(2);
+        selection.Pixels[0].Should().Be(PixelColor.Red);
+    }
+
+    [Fact]
     public void ClearActiveLayer_ClearsPixels_AndCanBeUndone()
     {
         // Arrange

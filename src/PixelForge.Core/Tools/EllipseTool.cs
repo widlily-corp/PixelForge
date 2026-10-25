@@ -13,7 +13,10 @@ public class EllipseTool : ITool
     private int _startY;
     private int _currentX;
     private int _currentY;
-    private List<(int X, int Y, PixelColor Color)> _previewPixels = new();
+    private readonly List<(int X, int Y, PixelColor Color)> _previewPixels = new();
+    private readonly HashSet<int> _previewVisited = new();
+    private readonly List<PixelDelta> _deltas = new();
+    private readonly HashSet<int> _drawVisited = new();
 
     public string Name => "Ellipse";
     public string Shortcut => "C";
@@ -68,34 +71,22 @@ public class EllipseTool : ITool
         _currentX = x;
         _currentY = y;
 
-        var deltas = new List<PixelDelta>();
-        var visited = new HashSet<int>();
+        _deltas.Clear();
+        _drawVisited.Clear();
 
-        GenerateEllipsePoints(_startX, _startY, _currentX, _currentY, IsFilled, (ex, ey) =>
-        {
-            ctx.ForEachSymmetricPoint(ex, ey, (px, py) =>
-            {
-                int index = py * ctx.Canvas.Width + px;
-                if (visited.Add(index))
-                {
-                    var oldColor = ctx.ActiveLayer.GetPixel(px, py);
-                    if (oldColor != ctx.PrimaryColor)
-                    {
-                        deltas.Add(new PixelDelta(px, py, oldColor, ctx.PrimaryColor));
-                        ctx.ActiveLayer.SetPixel(px, py, ctx.PrimaryColor);
-                    }
-                }
-            });
-        });
+        DrawEllipsePoints(ctx, _startX, _startY, _currentX, _currentY, IsFilled, isPreview: false);
 
-        if (deltas.Count > 0)
+        if (_deltas.Count > 0)
         {
-            var command = new DrawPixelsCommand(ctx.ActiveLayer, deltas.ToArray(), IsFilled ? "Draw Filled Ellipse" : "Draw Ellipse Outline");
+            var command = new DrawPixelsCommand(ctx.ActiveLayer, _deltas.ToArray(), IsFilled ? "Draw Filled Ellipse" : "Draw Ellipse Outline");
             ctx.History.ExecuteCommand(command);
         }
 
         _isDragging = false;
         _previewPixels.Clear();
+        _previewVisited.Clear();
+        _deltas.Clear();
+        _drawVisited.Clear();
     }
 
     public IReadOnlyList<(int X, int Y, PixelColor Color)> GetPreviewPixels(ToolContext ctx)
@@ -105,22 +96,93 @@ public class EllipseTool : ITool
 
     private void UpdatePreview(ToolContext ctx)
     {
-        var preview = new List<(int X, int Y, PixelColor Color)>();
-        var visited = new HashSet<int>();
+        _previewPixels.Clear();
+        _previewVisited.Clear();
 
-        GenerateEllipsePoints(_startX, _startY, _currentX, _currentY, IsFilled, (ex, ey) =>
+        DrawEllipsePoints(ctx, _startX, _startY, _currentX, _currentY, IsFilled, isPreview: true);
+    }
+
+    private void DrawEllipsePoints(ToolContext ctx, int x0, int y0, int x1, int y1, bool isFilled, bool isPreview)
+    {
+        GenerateEllipsePoints(x0, y0, x1, y1, isFilled, (ex, ey) =>
         {
-            ctx.ForEachSymmetricPoint(ex, ey, (px, py) =>
-            {
-                int index = py * ctx.Canvas.Width + px;
-                if (visited.Add(index))
-                {
-                    preview.Add((px, py, ctx.PrimaryColor));
-                }
-            });
+            PlotPoint(ctx, ex, ey, isPreview);
         });
+    }
 
-        _previewPixels = preview;
+    private void PlotPoint(ToolContext ctx, int x, int y, bool isPreview)
+    {
+        PlotSingle(ctx, x, y, isPreview);
+
+        if (!ctx.SymmetryX && !ctx.SymmetryY)
+        {
+            return;
+        }
+
+        int sx = ctx.SymmetryX ? ctx.GetSymmetricX(x) : x;
+        int sy = ctx.SymmetryY ? ctx.GetSymmetricY(y) : y;
+
+        bool validSx = ctx.SymmetryX && sx >= 0 && sx < ctx.Canvas.Width && sx != x;
+        bool validSy = ctx.SymmetryY && sy >= 0 && sy < ctx.Canvas.Height && sy != y;
+
+        if (validSx)
+        {
+            PlotSingle(ctx, sx, y, isPreview);
+        }
+
+        if (validSy)
+        {
+            PlotSingle(ctx, x, sy, isPreview);
+        }
+
+        if (validSx && validSy)
+        {
+            PlotSingle(ctx, sx, sy, isPreview);
+        }
+    }
+
+    private void PlotSingle(ToolContext ctx, int px, int py, bool isPreview)
+    {
+        if ((uint)px >= (uint)ctx.Canvas.Width || (uint)py >= (uint)ctx.Canvas.Height)
+        {
+            return;
+        }
+
+        if (ctx.Selection.IsActive && !ctx.Selection.Contains(px, py))
+        {
+            return;
+        }
+
+        int index = py * ctx.Canvas.Width + px;
+        if (isPreview)
+        {
+            if (_previewVisited.Add(index))
+            {
+                if (ctx.ActiveLayer.IsAlphaLocked && ctx.ActiveLayer.GetPixel(px, py).A == 0)
+                {
+                    return;
+                }
+
+                _previewPixels.Add((px, py, ctx.PrimaryColor));
+            }
+        }
+        else
+        {
+            if (_drawVisited.Add(index))
+            {
+                var oldColor = ctx.ActiveLayer.GetPixel(px, py);
+                if (ctx.ActiveLayer.IsAlphaLocked && oldColor.A == 0)
+                {
+                    return;
+                }
+
+                if (oldColor != ctx.PrimaryColor)
+                {
+                    _deltas.Add(new PixelDelta(px, py, oldColor, ctx.PrimaryColor));
+                    ctx.ActiveLayer.SetPixel(px, py, ctx.PrimaryColor);
+                }
+            }
+        }
     }
 
     private static void GenerateEllipsePoints(int x0, int y0, int x1, int y1, bool isFilled, Action<int, int> plot)
