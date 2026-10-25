@@ -16,7 +16,7 @@
 
     <Color x:Key="TextPrimaryColor">#F8FAFC</Color>
     <Color x:Key="TextSecondaryColor">#94A3B8</Color>
-    <Color x:Key="TextMutedColor">#64748B</Color>
+    <Color x:Key="TextMutedColor">#78889E</Color>
     <Color x:Key="TextBadgeColor">#CBD5E1</Color>
 
     <Color x:Key="AccentPrimaryColor">#00D2FF</Color>

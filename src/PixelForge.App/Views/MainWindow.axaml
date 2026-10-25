@@ -57,10 +57,18 @@
             <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
             <Setter Property="RenderTransform" Value="scale(1.06)" />
         </Style>
+        <Style Selector="Button.tool-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+        </Style>
         <Style Selector="Button.tool-btn:pressed">
             <Setter Property="RenderTransform" Value="scale(0.95)" />
         </Style>
         <Style Selector="Button.tool-btn.active">
+            <Setter Property="Background" Value="{DynamicResource AccentGlowBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+        </Style>
+        <Style Selector="Button.tool-btn.active /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource AccentGlowBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
         </Style>
@@ -147,30 +155,60 @@
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="6" />
             <Setter Property="Padding" Value="8,3" />
+            <Setter Property="Margin" Value="0,1,6,1" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 
-        <!-- Context Bar ToggleButton Style -->
-        <Style Selector="ToggleButton.context-toggle-btn">
+        <!-- Context Bar & Tool Option ToggleButton Style -->
+        <Style Selector="ToggleButton.context-toggle-btn, ToggleButton.tool-opt-btn">
             <Setter Property="Focusable" Value="False" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="Padding" Value="6,2" />
+            <Setter Property="CornerRadius" Value="6" />
             <Setter Property="Background" Value="{DynamicResource SurfacePanelBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+            <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Transitions">
                 <Transitions>
                     <BrushTransition Property="Background" Duration="0:0:0.1" />
                     <BrushTransition Property="BorderBrush" Duration="0:0:0.1" />
+                    <BrushTransition Property="Foreground" Duration="0:0:0.1" />
                 </Transitions>
             </Setter>
         </Style>
-        <Style Selector="ToggleButton.context-toggle-btn:pointerover">
+        <Style Selector="ToggleButton.context-toggle-btn:pointerover, ToggleButton.tool-opt-btn:pointerover">
             <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
         </Style>
-        <Style Selector="ToggleButton.context-toggle-btn:checked">
+        <Style Selector="ToggleButton.context-toggle-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter, ToggleButton.tool-opt-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+        </Style>
+        <Style Selector="ToggleButton.context-toggle-btn:pressed, ToggleButton.tool-opt-btn:pressed">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardSelectedBrush}" />
+        </Style>
+        <Style Selector="ToggleButton.context-toggle-btn:pressed /template/ ContentPresenter#PART_ContentPresenter, ToggleButton.tool-opt-btn:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardSelectedBrush}" />
+        </Style>
+        <Style Selector="ToggleButton.context-toggle-btn:checked, ToggleButton.tool-opt-btn:checked">
             <Setter Property="Background" Value="{DynamicResource AccentGlowBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        </Style>
+        <Style Selector="ToggleButton.context-toggle-btn:checked /template/ ContentPresenter#PART_ContentPresenter, ToggleButton.tool-opt-btn:checked /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AccentGlowBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        </Style>
+        <Style Selector="ToggleButton.context-toggle-btn:checked:pointerover, ToggleButton.tool-opt-btn:checked:pointerover">
+            <Setter Property="Background" Value="{DynamicResource AccentGlowBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryHoverBrush}" />
+        </Style>
+        <Style Selector="ToggleButton.context-toggle-btn:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter, ToggleButton.tool-opt-btn:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AccentGlowBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryHoverBrush}" />
         </Style>
 
         <!-- Status Bar Capsule Button Style -->
@@ -194,6 +232,10 @@
             <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
             <Setter Property="RenderTransform" Value="scale(1.03)" />
         </Style>
+        <Style Selector="Button.status-capsule-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+        </Style>
         <Style Selector="Button.status-capsule-btn:pressed">
             <Setter Property="RenderTransform" Value="scale(0.97)" />
         </Style>
@@ -206,8 +248,51 @@
             <Setter Property="BorderThickness" Value="1" />
         </Style>
 
+        <!-- Status Bar Capsule Toggle Style -->
+        <Style Selector="ToggleButton.status-capsule-toggle">
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="4,1" />
+            <Setter Property="Height" Value="20" />
+            <Setter Property="CornerRadius" Value="3" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="ToggleButton.status-capsule-toggle:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+        <Style Selector="ToggleButton.status-capsule-toggle:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+        <Style Selector="ToggleButton.status-capsule-toggle:checked">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+        </Style>
+        <Style Selector="ToggleButton.status-capsule-toggle:checked /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+        </Style>
+        <Style Selector="ToggleButton.status-capsule-toggle:checked:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+        </Style>
+        <Style Selector="ToggleButton.status-capsule-toggle:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+        </Style>
+
         <!-- Quick Action Icon Button Style -->
-        <Style Selector="Button.action-btn">
+        <Style Selector="Button.action-btn, ToggleButton.action-btn">
             <Setter Property="Focusable" Value="False" />
             <Setter Property="Height" Value="30" />
             <Setter Property="Padding" Value="8,4" />
@@ -228,13 +313,38 @@
                 </Transitions>
             </Setter>
         </Style>
-        <Style Selector="Button.action-btn:pointerover">
+        <Style Selector="Button.action-btn:pointerover, ToggleButton.action-btn:pointerover">
             <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
             <Setter Property="RenderTransform" Value="scale(1.06)" />
         </Style>
-        <Style Selector="Button.action-btn:pressed">
+        <Style Selector="Button.action-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter, ToggleButton.action-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+        </Style>
+        <Style Selector="Button.action-btn:pressed, ToggleButton.action-btn:pressed">
             <Setter Property="RenderTransform" Value="scale(0.94)" />
+        </Style>
+        <Style Selector="ToggleButton.action-btn:checked">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        </Style>
+        <Style Selector="ToggleButton.action-btn:checked /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        </Style>
+        <Style Selector="ToggleButton.action-btn:checked:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+            <Setter Property="RenderTransform" Value="scale(1.06)" />
+        </Style>
+        <Style Selector="ToggleButton.action-btn:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
         </Style>
 
         <!-- Quick Action Icon Toggle Button Style -->
@@ -266,6 +376,11 @@
             <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
             <Setter Property="RenderTransform" Value="scale(1.06)" />
         </Style>
+        <Style Selector="ToggleButton.action-toggle-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        </Style>
         <Style Selector="ToggleButton.action-toggle-btn:pressed">
             <Setter Property="RenderTransform" Value="scale(0.94)" />
         </Style>
@@ -273,6 +388,22 @@
             <Setter Property="Background" Value="{DynamicResource AccentGlowBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
             <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+        </Style>
+        <Style Selector="ToggleButton.action-toggle-btn:checked /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AccentGlowBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+        </Style>
+        <Style Selector="ToggleButton.action-toggle-btn:checked:pointerover">
+            <Setter Property="Background" Value="{DynamicResource AccentGlowBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryHoverBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryHoverBrush}" />
+            <Setter Property="RenderTransform" Value="scale(1.06)" />
+        </Style>
+        <Style Selector="ToggleButton.action-toggle-btn:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AccentGlowBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryHoverBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryHoverBrush}" />
         </Style>
 
         <!-- Layers ListBoxItem Style -->
@@ -289,7 +420,13 @@
         <Style Selector="ListBoxItem:pointerover">
             <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
         </Style>
+        <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+        </Style>
         <Style Selector="ListBoxItem:selected">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardSelectedBrush}" />
+        </Style>
+        <Style Selector="ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource SurfaceCardSelectedBrush}" />
         </Style>
 
@@ -301,12 +438,71 @@
             <Setter Property="CornerRadius" Value="6" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.1" />
+                </Transitions>
+            </Setter>
         </Style>
         <Style Selector="ToggleButton.inspector-card-header:pointerover">
             <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+        <Style Selector="ToggleButton.inspector-card-header:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+        <Style Selector="ToggleButton.inspector-card-header:pressed">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardSelectedBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+        <Style Selector="ToggleButton.inspector-card-header:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardSelectedBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+        <Style Selector="ToggleButton.inspector-card-header:checked">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        </Style>
+        <Style Selector="ToggleButton.inspector-card-header:checked /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        </Style>
+        <Style Selector="ToggleButton.inspector-card-header:checked:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        </Style>
+        <Style Selector="ToggleButton.inspector-card-header:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        </Style>
+        <Style Selector="ToggleButton.inspector-card-header:checked:pressed">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardSelectedBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        </Style>
+        <Style Selector="ToggleButton.inspector-card-header:checked:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardSelectedBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
         </Style>
     </Window.Styles>
 
@@ -824,9 +1020,9 @@
                                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                             <!-- Pixel-Perfect Toggle -->
                                             <ToggleButton IsChecked="{Binding ToolViewModel.IsPixelPerfect, Mode=TwoWay}"
-                                                          Classes="context-toggle-btn"
+                                                          Classes="context-toggle-btn tool-opt-btn"
                                                           ToolTip.Tip="{Binding Loc[Context_PixelPerfectTip]}"
-                                                          Height="26" Padding="6,2" CornerRadius="5">
+                                                          Height="26" Padding="6,2" CornerRadius="6">
                                                 <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                                     <PathIcon Data="{DynamicResource IconPixelPerfect}" Width="12" Height="12" Foreground="{DynamicResource AccentPrimaryBrush}" />
                                                     <Border Width="8" Height="8" CornerRadius="4"
@@ -1371,9 +1567,8 @@
                     <Border Padding="4,1" VerticalAlignment="Center" Height="22"
                             Classes="status-capsule-badge">
                         <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                            <ToggleButton IsChecked="{Binding CanvasViewModel.ShowTileGrid, Mode=TwoWay}"
-                                          Background="Transparent" BorderThickness="0" Padding="4,1" Height="20"
-                                          CornerRadius="3"
+                            <ToggleButton Classes="status-capsule-toggle"
+                                          IsChecked="{Binding CanvasViewModel.ShowTileGrid, Mode=TwoWay}"
                                           ToolTip.Tip="{Binding Loc[Tip_TileGrid]}">
                                 <StackPanel Orientation="Horizontal" Spacing="4">
                                     <PathIcon Data="{DynamicResource IconTileGrid}" Width="11" Height="11"
