@@ -24,8 +24,6 @@ public partial class MainViewModel : ViewModelBase
     private readonly UndoRedoService _undoRedoService;
     private readonly AppSettingsService _appSettingsService;
 
-    public LocalizationService Loc => LocalizationService.Instance;
-
     public ObservableCollection<string> RecentProjects { get; } = new();
 
     public bool HasRecentProjects => RecentProjects.Count > 0;

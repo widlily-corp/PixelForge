@@ -24,7 +24,8 @@
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                     <Border Background="{DynamicResource SurfaceBaseBrush}"
-                            CornerRadius="4" Padding="6,2" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
+                            CornerRadius="4" Padding="6,2" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1"
+                            ToolTip.Tip="{Binding [Tip_PreviewDimensions], Source={x:Static loc:LocalizationService.Instance}}">
                         <TextBlock Name="DimensionBadge" Text="32 × 32" FontSize="11"
                                    Foreground="{DynamicResource TextSecondaryBrush}" FontWeight="SemiBold" />
                     </Border>
@@ -32,7 +33,7 @@
                                   Classes="action-btn"
                                   Width="22" Height="22" Padding="2"
                                   IsChecked="True"
-                                  ToolTip.Tip="{Binding [Panel_TogglePreview], Source={x:Static loc:LocalizationService.Instance}}">
+                                  ToolTip.Tip="{Binding [Tip_PreviewToggle], Source={x:Static loc:LocalizationService.Instance}}">
                         <Panel>
                             <PathIcon Data="{DynamicResource IconArrowUp}" Width="10" Height="10"
                                       IsVisible="{Binding #PreviewCollapseToggle.IsChecked}"
@@ -85,13 +86,16 @@
                            FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                 <Button Name="Scale1xButton" Grid.Column="1" Content="1x" Margin="2,0" Padding="8,3"
                         FontSize="11" FontWeight="SemiBold" CornerRadius="4"
-                        Background="{DynamicResource AccentPrimaryBrush}" Foreground="#0A0E17" />
+                        Background="{DynamicResource AccentPrimaryBrush}" Foreground="#0A0E17"
+                        ToolTip.Tip="{Binding [Tip_Preview1x], Source={x:Static loc:LocalizationService.Instance}}" />
                 <Button Name="Scale2xButton" Grid.Column="2" Content="2x" Margin="2,0" Padding="8,3"
                         FontSize="11" CornerRadius="4"
-                        Background="{DynamicResource SurfacePanelBrush}" Foreground="{DynamicResource TextSecondaryBrush}" />
+                        Background="{DynamicResource SurfacePanelBrush}" Foreground="{DynamicResource TextSecondaryBrush}"
+                        ToolTip.Tip="{Binding [Tip_Preview2x], Source={x:Static loc:LocalizationService.Instance}}" />
                 <Button Name="Scale4xButton" Grid.Column="3" Content="4x" Margin="2,0" Padding="8,3"
                         FontSize="11" CornerRadius="4"
-                        Background="{DynamicResource SurfacePanelBrush}" Foreground="{DynamicResource TextSecondaryBrush}" />
+                        Background="{DynamicResource SurfacePanelBrush}" Foreground="{DynamicResource TextSecondaryBrush}"
+                        ToolTip.Tip="{Binding [Tip_Preview4x], Source={x:Static loc:LocalizationService.Instance}}" />
             </Grid>
         </Grid>
     </Border>

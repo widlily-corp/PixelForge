@@ -28,6 +28,10 @@
     </Window.Resources>
 
     <Window.Styles>
+        <!-- Responsive Fast ToolTip Style -->
+        <Style Selector="ToolTip">
+            <Setter Property="ShowDelay" Value="150" />
+        </Style>
         <!-- Toolbar Tool Button Style -->
         <Style Selector="Button.tool-btn">
             <Setter Property="Focusable" Value="False" />
@@ -967,7 +971,7 @@
                                           HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" MaxHeight="78">
                                 <WrapPanel Orientation="Horizontal" Margin="0,2">
                                     <!-- 1. Tool Capsule: Icon + Tool Name -->
-                                    <Border Classes="context-chip">
+                                    <Border Classes="context-chip" ToolTip.Tip="{Binding Loc[Tip_ActiveTool]}">
                                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                             <PathIcon x:Name="ActiveToolIcon"
                                                       Data="{Binding ToolViewModel.ActiveTool, Converter={StaticResource ToolToIconConverter}}"
@@ -1007,7 +1011,8 @@
                                             </Button>
                                             <Border Background="{DynamicResource SurfacePanelBrush}"
                                                     BorderBrush="{DynamicResource BorderSubtleBrush}"
-                                                    BorderThickness="1" CornerRadius="4" Padding="5,1" Margin="3,0,0,0">
+                                                    BorderThickness="1" CornerRadius="4" Padding="5,1" Margin="3,0,0,0"
+                                                    ToolTip.Tip="{Binding Loc[Tip_BrushSize]}">
                                                 <TextBlock Text="{Binding ToolViewModel.BrushSize, StringFormat='{}{0}px'}"
                                                            FontSize="11" FontWeight="Bold"
                                                            Foreground="{DynamicResource AccentPrimaryBrush}" />
@@ -1040,13 +1045,15 @@
                                             <Separator Width="1" Height="16" Background="{DynamicResource BorderSubtleBrush}" />
 
                                             <!-- Stabilizer -->
-                                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" ToolTip.Tip="{Binding Loc[Tip_Stabilizer]}">
                                                 <TextBlock Text="{Binding Loc[Context_Stabilizer]}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
                                                 <Slider Minimum="0" Maximum="10" Value="{Binding ToolViewModel.StabilizerStrength, Mode=TwoWay}"
-                                                        Width="65" VerticalAlignment="Center" SmallChange="1" LargeChange="1" />
+                                                        Width="65" VerticalAlignment="Center" SmallChange="1" LargeChange="1"
+                                                        ToolTip.Tip="{Binding Loc[Tip_Stabilizer]}" />
                                                 <Border Background="{DynamicResource SurfacePanelBrush}"
                                                         BorderBrush="{DynamicResource BorderSubtleBrush}"
-                                                        BorderThickness="1" CornerRadius="4" Padding="5,1">
+                                                        BorderThickness="1" CornerRadius="4" Padding="5,1"
+                                                        ToolTip.Tip="{Binding Loc[Tip_Stabilizer]}">
                                                     <TextBlock Text="{Binding ToolViewModel.StabilizerStrength}" FontSize="11" FontWeight="Bold"
                                                                Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" Width="14" TextAlignment="Center" />
                                                 </Border>
@@ -1061,7 +1068,7 @@
                                             <!-- Radius -->
                                             <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                                 <TextBlock Text="{Binding Loc[Context_SprayRadius]}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
-                                                <NumericUpDown Value="{Binding ToolViewModel.SprayRadius, Mode=TwoWay}"
+                                                <NumericUpDown Value="{Binding ToolViewModel.SprayRadius, Mode=TwoWay}" ToolTip.Tip="{Binding Loc[Tip_SprayRadius]}"
                                                                Minimum="1" Maximum="16" Increment="1"
                                                                Height="26" Width="68" FontSize="11" VerticalContentAlignment="Center" />
                                             </StackPanel>
@@ -1069,7 +1076,7 @@
                                             <!-- Density -->
                                             <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                                 <TextBlock Text="{Binding Loc[Context_SprayDensity]}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
-                                                <Slider Minimum="0.05" Maximum="1.0" Value="{Binding ToolViewModel.SprayDensity, Mode=TwoWay}"
+                                                <Slider Minimum="0.05" Maximum="1.0" Value="{Binding ToolViewModel.SprayDensity, Mode=TwoWay}" ToolTip.Tip="{Binding Loc[Tip_SprayDensity]}"
                                                         Width="65" VerticalAlignment="Center" SmallChange="0.05" LargeChange="0.1" />
                                                 <Border Background="{DynamicResource SurfacePanelBrush}"
                                                         BorderBrush="{DynamicResource BorderSubtleBrush}"
@@ -1085,7 +1092,7 @@
                                     <Border Classes="context-chip" IsVisible="{Binding ToolViewModel.Supports8x8Pattern}">
                                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding Loc[Context_Texture8x8]}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
-                                            <ComboBox ItemsSource="{Binding ToolViewModel.Available8x8Patterns}"
+                                            <ComboBox ItemsSource="{Binding ToolViewModel.Available8x8Patterns}" ToolTip.Tip="{Binding Loc[Tip_Pattern8x8]}"
                                                       SelectedItem="{Binding ToolViewModel.SelectedPatternPreset, Mode=TwoWay}"
                                                       Height="26" FontSize="11" VerticalContentAlignment="Center" MinWidth="110" />
                                         </StackPanel>
@@ -1095,7 +1102,7 @@
                                     <Border Classes="context-chip" IsVisible="{Binding ToolViewModel.SupportsDitherPattern}">
                                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding Loc[Context_Dither]}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
-                                            <ComboBox ItemsSource="{Binding ToolViewModel.AvailablePatterns}"
+                                            <ComboBox ItemsSource="{Binding ToolViewModel.AvailablePatterns}" ToolTip.Tip="{Binding Loc[Tip_Dithering]}"
                                                       SelectedItem="{Binding ToolViewModel.SelectedDitherPattern, Mode=TwoWay}"
                                                       Height="26" FontSize="11" VerticalContentAlignment="Center" MinWidth="130">
                                                 <ComboBox.ItemTemplate>
@@ -1111,13 +1118,13 @@
                                     <Border Classes="context-chip" IsVisible="{Binding ToolViewModel.SupportsFillSettings}">
                                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding Loc[Context_Tolerance]}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
-                                            <NumericUpDown Value="{Binding ToolViewModel.FillTolerance, Mode=TwoWay}"
+                                            <NumericUpDown Value="{Binding ToolViewModel.FillTolerance, Mode=TwoWay}" ToolTip.Tip="{Binding Loc[Tip_FillTolerance]}"
                                                            Minimum="0" Maximum="100" Increment="5" FormatString="{}{0}%"
                                                            Height="26" Width="76" FontSize="11" VerticalContentAlignment="Center" />
                                             <CheckBox IsChecked="{Binding ToolViewModel.FillContiguous, Mode=TwoWay}"
                                                       Content="{Binding Loc[Context_Contiguous]}" FontSize="11"
                                                       Foreground="{DynamicResource TextPrimaryBrush}"
-                                                      ToolTip.Tip="{Binding Loc[Context_ContiguousTip]}" />
+                                                      ToolTip.Tip="{Binding Loc[Tip_FillContiguous]}" />
                                         </StackPanel>
                                     </Border>
 
@@ -1125,14 +1132,14 @@
                                     <Border Classes="context-chip" IsVisible="{Binding ToolViewModel.SupportsGradientSettings}">
                                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding Loc[Context_Gradient]}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
-                                            <ComboBox ItemsSource="{Binding ToolViewModel.AvailableGradientTypes}"
+                                            <ComboBox ItemsSource="{Binding ToolViewModel.AvailableGradientTypes}" ToolTip.Tip="{Binding Loc[Tip_GradientType]}"
                                                       SelectedItem="{Binding ToolViewModel.GradientType, Mode=TwoWay}"
                                                       Height="26" FontSize="11" VerticalContentAlignment="Center" MinWidth="85" />
                                             <TextBlock Text="{Binding Loc[Context_Preset]}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
                                             <ComboBox ItemsSource="{Binding ToolViewModel.AvailableGradientPresets}"
                                                       SelectedItem="{Binding ToolViewModel.SelectedGradientPreset, Mode=TwoWay}"
                                                       Height="26" FontSize="11" VerticalContentAlignment="Center" MinWidth="130"
-                                                      ToolTip.Tip="{Binding Loc[Context_PresetTip]}">
+                                                      ToolTip.Tip="{Binding Loc[Tip_GradientPreset]}">
                                                 <ComboBox.ItemTemplate>
                                                     <DataTemplate>
                                                         <TextBlock Text="{Binding Name}" FontSize="11" />
@@ -1144,13 +1151,13 @@
                                                     Background="{DynamicResource SurfaceCardHoverBrush}"
                                                     BorderBrush="{DynamicResource BorderSubtleBrush}"
                                                     BorderThickness="1" CornerRadius="4"
-                                                    ToolTip.Tip="{Binding Loc[Context_RampTip]}" />
+                                                    ToolTip.Tip="{Binding Loc[Tip_ColorRampBtn]}" />
                                         </StackPanel>
                                     </Border>
 
                                     <!-- 8. Shape Fill Capsule: Filled Shapes (Rectangle, Ellipse) -->
                                     <Border Classes="context-chip" IsVisible="{Binding ToolViewModel.SupportsShapeFill}">
-                                        <CheckBox IsChecked="{Binding ToolViewModel.IsShapeFilled, Mode=TwoWay}"
+                                        <CheckBox IsChecked="{Binding ToolViewModel.IsShapeFilled, Mode=TwoWay}" ToolTip.Tip="{Binding Loc[Tip_ShapeFilled]}"
                                                   Content="{Binding Loc[Context_ShapeFill]}" FontSize="11"
                                                   Foreground="{DynamicResource TextPrimaryBrush}" />
                                     </Border>
@@ -1207,7 +1214,8 @@
                             BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1"
                             CornerRadius="8" Padding="6" Margin="0,0,0,6">
                         <Grid RowDefinitions="Auto,Auto">
-                            <ToggleButton Name="PreviewCardToggle" IsChecked="True" Classes="inspector-card-header">
+                            <ToggleButton Name="PreviewCardToggle" IsChecked="True" Classes="inspector-card-header"
+                                          ToolTip.Tip="{Binding Loc[Tip_PreviewToggle]}">
                                 <Grid ColumnDefinitions="*,Auto">
                                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                         <PathIcon Data="{DynamicResource IconCrop}" Width="12" Height="12" Foreground="{DynamicResource AccentPrimaryBrush}" />
@@ -1231,7 +1239,8 @@
                             BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1"
                             CornerRadius="8" Padding="6" Margin="0,0,0,6">
                         <Grid RowDefinitions="Auto,Auto">
-                            <ToggleButton Name="PaletteCardToggle" IsChecked="True" Classes="inspector-card-header">
+                            <ToggleButton Name="PaletteCardToggle" IsChecked="True" Classes="inspector-card-header"
+                                          ToolTip.Tip="{Binding Loc[Tip_ColorPresets]}">
                                 <Grid ColumnDefinitions="*,Auto">
                                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                         <PathIcon Data="{DynamicResource IconPalette}" Width="12" Height="12" Foreground="{DynamicResource AccentPrimaryBrush}" />
@@ -1300,7 +1309,7 @@
                                       IsVisible="{Binding CanvasViewModel.ReferenceOverlay.HasImage}">
                                     <TextBlock Grid.Column="0" Text="{Binding Loc[Ref_Opacity]}" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0" />
                                     <Slider Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding CanvasViewModel.ReferenceOverlay.Opacity, Mode=TwoWay}"
-                                            VerticalAlignment="Center" Margin="0,0,4,0" />
+                                            VerticalAlignment="Center" Margin="0,0,4,0" ToolTip.Tip="{Binding Loc[Tip_RefOpacity]}" />
                                     <TextBlock Grid.Column="2" Text="{Binding CanvasViewModel.ReferenceOverlay.Opacity, StringFormat='{}{0:P0}'}"
                                                FontSize="10" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}" />
                                 </Grid>
@@ -1349,7 +1358,7 @@
                             <Grid Grid.Row="1" ColumnDefinitions="Auto,*,36" Margin="0,0,0,6">
                                 <TextBlock Grid.Column="0" Text="{Binding Loc[Layer_Opacity]}" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0" />
                                 <Slider Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding LayerViewModel.ActiveLayer.Opacity, FallbackValue=1}"
-                                        VerticalAlignment="Center" Margin="0,0,4,0" />
+                                        VerticalAlignment="Center" Margin="0,0,4,0" ToolTip.Tip="{Binding Loc[Tip_LayerOpacity]}" />
                                 <TextBlock Grid.Column="2" Text="{Binding LayerViewModel.ActiveLayer.Opacity, StringFormat='{}{0:P0}', FallbackValue='100%'}"
                                            FontSize="10" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}" />
                             </Grid>
@@ -1400,7 +1409,7 @@
                                                        TextTrimming="CharacterEllipsis"
                                                        IsVisible="{Binding !IsRenaming}"
                                                        DoubleTapped="OnLayerNameDoubleTapped"
-                                                       ToolTip.Tip="Двойной клик для переименования" />
+                                                       ToolTip.Tip="{Binding #RootWindow.DataContext.Loc[Tip_LayerRename]}" />
 
                                             <!-- Layer Name Inline Edit Mode -->
                                             <TextBox Grid.Column="2" Text="{Binding Name, Mode=TwoWay}" Margin="4,0"
@@ -1494,7 +1503,7 @@
 
                 <!-- Center: Mouse Shortcuts Hint Capsule (Responsive hiding on narrow screens) -->
                 <Border Name="MouseHintsBadge" Grid.Column="1" Margin="4,0" Padding="8,2" VerticalAlignment="Center" Height="22"
-                        Classes="status-capsule-badge" IsHitTestVisible="False">
+                        Classes="status-capsule-badge" ToolTip.Tip="{Binding Loc[Tip_StatusHints]}">
                     <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                         <!-- LMB -->
                         <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
@@ -1580,7 +1589,7 @@
                             <Button Command="{Binding CanvasViewModel.CycleTileGridSizeCommand}"
                                     Background="Transparent" BorderThickness="0" Padding="4,1" Height="20"
                                     CornerRadius="3"
-                                    ToolTip.Tip="{Binding Loc[Context_TileSize]}">
+                                    ToolTip.Tip="{Binding Loc[Tip_StatusTileSize]}">
                                 <TextBlock Text="{Binding CanvasViewModel.TileGridText}" FontSize="10" FontWeight="SemiBold"
                                            Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" />
                             </Button>
@@ -1602,7 +1611,7 @@
                     <Button Padding="8,2" VerticalAlignment="Center" Height="22"
                             Classes="status-capsule-btn"
                             Command="{Binding ToggleLanguageCommand}"
-                            ToolTip.Tip="{Binding Loc[Status_LangButtonTip]}">
+                            ToolTip.Tip="{Binding Loc[Tip_StatusLanguage]}">
                         <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                             <TextBlock Text="🌐" FontSize="10" VerticalAlignment="Center" />
                             <TextBlock Text="{Binding Loc[Status_LangButton]}" FontSize="10" FontWeight="Bold"
@@ -1613,7 +1622,7 @@
                     <!-- Cursor Coordinates & Color under cursor Capsule Badge -->
                     <Border Padding="8,2" VerticalAlignment="Center" Height="22"
                             Classes="status-capsule-badge"
-                            ToolTip.Tip="{Binding CanvasViewModel.HoveredColorHex}">
+                            ToolTip.Tip="{Binding Loc[Tip_StatusCoords]}">
                         <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
                             <TextBlock Text="✛" FontSize="11" Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" />
                             <TextBlock Text="{Binding CanvasViewModel.CursorCoordinatesText}" FontSize="11" FontWeight="SemiBold"

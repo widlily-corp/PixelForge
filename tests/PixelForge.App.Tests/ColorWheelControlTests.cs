@@ -12,6 +12,7 @@ using Xunit;
 
 namespace PixelForge.App.Tests;
 
+[Collection("LocalizationSharedState")]
 public class ColorWheelControlTests
 {
     private static string GetSolutionRoot()
@@ -326,5 +327,8 @@ public class ColorWheelControlTests
         // English localization
         loc.SetLanguage(AppLanguage.English);
         loc["Color_TabWheel"].Should().Be("Wheel");
+
+        // Restore default
+        loc.SetLanguage(AppLanguage.Russian);
     }
 }

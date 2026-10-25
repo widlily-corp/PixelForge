@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using PixelForge.Core.Localization;
 
 namespace PixelForge.App.ViewModels;
 
@@ -7,4 +8,13 @@ namespace PixelForge.App.ViewModels;
 /// </summary>
 public abstract class ViewModelBase : ObservableObject
 {
+    /// <summary>
+    /// Centralized dynamic localization service instance for XAML bindings: {Binding Loc[Key]}
+    /// </summary>
+    public LocalizationService Loc => LocalizationService.Instance;
+
+    protected ViewModelBase()
+    {
+        LocalizationService.Instance.LanguageChanged += (_, _) => OnPropertyChanged(nameof(Loc));
+    }
 }

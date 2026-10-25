@@ -102,7 +102,7 @@
                     <TextBlock Text="{Binding Loc[Panel_ColorPicker]}" FontSize="11" FontWeight="Bold"
                                Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
                 </StackPanel>
-                <ComboBox Name="PresetComboBox" Grid.Column="1" Height="26" FontSize="11"
+                <ComboBox Name="PresetComboBox" Grid.Column="1" Height="26" FontSize="11" ToolTip.Tip="{Binding Loc[Tip_ColorPresets]}"
                           Padding="6,2" VerticalAlignment="Center"
                           Background="{DynamicResource SurfacePanelBrush}"
                           BorderBrush="{DynamicResource BorderSubtleBrush}">
@@ -178,7 +178,7 @@
                 <Grid ColumnDefinitions="Auto,*,Auto">
                     <TextBlock Grid.Column="0" Text="{Binding Loc[Color_Hex]}" FontSize="10" FontWeight="Bold"
                                Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
-                    <TextBox Name="HexTextBox" Grid.Column="1" Text="#000000" Height="26" FontSize="11"
+                    <TextBox Name="HexTextBox" Grid.Column="1" Text="#000000" Height="26" FontSize="11" ToolTip.Tip="{Binding Loc[Tip_ColorHex]}"
                              FontFamily="Consolas, monospace" VerticalContentAlignment="Center"
                              Background="{DynamicResource SurfaceInputBrush}"
                              Foreground="{DynamicResource TextPrimaryBrush}"
@@ -200,10 +200,10 @@
                     Padding="2"
                     Margin="0,0,0,10">
                 <Grid ColumnDefinitions="*,*,*">
-                    <Button Name="WheelTabButton" Grid.Column="0" Content="{Binding Loc[Color_TabWheel]}" Classes="mode-tab-btn active" HorizontalAlignment="Stretch" />
-                    <Button Name="PaletteTabButton" Grid.Column="1" Content="{Binding Loc[Color_TabPalette]}"
+                    <Button Name="WheelTabButton" Grid.Column="0" Content="{Binding Loc[Color_TabWheel]}" Classes="mode-tab-btn active" HorizontalAlignment="Stretch" ToolTip.Tip="{Binding Loc[Tip_TabWheel]}" />
+                    <Button Name="PaletteTabButton" Grid.Column="1" Content="{Binding Loc[Color_TabPalette]}" ToolTip.Tip="{Binding Loc[Tip_TabPalette]}"
                             Classes="mode-tab-btn" HorizontalAlignment="Stretch" />
-                    <Button Name="SlidersTabButton" Grid.Column="2" Content="{Binding Loc[Color_TabSliders]}"
+                    <Button Name="SlidersTabButton" Grid.Column="2" Content="{Binding Loc[Color_TabSliders]}" ToolTip.Tip="{Binding Loc[Tip_TabSliders]}"
                             Classes="mode-tab-btn" HorizontalAlignment="Stretch" />
                 </Grid>
             </Border>
@@ -213,7 +213,7 @@
 
                 <!-- 4A. HSV Color Wheel Container -->
                 <Grid Name="WheelContainer" RowDefinitions="Auto,*" IsVisible="True">
-                    <controls:ColorWheelControl Name="ColorWheel" Height="170" Margin="4" />
+                    <controls:ColorWheelControl Name="ColorWheel" Height="170" Margin="4" ToolTip.Tip="{Binding Loc[Tip_ColorWheel]}" />
                 </Grid>
 
                 <!-- 4B. Palette Swatches Grid Container -->
@@ -234,7 +234,7 @@
                     <!-- Red -->
                     <Grid ColumnDefinitions="14,*,32">
                         <TextBlock Grid.Column="0" Text="R" FontSize="11" FontWeight="Bold" Foreground="#EF4444" VerticalAlignment="Center" />
-                        <Slider Name="RedSlider" Grid.Column="1" Minimum="0" Maximum="255" Value="0" Margin="6,0" VerticalAlignment="Center" />
+                        <Slider Name="RedSlider" Grid.Column="1" Minimum="0" Maximum="255" Value="0" Margin="6,0" VerticalAlignment="Center" ToolTip.Tip="{Binding Loc[Tip_SliderRed]}" />
                         <TextBlock Name="RedValueText" Grid.Column="2" Text="0" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"
                                    Foreground="{DynamicResource TextSecondaryBrush}" />
                     </Grid>
@@ -242,7 +242,7 @@
                     <!-- Green -->
                     <Grid ColumnDefinitions="14,*,32">
                         <TextBlock Grid.Column="0" Text="G" FontSize="11" FontWeight="Bold" Foreground="#10B981" VerticalAlignment="Center" />
-                        <Slider Name="GreenSlider" Grid.Column="1" Minimum="0" Maximum="255" Value="0" Margin="6,0" VerticalAlignment="Center" />
+                        <Slider Name="GreenSlider" Grid.Column="1" Minimum="0" Maximum="255" Value="0" Margin="6,0" VerticalAlignment="Center" ToolTip.Tip="{Binding Loc[Tip_SliderGreen]}" />
                         <TextBlock Name="GreenValueText" Grid.Column="2" Text="0" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"
                                    Foreground="{DynamicResource TextSecondaryBrush}" />
                     </Grid>
@@ -250,7 +250,7 @@
                     <!-- Blue -->
                     <Grid ColumnDefinitions="14,*,32">
                         <TextBlock Grid.Column="0" Text="B" FontSize="11" FontWeight="Bold" Foreground="#3B82F6" VerticalAlignment="Center" />
-                        <Slider Name="BlueSlider" Grid.Column="1" Minimum="0" Maximum="255" Value="0" Margin="6,0" VerticalAlignment="Center" />
+                        <Slider Name="BlueSlider" Grid.Column="1" Minimum="0" Maximum="255" Value="0" Margin="6,0" VerticalAlignment="Center" ToolTip.Tip="{Binding Loc[Tip_SliderBlue]}" />
                         <TextBlock Name="BlueValueText" Grid.Column="2" Text="0" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"
                                    Foreground="{DynamicResource TextSecondaryBrush}" />
                     </Grid>
@@ -258,7 +258,7 @@
                     <!-- Alpha -->
                     <Grid ColumnDefinitions="14,*,32">
                         <TextBlock Grid.Column="0" Text="A" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
-                        <Slider Name="AlphaSlider" Grid.Column="1" Minimum="0" Maximum="255" Value="255" Margin="6,0" VerticalAlignment="Center" />
+                        <Slider Name="AlphaSlider" Grid.Column="1" Minimum="0" Maximum="255" Value="255" Margin="6,0" VerticalAlignment="Center" ToolTip.Tip="{Binding Loc[Tip_SliderAlpha]}" />
                         <TextBlock Name="AlphaValueText" Grid.Column="2" Text="255" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"
                                    Foreground="{DynamicResource TextSecondaryBrush}" />
                     </Grid>
