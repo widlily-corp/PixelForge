@@ -249,21 +249,25 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
 
     private void InitializeCheckerboardShader()
     {
-        // 16x16 2x2 tile checkerboard pattern (8x8 squares)
-        using var tileBitmap = new SKBitmap(16, 16, SKColorType.Rgba8888, SKAlphaType.Premul);
-        var lightColor = new SKColor(42, 46, 64);
-        var darkColor = new SKColor(31, 35, 50);
+        int checkerSize = CanvasViewModel?.CheckerSize ?? 16;
+        if (checkerSize < 2) checkerSize = 16;
+        int halfSize = Math.Max(1, checkerSize / 2);
 
-        for (int y = 0; y < 16; y++)
+        SKColor lightColor = SKColor.TryParse(CanvasViewModel?.ColorCheckerLight, out var cl) ? cl : new SKColor(42, 46, 64);
+        SKColor darkColor = SKColor.TryParse(CanvasViewModel?.ColorCheckerDark, out var cd) ? cd : new SKColor(31, 35, 50);
+
+        using var tileBitmap = new SKBitmap(checkerSize, checkerSize, SKColorType.Rgba8888, SKAlphaType.Premul);
+        for (int y = 0; y < checkerSize; y++)
         {
-            for (int x = 0; x < 16; x++)
+            for (int x = 0; x < checkerSize; x++)
             {
-                bool isLight = ((x / 8) + (y / 8)) % 2 == 0;
+                bool isLight = ((x / halfSize) + (y / halfSize)) % 2 == 0;
                 tileBitmap.SetPixel(x, y, isLight ? lightColor : darkColor);
             }
         }
 
         var shader = SKShader.CreateBitmap(tileBitmap, SKShaderTileMode.Repeat, SKShaderTileMode.Repeat);
+        _checkerboardPaint.Shader?.Dispose();
         _checkerboardPaint.Shader = shader;
     }
 
@@ -332,6 +336,10 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
 
     private void OnCanvasViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
+        if (e.PropertyName is nameof(CanvasViewModel.CheckerSize) or nameof(CanvasViewModel.ColorCheckerLight) or nameof(CanvasViewModel.ColorCheckerDark))
+        {
+            InitializeCheckerboardShader();
+        }
         InvalidateVisual();
     }
 
@@ -484,7 +492,7 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
             RenderToolPreview(canvas, destRect, zoom);
 
             // 4. Adaptive pixel grid when zoom >= 4x
-            if (vm.ShowGrid && zoom >= 4f)
+            if (vm.ShowGrid && zoom >= vm.PixelGridMinZoom)
             {
                 RenderPixelGrid(canvas, destRect, canvasW, canvasH, zoom);
             }

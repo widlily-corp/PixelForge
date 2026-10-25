@@ -36,6 +36,8 @@ public partial class MainWindow : Window
         MenuExit.Click += (_, _) => Close();
         MenuAbout.Click += OnAboutClick;
         MenuHotkeys.Click += OnHotkeysClick;
+        MenuSettingsFile.Click += OnSettingsClick;
+        MenuSettingsEdit.Click += OnSettingsClick;
 
         MenuToggleTheme.Click += OnToggleThemeClick;
         QuickThemeButton.Click += OnToggleThemeClick;
@@ -75,6 +77,7 @@ public partial class MainWindow : Window
             _subscribedMainVm.ToolViewModel.PropertyChanged -= OnToolViewModelPropertyChanged;
             _subscribedMainVm.ShowHotkeysRequested -= OnShowHotkeysRequested;
             _subscribedMainVm.ShowColorRampRequested -= OnShowColorRampRequested;
+            _subscribedMainVm.ShowSettingsRequested -= OnShowSettingsRequested;
             _subscribedMainVm = null;
         }
 
@@ -84,6 +87,7 @@ public partial class MainWindow : Window
             _subscribedMainVm.ToolViewModel.PropertyChanged += OnToolViewModelPropertyChanged;
             _subscribedMainVm.ShowHotkeysRequested += OnShowHotkeysRequested;
             _subscribedMainVm.ShowColorRampRequested += OnShowColorRampRequested;
+            _subscribedMainVm.ShowSettingsRequested += OnShowSettingsRequested;
             UpdateActiveToolHighlight();
         }
     }
@@ -96,6 +100,11 @@ public partial class MainWindow : Window
     private void OnShowColorRampRequested(object? sender, EventArgs e)
     {
         OnColorRampClick(this, new RoutedEventArgs());
+    }
+
+    private void OnShowSettingsRequested(object? sender, EventArgs e)
+    {
+        OnSettingsClick(this, new RoutedEventArgs());
     }
 
     private void OnWindowLoaded(object? sender, RoutedEventArgs e)
@@ -407,6 +416,29 @@ public partial class MainWindow : Window
         await dialog.ShowDialog(this);
     }
 
+    private async void OnSettingsClick(object? sender, RoutedEventArgs e)
+    {
+        await OpenSettingsDialogAsync();
+    }
+
+    private async Task OpenSettingsDialogAsync()
+    {
+        if (ViewModel == null) return;
+
+        var vm = new SettingsViewModel(ViewModel.AppSettingsService);
+        var dialog = new SettingsWindow
+        {
+            DataContext = vm
+        };
+
+        vm.SettingsApplied += (_, _) =>
+        {
+            ViewModel.ApplySettings(vm.CreateSnapshot());
+        };
+
+        await dialog.ShowDialog(this);
+    }
+
     private static bool MatchesKey(KeyEventArgs e, Key key, PhysicalKey physicalKey, char? ruChar = null)
     {
         if (e.Key == key || e.PhysicalKey == physicalKey)
@@ -657,6 +689,11 @@ public partial class MainWindow : Window
             {
                 e.Handled = true;
                 ViewModel.Deselect();
+            }
+            else if (MatchesKey(e, Key.OemComma, PhysicalKey.Comma, 'б') || e.Key == Key.OemComma || e.KeySymbol == ",")
+            {
+                e.Handled = true;
+                await OpenSettingsDialogAsync();
             }
             else if (MatchesKey(e, Key.G, PhysicalKey.G, 'п'))
             {

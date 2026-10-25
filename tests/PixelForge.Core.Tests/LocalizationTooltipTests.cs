@@ -8,6 +8,7 @@ namespace PixelForge.Core.Tests;
 /// Comprehensive verification suite ensuring all tooltips across tools, toolbar,
 /// panels, options, and status bar exist with high-quality descriptions in both Russian and English.
 /// </summary>
+[Collection("LocalizationSharedState")]
 public class LocalizationTooltipTests
 {
     private readonly LocalizationService _service = LocalizationService.Instance;

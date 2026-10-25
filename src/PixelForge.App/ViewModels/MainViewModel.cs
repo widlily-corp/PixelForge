@@ -118,11 +118,25 @@ public partial class MainViewModel : ViewModelBase
 
         UpdateRecentProjectsList();
 
-        // Create default 32x32 pixel canvas
-        var canvas = new PixelCanvas(32, 32);
+        // Create default pixel canvas from settings
+        var canvas = new PixelCanvas(_appSettingsService.DefaultCanvasWidth, _appSettingsService.DefaultCanvasHeight);
 
         _toolViewModel = new ToolViewModel();
+        _toolViewModel.BrushSize = _appSettingsService.DefaultBrushSize;
+        _toolViewModel.StabilizerStrength = _appSettingsService.DefaultStabilizerStrength;
+        _toolViewModel.IsPixelPerfect = _appSettingsService.DefaultPixelPerfect;
+
         _canvasViewModel = new CanvasViewModel(canvas);
+        _canvasViewModel.ShowGrid = _appSettingsService.ShowPixelGrid;
+        _canvasViewModel.PixelGridMinZoom = (float)_appSettingsService.PixelGridMinZoom;
+        _canvasViewModel.CheckerSize = _appSettingsService.CheckerSize;
+        _canvasViewModel.ColorCheckerLight = _appSettingsService.ColorCheckerLight;
+        _canvasViewModel.ColorCheckerDark = _appSettingsService.ColorCheckerDark;
+        _canvasViewModel.TileGridSize = _appSettingsService.TileGridWidth;
+        _canvasViewModel.TileGridSettings.TileSize = _appSettingsService.TileGridWidth;
+
+        _undoRedoService.MaxSteps = _appSettingsService.MaxUndoSteps;
+
         _layerViewModel = new LayerViewModel(canvas, _undoRedoService);
         _paletteViewModel = new PaletteViewModel();
         _historyViewModel = new HistoryViewModel(_undoRedoService);
@@ -150,10 +164,16 @@ public partial class MainViewModel : ViewModelBase
         {
             StatusMessage = Loc.Format("Msg_AutosaveError", ex.Message);
         };
-        _autosaveService.Start(GetProjectSnapshot, TimeSpan.FromMinutes(2));
+        if (_appSettingsService.AutosaveEnabled)
+        {
+            _autosaveService.Start(GetProjectSnapshot, TimeSpan.FromMinutes(_appSettingsService.AutosaveIntervalMinutes));
+        }
 
-        // Run non-blocking background update check
-        _ = RunInitialUpdateCheckAsync();
+        // Run non-blocking background update check if enabled
+        if (_appSettingsService.CheckUpdatesOnStartup)
+        {
+            _ = RunInitialUpdateCheckAsync();
+        }
     }
 
     public void UpdateRecentProjectsList()
@@ -203,10 +223,12 @@ public partial class MainViewModel : ViewModelBase
         StatusMessage = $"Loaded {Path.GetFileName(filePath ?? "project")}";
     }
 
+    public AppSettingsService AppSettingsService => _appSettingsService;
+
     [RelayCommand]
     public void CreateNewProject()
     {
-        NewProject(32, 32);
+        NewProject(_appSettingsService.DefaultCanvasWidth, _appSettingsService.DefaultCanvasHeight);
     }
 
     public void NewProject(int width = 32, int height = 32)
@@ -953,6 +975,66 @@ public partial class MainViewModel : ViewModelBase
     public void OpenColorRampDialog()
     {
         ShowColorRampRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// Event triggered when opening the settings dialog is requested.
+    /// </summary>
+    public event EventHandler? ShowSettingsRequested;
+
+    /// <summary>
+    /// Requests display of the settings dialog.
+    /// </summary>
+    [RelayCommand]
+    public void OpenSettings()
+    {
+        ShowSettingsRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// Applies updated configuration immediately to runtime subsystems and persists to disk.
+    /// </summary>
+    public void ApplySettings(AppSettingsData data)
+    {
+        _appSettingsService.ApplySettings(data);
+
+        // 1. Language & Theme
+        if (Loc.CurrentLanguage != _appSettingsService.Language)
+        {
+            SetLanguage(_appSettingsService.Language);
+        }
+        if (ThemeService.IsDarkTheme != _appSettingsService.IsDarkTheme)
+        {
+            ThemeService.SetTheme(_appSettingsService.IsDarkTheme);
+        }
+
+        // 2. Canvas & Grid
+        CanvasViewModel.ShowGrid = _appSettingsService.ShowPixelGrid;
+        CanvasViewModel.PixelGridMinZoom = (float)_appSettingsService.PixelGridMinZoom;
+        CanvasViewModel.CheckerSize = _appSettingsService.CheckerSize;
+        CanvasViewModel.ColorCheckerLight = _appSettingsService.ColorCheckerLight;
+        CanvasViewModel.ColorCheckerDark = _appSettingsService.ColorCheckerDark;
+        CanvasViewModel.TileGridSize = _appSettingsService.TileGridWidth;
+        CanvasViewModel.TileGridSettings.TileSize = _appSettingsService.TileGridWidth;
+
+        // 3. Tools
+        ToolViewModel.BrushSize = _appSettingsService.DefaultBrushSize;
+        ToolViewModel.StabilizerStrength = _appSettingsService.DefaultStabilizerStrength;
+        ToolViewModel.IsPixelPerfect = _appSettingsService.DefaultPixelPerfect;
+
+        // 4. Undo & Autosave
+        _undoRedoService.MaxSteps = _appSettingsService.MaxUndoSteps;
+
+        if (_appSettingsService.AutosaveEnabled)
+        {
+            _autosaveService.Start(GetProjectSnapshot, TimeSpan.FromMinutes(_appSettingsService.AutosaveIntervalMinutes));
+        }
+        else
+        {
+            _autosaveService.Stop();
+        }
+
+        StatusMessage = Loc.Get("Msg_SettingsSaved");
     }
 
     private async Task RunInitialUpdateCheckAsync()

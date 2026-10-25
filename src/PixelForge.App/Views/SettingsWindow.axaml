@@ -1,0 +1,509 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:PixelForge.App.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="560"
+        x:Class="PixelForge.App.Views.SettingsWindow"
+        x:DataType="vm:SettingsViewModel"
+        Title="{Binding Loc[Dlg_SettingsTitle]}"
+        Width="720" Height="580"
+        MinWidth="660" MinHeight="500"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource SurfaceBaseBrush}">
+
+    <Window.Styles>
+        <!-- Navigation tab styling -->
+        <Style Selector="RadioButton.nav-tab">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="3,0,0,0" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="12,10" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="RadioButton.nav-tab:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        </Style>
+        <Style Selector="RadioButton.nav-tab:checked">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <!-- Settings Cards -->
+        <Style Selector="Border.settings-card">
+            <Setter Property="Background" Value="{DynamicResource SurfacePanelBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="16,14" />
+            <Setter Property="Margin" Value="0,0,0,12" />
+        </Style>
+        <Style Selector="TextBlock.card-title">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+        <Style Selector="TextBlock.card-desc">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+
+        <!-- Presets -->
+        <Style Selector="Button.preset-btn">
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="8,2" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.preset-btn:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+        </Style>
+
+        <!-- Key badges for cheatsheet -->
+        <Style Selector="Border.key-badge">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderStrongBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="6,2" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Border.key-badge TextBlock">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontFamily" Value="Consolas, monospace" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- 1. Header Bar -->
+        <Border Grid.Row="0" Background="{DynamicResource SurfacePanelBrush}"
+                BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,0,0,1"
+                Padding="20,14">
+            <Grid ColumnDefinitions="Auto,*">
+                <Border Grid.Column="0" Width="38" Height="38" CornerRadius="8"
+                        Background="{DynamicResource SurfaceCardBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1"
+                        Margin="0,0,14,0">
+                    <PathIcon Data="{DynamicResource IconSettings}" Width="20" Height="20"
+                              Foreground="{DynamicResource AccentPrimaryBrush}"
+                              HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{Binding Loc[Dlg_SettingsHeader]}" FontSize="17" FontWeight="Bold"
+                               Foreground="{DynamicResource TextPrimaryBrush}" />
+                    <TextBlock Text="{Binding Loc[Dlg_SettingsSubheader]}" FontSize="11"
+                               Foreground="{DynamicResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 2. Body: Left Navigation & Right Settings Pages -->
+        <Grid Grid.Row="1" ColumnDefinitions="210,*">
+            <!-- Left Sidebar Navigation -->
+            <Border Grid.Column="0" Background="{DynamicResource SurfacePanelBrush}"
+                    BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,0,1,0"
+                    Padding="10,12">
+                <StackPanel Spacing="4">
+                    <RadioButton Classes="nav-tab" GroupName="SettingsNav"
+                                 IsChecked="{Binding IsTab0, Mode=OneWay}"
+                                 Command="{Binding SelectTabCommand}" CommandParameter="0">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="⚙️" FontSize="13" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Loc[Dlg_SettingsTab_General]}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton Classes="nav-tab" GroupName="SettingsNav"
+                                 IsChecked="{Binding IsTab1, Mode=OneWay}"
+                                 Command="{Binding SelectTabCommand}" CommandParameter="1">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="🖼" FontSize="13" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Loc[Dlg_SettingsTab_Canvas]}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton Classes="nav-tab" GroupName="SettingsNav"
+                                 IsChecked="{Binding IsTab2, Mode=OneWay}"
+                                 Command="{Binding SelectTabCommand}" CommandParameter="2">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="🖌" FontSize="13" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Loc[Dlg_SettingsTab_Tools]}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton Classes="nav-tab" GroupName="SettingsNav"
+                                 IsChecked="{Binding IsTab3, Mode=OneWay}"
+                                 Command="{Binding SelectTabCommand}" CommandParameter="3">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="💾" FontSize="13" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Loc[Dlg_SettingsTab_Autosave]}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton Classes="nav-tab" GroupName="SettingsNav"
+                                 IsChecked="{Binding IsTab4, Mode=OneWay}"
+                                 Command="{Binding SelectTabCommand}" CommandParameter="4">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="⚡" FontSize="13" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Loc[Dlg_SettingsTab_Performance]}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton Classes="nav-tab" GroupName="SettingsNav"
+                                 IsChecked="{Binding IsTab5, Mode=OneWay}"
+                                 Command="{Binding SelectTabCommand}" CommandParameter="5">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="⌨" FontSize="13" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Loc[Dlg_SettingsTab_Hotkeys]}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+                </StackPanel>
+            </Border>
+
+            <!-- Right Content Panels (TabControl with hidden strip) -->
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <TabControl SelectedIndex="{Binding SelectedTabIndex}" Margin="0" Padding="18,14">
+                    <TabControl.Styles>
+                        <Style Selector="TabControl > TabStrip">
+                            <Setter Property="IsVisible" Value="False" />
+                        </Style>
+                    </TabControl.Styles>
+
+                    <!-- TAB 0: GENERAL -->
+                    <TabItem>
+                        <StackPanel Spacing="12">
+                            <!-- Language Card -->
+                            <Border Classes="settings-card">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Classes="card-title" Text="{Binding Loc[Dlg_Settings_Language]}" />
+                                    <ComboBox ItemsSource="{Binding AvailableLanguages}"
+                                              SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}"
+                                              Width="220" HorizontalAlignment="Left" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Theme Card -->
+                            <Border Classes="settings-card">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Classes="card-title" Text="{Binding Loc[Dlg_Settings_Theme]}" />
+                                    <ToggleSwitch OnContent="{Binding Loc[Dlg_Settings_ThemeDark]}"
+                                                  OffContent="{Binding Loc[Dlg_Settings_ThemeLight]}"
+                                                  IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Startup Updates Card -->
+                            <Border Classes="settings-card">
+                                <StackPanel Spacing="6">
+                                    <CheckBox IsChecked="{Binding CheckUpdatesOnStartup, Mode=TwoWay}"
+                                              Content="{Binding Loc[Dlg_Settings_CheckUpdates]}"
+                                              FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    <TextBlock Classes="card-desc" Text="{Binding Loc[Dlg_Settings_CheckUpdatesDesc]}" Margin="28,0,0,0" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </TabItem>
+
+                    <!-- TAB 1: CANVAS & GRID -->
+                    <TabItem>
+                        <StackPanel Spacing="12">
+                            <!-- Default Canvas Size Card -->
+                            <Border Classes="settings-card">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Classes="card-title" Text="{Binding Loc[Dlg_Settings_DefaultCanvasSize]}" />
+                                    <Grid ColumnDefinitions="*,12,*">
+                                        <StackPanel Grid.Column="0" Spacing="4">
+                                            <TextBlock Text="{Binding Loc[Dlg_Settings_Width]}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                            <NumericUpDown Value="{Binding DefaultCanvasWidth, Mode=TwoWay}" Minimum="1" Maximum="4096" FormatString="0" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2" Spacing="4">
+                                            <TextBlock Text="{Binding Loc[Dlg_Settings_Height]}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                            <NumericUpDown Value="{Binding DefaultCanvasHeight, Mode=TwoWay}" Minimum="1" Maximum="4096" FormatString="0" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- Quick Presets -->
+                                    <ItemsControl ItemsSource="{Binding CanvasPresets}" Margin="0,4,0,0">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button Classes="preset-btn" Content="{Binding Label}"
+                                                        Command="{Binding $parent[Window].((vm:SettingsViewModel)DataContext).ApplyCanvasPresetCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Margin="0,0,6,6" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Pixel Grid Card -->
+                            <Border Classes="settings-card">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Classes="card-title" Text="{Binding Loc[Dlg_Settings_PixelGrid]}" />
+                                    <CheckBox IsChecked="{Binding ShowPixelGrid, Mode=TwoWay}"
+                                              Content="{Binding Loc[Dlg_Settings_ShowPixelGrid]}"
+                                              Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    <Grid ColumnDefinitions="*,120" VerticalAlignment="Center">
+                                        <TextBlock Grid.Column="0" Text="{Binding Loc[Dlg_Settings_MinZoomGrid]}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Column="1" Value="{Binding PixelGridMinZoom, Mode=TwoWay}" Minimum="1.0" Maximum="32.0" Increment="0.5" FormatString="0.0" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Tile Grid Card -->
+                            <Border Classes="settings-card">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Classes="card-title" Text="{Binding Loc[Dlg_Settings_TileGrid]}" />
+                                    <Grid ColumnDefinitions="*,12,*">
+                                        <StackPanel Grid.Column="0" Spacing="4">
+                                            <TextBlock Text="{Binding Loc[Dlg_Settings_TileWidth]}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                            <NumericUpDown Value="{Binding TileGridWidth, Mode=TwoWay}" Minimum="1" Maximum="1024" FormatString="0" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2" Spacing="4">
+                                            <TextBlock Text="{Binding Loc[Dlg_Settings_TileHeight]}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                            <NumericUpDown Value="{Binding TileGridHeight, Mode=TwoWay}" Minimum="1" Maximum="1024" FormatString="0" />
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Transparency Checkerboard Card -->
+                            <Border Classes="settings-card">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Classes="card-title" Text="{Binding Loc[Dlg_Settings_Checkerboard]}" />
+                                    <Grid ColumnDefinitions="*,120" VerticalAlignment="Center">
+                                        <TextBlock Grid.Column="0" Text="{Binding Loc[Dlg_Settings_CheckerSize]}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                        <ComboBox Grid.Column="1" ItemsSource="{Binding AvailableCheckerSizes}"
+                                                  SelectedItem="{Binding CheckerSize, Mode=TwoWay}" Width="120" />
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,12,*">
+                                        <StackPanel Grid.Column="0" Spacing="4">
+                                            <TextBlock Text="{Binding Loc[Dlg_Settings_CheckerLight]}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                            <TextBox Text="{Binding ColorCheckerLight, Mode=TwoWay}" FontFamily="Consolas, monospace" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2" Spacing="4">
+                                            <TextBlock Text="{Binding Loc[Dlg_Settings_CheckerDark]}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                            <TextBox Text="{Binding ColorCheckerDark, Mode=TwoWay}" FontFamily="Consolas, monospace" />
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </TabItem>
+
+                    <!-- TAB 2: TOOLS DEFAULTS -->
+                    <TabItem>
+                        <StackPanel Spacing="12">
+                            <!-- Default Brush Size Card -->
+                            <Border Classes="settings-card">
+                                <StackPanel Spacing="10">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Grid.Column="0" Classes="card-title" Text="{Binding Loc[Dlg_Settings_DefaultBrushSize]}" Margin="0" />
+                                        <TextBlock Grid.Column="1" Text="{Binding DefaultBrushSize, StringFormat='{}{0} px'}"
+                                                   FontWeight="Bold" Foreground="{DynamicResource AccentPrimaryBrush}" />
+                                    </Grid>
+                                    <Slider Minimum="1" Maximum="64" Value="{Binding DefaultBrushSize, Mode=TwoWay}" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Stroke Stabilizer Card -->
+                            <Border Classes="settings-card">
+                                <StackPanel Spacing="10">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Grid.Column="0" Classes="card-title" Text="{Binding Loc[Dlg_Settings_Stabilizer]}" Margin="0" />
+                                        <TextBlock Grid.Column="1" Text="{Binding DefaultStabilizerStrength, StringFormat='{}{0} / 10'}"
+                                                   FontWeight="Bold" Foreground="{DynamicResource AccentPrimaryBrush}" />
+                                    </Grid>
+                                    <Slider Minimum="0" Maximum="10" Value="{Binding DefaultStabilizerStrength, Mode=TwoWay}" />
+                                    <TextBlock Classes="card-desc" Text="{Binding Loc[Dlg_Settings_StabilizerDesc]}" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Pixel-Perfect Card -->
+                            <Border Classes="settings-card">
+                                <StackPanel Spacing="6">
+                                    <CheckBox IsChecked="{Binding DefaultPixelPerfect, Mode=TwoWay}"
+                                              Content="{Binding Loc[Dlg_Settings_PixelPerfect]}"
+                                              FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    <TextBlock Classes="card-desc" Text="{Binding Loc[Dlg_Settings_PixelPerfectDesc]}" Margin="28,0,0,0" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </TabItem>
+
+                    <!-- TAB 3: AUTOSAVE & HISTORY -->
+                    <TabItem>
+                        <StackPanel Spacing="12">
+                            <!-- Autosave Card -->
+                            <Border Classes="settings-card">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Classes="card-title" Text="{Binding Loc[Dlg_Settings_Autosave]}" />
+                                    <CheckBox IsChecked="{Binding AutosaveEnabled, Mode=TwoWay}"
+                                              Content="{Binding Loc[Dlg_Settings_AutosaveEnabled]}"
+                                              FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    <Grid ColumnDefinitions="*,120" VerticalAlignment="Center">
+                                        <TextBlock Grid.Column="0" Text="{Binding Loc[Dlg_Settings_AutosaveInterval]}"
+                                                   FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Column="1" Value="{Binding AutosaveIntervalMinutes, Mode=TwoWay}"
+                                                       Minimum="1" Maximum="60" FormatString="0" />
+                                    </Grid>
+                                    <TextBlock Classes="card-desc" Text="{Binding Loc[Dlg_Settings_AutosaveDesc]}" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- History Undo/Redo Card -->
+                            <Border Classes="settings-card">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Classes="card-title" Text="{Binding Loc[Dlg_Settings_History]}" />
+                                    <Grid ColumnDefinitions="*,120" VerticalAlignment="Center">
+                                        <TextBlock Grid.Column="0" Text="{Binding Loc[Dlg_Settings_MaxUndo]}"
+                                                   FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Column="1" Value="{Binding MaxUndoSteps, Mode=TwoWay}"
+                                                       Minimum="10" Maximum="500" FormatString="0" />
+                                    </Grid>
+                                    <TextBlock Classes="card-desc" Text="{Binding Loc[Dlg_Settings_MaxUndoDesc]}" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </TabItem>
+
+                    <!-- TAB 4: PERFORMANCE -->
+                    <TabItem>
+                        <StackPanel Spacing="12">
+                            <!-- RAM Preload Card -->
+                            <Border Classes="settings-card">
+                                <StackPanel Spacing="6">
+                                    <CheckBox IsChecked="{Binding PreloadMemory, Mode=TwoWay}"
+                                              Content="{Binding Loc[Dlg_Settings_PreloadMemory]}"
+                                              FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    <TextBlock Classes="card-desc" Text="{Binding Loc[Dlg_Settings_PreloadDesc]}" Margin="28,0,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Hardware Acceleration Card -->
+                            <Border Classes="settings-card">
+                                <StackPanel Spacing="6">
+                                    <CheckBox IsChecked="{Binding HardwareAcceleration, Mode=TwoWay}"
+                                              Content="{Binding Loc[Dlg_Settings_HwAccel]}"
+                                              FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    <TextBlock Classes="card-desc" Text="{Binding Loc[Dlg_Settings_HwAccelDesc]}" Margin="28,0,0,0" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </TabItem>
+
+                    <!-- TAB 5: HOTKEYS CHEATSHEET -->
+                    <TabItem>
+                        <Grid ColumnDefinitions="*,12,*">
+                            <!-- Left Column: Tools -->
+                            <Border Grid.Column="0" Classes="settings-card">
+                                <StackPanel Spacing="6">
+                                    <TextBlock Classes="card-title" Text="{Binding Loc[Dlg_HotkeysToolsTab]}" />
+
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_Pencil]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="B" /></Border></Grid>
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_Eraser]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="E" /></Border></Grid>
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_Dither]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="D" /></Border></Grid>
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_Pattern]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="P" /></Border></Grid>
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_Shade]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="H" /></Border></Grid>
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_Spray]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="A" /></Border></Grid>
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_Fill]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="G" /></Border></Grid>
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_Wand]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="W" /></Border></Grid>
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_Gradient]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="T" /></Border></Grid>
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_Eyedropper]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="I" /></Border></Grid>
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_Line]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="L" /></Border></Grid>
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_Rect]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="R" /></Border></Grid>
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_Ellipse]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="C" /></Border></Grid>
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_Selection]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="S" /></Border></Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Right Column: Canvas & System -->
+                            <Border Grid.Column="2" Classes="settings-card">
+                                <StackPanel Spacing="6">
+                                    <TextBlock Classes="card-title" Text="{Binding Loc[Dlg_HotkeysCanvasTab]}" />
+
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_PixelPerfect]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="Shift+P" /></Border></Grid>
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="Симметрия X" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="Shift+X" /></Border></Grid>
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="Симметрия Y" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="Shift+Y" /></Border></Grid>
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_Tiled]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="F10" /></Border></Grid>
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_Undo]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="Ctrl+Z" /></Border></Grid>
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_Redo]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="Ctrl+Y" /></Border></Grid>
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_Save]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="Ctrl+S" /></Border></Grid>
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_CanvasSize]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="Ctrl+Alt+C" /></Border></Grid>
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Menu_Settings]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="Ctrl+," /></Border></Grid>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- 3. Bottom Action Bar -->
+        <Border Grid.Row="2" Background="{DynamicResource SurfacePanelBrush}"
+                BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,1,0,0"
+                Padding="20,12">
+            <Grid ColumnDefinitions="Auto,*,Auto,10,Auto">
+                <Button Grid.Column="0" Content="{Binding Loc[Dlg_Settings_Reset]}"
+                        Command="{Binding ResetToDefaultsCommand}"
+                        Padding="16,8" CornerRadius="6"
+                        Background="{DynamicResource SurfaceCardBrush}"
+                        Foreground="{DynamicResource TextSecondaryBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" />
+
+                <Button Grid.Column="2" Content="{Binding Loc[Dlg_Settings_Cancel]}"
+                        Command="{Binding CancelCommand}"
+                        Padding="20,8" CornerRadius="6"
+                        Background="{DynamicResource SurfaceCardBrush}"
+                        Foreground="{DynamicResource TextPrimaryBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" />
+
+                <Button Grid.Column="4" Content="{Binding Loc[Dlg_Settings_Apply]}"
+                        Command="{Binding SaveAndApplyCommand}"
+                        Padding="24,8" CornerRadius="6"
+                        Background="{DynamicResource AccentPrimaryBrush}"
+                        Foreground="#0A0E17" FontWeight="SemiBold"
+                        IsDefault="True" />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

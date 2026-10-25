@@ -4,6 +4,7 @@ using Xunit;
 
 namespace PixelForge.Core.Tests;
 
+[Collection("LocalizationSharedState")]
 public class LocalizationTests
 {
     [Fact]

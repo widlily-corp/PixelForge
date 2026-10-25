@@ -22,6 +22,18 @@ public partial class CanvasViewModel : ViewModelBase
     private bool _showGrid = true;
 
     [ObservableProperty]
+    private float _pixelGridMinZoom = 4.0f;
+
+    [ObservableProperty]
+    private int _checkerSize = 16;
+
+    [ObservableProperty]
+    private string _colorCheckerLight = "#2A2E40";
+
+    [ObservableProperty]
+    private string _colorCheckerDark = "#1F2332";
+
+    [ObservableProperty]
     private bool _showTileGrid = false;
 
     [ObservableProperty]

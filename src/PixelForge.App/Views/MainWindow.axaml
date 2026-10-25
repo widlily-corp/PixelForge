@@ -530,6 +530,8 @@
                     <Separator />
                     <MenuItem Header="{Binding Loc[Menu_AssociateFiles]}" Command="{Binding RegisterFileAssociationCommand}" />
                     <Separator />
+                    <MenuItem Name="MenuSettingsFile" Header="{Binding Loc[Menu_Settings]}" Command="{Binding OpenSettingsCommand}" />
+                    <Separator />
                     <MenuItem Name="MenuExit" Header="{Binding Loc[Menu_Exit]}" HotKey="Alt+F4" />
                 </MenuItem>
 
@@ -545,6 +547,8 @@
                     <MenuItem Header="{Binding Loc[Menu_SelectAll]}" HotKey="Ctrl+A" Command="{Binding SelectAllCommand}" />
                     <MenuItem Header="{Binding Loc[Menu_Deselect]}" HotKey="Ctrl+D" Command="{Binding DeselectCommand}" />
                     <MenuItem Header="{Binding Loc[Menu_DeleteSelection]}" HotKey="Delete" Command="{Binding DeleteSelectionOrClearLayerCommand}" />
+                    <Separator />
+                    <MenuItem Name="MenuSettingsEdit" Header="{Binding Loc[Menu_Settings]}" HotKey="Ctrl+OemComma" Command="{Binding OpenSettingsCommand}" />
                 </MenuItem>
 
                 <!-- Canvas Menu -->

@@ -29,6 +29,8 @@ public partial class ThemeService : ObservableObject
 
     public void SetLightTheme() => ApplyTheme(false);
 
+    public void SetTheme(bool isDark) => ApplyTheme(isDark);
+
     public void ToggleTheme() => ApplyTheme(!_isDarkTheme);
 
     private void ApplyTheme(bool isDark)

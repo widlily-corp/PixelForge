@@ -12,7 +12,27 @@ public partial class UndoRedoService : ObservableObject
     private readonly List<IUndoableCommand> _undoStack = new();
     private readonly List<IUndoableCommand> _redoStack = new();
 
-    public int MaxSteps { get; }
+    private int _maxSteps;
+
+    /// <summary>
+    /// Gets or sets the maximum number of undo steps retained in memory.
+    /// </summary>
+    public int MaxSteps
+    {
+        get => _maxSteps;
+        set
+        {
+            if (value <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), "MaxSteps must be greater than zero.");
+            }
+            _maxSteps = value;
+            while (_undoStack.Count > _maxSteps)
+            {
+                _undoStack.RemoveAt(0);
+            }
+        }
+    }
 
     public IReadOnlyList<IUndoableCommand> UndoStack => _undoStack;
     public IReadOnlyList<IUndoableCommand> RedoStack => _redoStack;
