@@ -53,6 +53,50 @@ public class SettingsViewModelTests
             vm.SelectedTabIndex.Should().Be(5);
             vm.IsTab5.Should().BeTrue();
             vm.IsTab2.Should().BeFalse();
+
+            // Test string parameter (as passed from XAML CommandParameter)
+            vm.SelectTab("1");
+            vm.SelectedTabIndex.Should().Be(1);
+            vm.IsTab1.Should().BeTrue();
+
+            // Test two-way property setters (used by RadioButton IsChecked)
+            vm.IsTab3 = true;
+            vm.SelectedTabIndex.Should().Be(3);
+            vm.IsTab3.Should().BeTrue();
+            vm.IsTab1.Should().BeFalse();
+
+            // Test null or invalid string does not crash
+            vm.SelectTab(null);
+            vm.SelectedTabIndex.Should().Be(3);
+            vm.SelectTab("invalid");
+            vm.SelectedTabIndex.Should().Be(3);
+        }
+        finally
+        {
+            if (File.Exists(tempFile)) File.Delete(tempFile);
+        }
+    }
+
+    [Fact]
+    public void SettingsViewModel_QuickPresetCommands_ShouldUpdateDimensions()
+    {
+        var tempFile = Path.Combine(Path.GetTempPath(), $"settings_vm_test_{Guid.NewGuid():N}.json");
+        try
+        {
+            var service = new AppSettingsService(tempFile);
+            var vm = new SettingsViewModel(service);
+
+            vm.SetPreset16Command.Execute(null);
+            vm.DefaultCanvasWidth.Should().Be(16);
+            vm.DefaultCanvasHeight.Should().Be(16);
+
+            vm.SetPreset64Command.Execute(null);
+            vm.DefaultCanvasWidth.Should().Be(64);
+            vm.DefaultCanvasHeight.Should().Be(64);
+
+            vm.SetPreset128Command.Execute(null);
+            vm.DefaultCanvasWidth.Should().Be(128);
+            vm.DefaultCanvasHeight.Should().Be(128);
         }
         finally
         {
@@ -197,6 +241,11 @@ public class SettingsViewModelTests
         xmlStr.Should().Contain("SaveAndApplyCommand");
         xmlStr.Should().Contain("ResetToDefaultsCommand");
         xmlStr.Should().Contain("CancelCommand");
+
+        // Verify fragile DataTemplate $parent cast is NOT present (prevents crash on Avalonia type resolution)
+        xmlStr.Should().NotContain("$parent[Window].((vm:SettingsViewModel)DataContext)");
+        xmlStr.Should().Contain("SetPreset16Command");
+        xmlStr.Should().Contain("SetPreset128Command");
     }
 
     [Fact]

@@ -23,12 +23,36 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private int _selectedTabIndex = 0;
 
-    public bool IsTab0 => SelectedTabIndex == 0;
-    public bool IsTab1 => SelectedTabIndex == 1;
-    public bool IsTab2 => SelectedTabIndex == 2;
-    public bool IsTab3 => SelectedTabIndex == 3;
-    public bool IsTab4 => SelectedTabIndex == 4;
-    public bool IsTab5 => SelectedTabIndex == 5;
+    public bool IsTab0
+    {
+        get => SelectedTabIndex == 0;
+        set { if (value) SelectedTabIndex = 0; }
+    }
+    public bool IsTab1
+    {
+        get => SelectedTabIndex == 1;
+        set { if (value) SelectedTabIndex = 1; }
+    }
+    public bool IsTab2
+    {
+        get => SelectedTabIndex == 2;
+        set { if (value) SelectedTabIndex = 2; }
+    }
+    public bool IsTab3
+    {
+        get => SelectedTabIndex == 3;
+        set { if (value) SelectedTabIndex = 3; }
+    }
+    public bool IsTab4
+    {
+        get => SelectedTabIndex == 4;
+        set { if (value) SelectedTabIndex = 4; }
+    }
+    public bool IsTab5
+    {
+        get => SelectedTabIndex == 5;
+        set { if (value) SelectedTabIndex = 5; }
+    }
 
     partial void OnSelectedTabIndexChanged(int value)
     {
@@ -194,10 +218,35 @@ public partial class SettingsViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    public void SelectTab(int index)
+    public void SelectTab(object? parameter)
     {
-        SelectedTabIndex = Math.Clamp(index, 0, 5);
+        if (parameter is int idx)
+        {
+            SelectedTabIndex = Math.Clamp(idx, 0, 5);
+        }
+        else if (parameter is string str && int.TryParse(str, out int parsed))
+        {
+            SelectedTabIndex = Math.Clamp(parsed, 0, 5);
+        }
     }
+
+    [RelayCommand]
+    public void SetPreset16() => ApplyCanvasPreset(new CanvasPresetItem(16, 16, "16 × 16"));
+
+    [RelayCommand]
+    public void SetPreset24() => ApplyCanvasPreset(new CanvasPresetItem(24, 24, "24 × 24"));
+
+    [RelayCommand]
+    public void SetPreset32() => ApplyCanvasPreset(new CanvasPresetItem(32, 32, "32 × 32"));
+
+    [RelayCommand]
+    public void SetPreset48() => ApplyCanvasPreset(new CanvasPresetItem(48, 48, "48 × 48"));
+
+    [RelayCommand]
+    public void SetPreset64() => ApplyCanvasPreset(new CanvasPresetItem(64, 64, "64 × 64"));
+
+    [RelayCommand]
+    public void SetPreset128() => ApplyCanvasPreset(new CanvasPresetItem(128, 128, "128 × 128"));
 
     [RelayCommand]
     public void ApplyCanvasPreset(CanvasPresetItem preset)

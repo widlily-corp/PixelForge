@@ -139,8 +139,7 @@
                     Padding="10,12">
                 <StackPanel Spacing="4">
                     <RadioButton Classes="nav-tab" GroupName="SettingsNav"
-                                 IsChecked="{Binding IsTab0, Mode=OneWay}"
-                                 Command="{Binding SelectTabCommand}" CommandParameter="0">
+                                 IsChecked="{Binding IsTab0}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock Text="⚙️" FontSize="13" VerticalAlignment="Center" />
                             <TextBlock Text="{Binding Loc[Dlg_SettingsTab_General]}" VerticalAlignment="Center" />
@@ -148,8 +147,7 @@
                     </RadioButton>
 
                     <RadioButton Classes="nav-tab" GroupName="SettingsNav"
-                                 IsChecked="{Binding IsTab1, Mode=OneWay}"
-                                 Command="{Binding SelectTabCommand}" CommandParameter="1">
+                                 IsChecked="{Binding IsTab1}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock Text="🖼" FontSize="13" VerticalAlignment="Center" />
                             <TextBlock Text="{Binding Loc[Dlg_SettingsTab_Canvas]}" VerticalAlignment="Center" />
@@ -157,8 +155,7 @@
                     </RadioButton>
 
                     <RadioButton Classes="nav-tab" GroupName="SettingsNav"
-                                 IsChecked="{Binding IsTab2, Mode=OneWay}"
-                                 Command="{Binding SelectTabCommand}" CommandParameter="2">
+                                 IsChecked="{Binding IsTab2}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock Text="🖌" FontSize="13" VerticalAlignment="Center" />
                             <TextBlock Text="{Binding Loc[Dlg_SettingsTab_Tools]}" VerticalAlignment="Center" />
@@ -166,8 +163,7 @@
                     </RadioButton>
 
                     <RadioButton Classes="nav-tab" GroupName="SettingsNav"
-                                 IsChecked="{Binding IsTab3, Mode=OneWay}"
-                                 Command="{Binding SelectTabCommand}" CommandParameter="3">
+                                 IsChecked="{Binding IsTab3}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock Text="💾" FontSize="13" VerticalAlignment="Center" />
                             <TextBlock Text="{Binding Loc[Dlg_SettingsTab_Autosave]}" VerticalAlignment="Center" />
@@ -175,8 +171,7 @@
                     </RadioButton>
 
                     <RadioButton Classes="nav-tab" GroupName="SettingsNav"
-                                 IsChecked="{Binding IsTab4, Mode=OneWay}"
-                                 Command="{Binding SelectTabCommand}" CommandParameter="4">
+                                 IsChecked="{Binding IsTab4}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock Text="⚡" FontSize="13" VerticalAlignment="Center" />
                             <TextBlock Text="{Binding Loc[Dlg_SettingsTab_Performance]}" VerticalAlignment="Center" />
@@ -184,8 +179,7 @@
                     </RadioButton>
 
                     <RadioButton Classes="nav-tab" GroupName="SettingsNav"
-                                 IsChecked="{Binding IsTab5, Mode=OneWay}"
-                                 Command="{Binding SelectTabCommand}" CommandParameter="5">
+                                 IsChecked="{Binding IsTab5}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock Text="⌨" FontSize="13" VerticalAlignment="Center" />
                             <TextBlock Text="{Binding Loc[Dlg_SettingsTab_Hotkeys]}" VerticalAlignment="Center" />
@@ -257,21 +251,14 @@
                                     </Grid>
 
                                     <!-- Quick Presets -->
-                                    <ItemsControl ItemsSource="{Binding CanvasPresets}" Margin="0,4,0,0">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <WrapPanel Orientation="Horizontal" />
-                                            </ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Button Classes="preset-btn" Content="{Binding Label}"
-                                                        Command="{Binding $parent[Window].((vm:SettingsViewModel)DataContext).ApplyCanvasPresetCommand}"
-                                                        CommandParameter="{Binding}"
-                                                        Margin="0,0,6,6" />
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
+                                    <WrapPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                        <Button Classes="preset-btn" Content="16 × 16" Command="{Binding SetPreset16Command}" Margin="0,0,6,6" />
+                                        <Button Classes="preset-btn" Content="24 × 24" Command="{Binding SetPreset24Command}" Margin="0,0,6,6" />
+                                        <Button Classes="preset-btn" Content="32 × 32" Command="{Binding SetPreset32Command}" Margin="0,0,6,6" />
+                                        <Button Classes="preset-btn" Content="48 × 48" Command="{Binding SetPreset48Command}" Margin="0,0,6,6" />
+                                        <Button Classes="preset-btn" Content="64 × 64" Command="{Binding SetPreset64Command}" Margin="0,0,6,6" />
+                                        <Button Classes="preset-btn" Content="128 × 128" Command="{Binding SetPreset128Command}" Margin="0,0,6,6" />
+                                    </WrapPanel>
                                 </StackPanel>
                             </Border>
 
