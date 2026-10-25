@@ -33,6 +33,11 @@ public enum ActiveColorTarget
 public enum ColorPickerViewMode
 {
     /// <summary>
+    /// Displays HSV color wheel.
+    /// </summary>
+    Wheel,
+
+    /// <summary>
     /// Displays palette swatches grid.
     /// </summary>
     Palette,
@@ -54,7 +59,7 @@ public partial class ColorPickerView : UserControl
     private PixelColor _primaryColor = PixelColor.Black;
     private PixelColor _secondaryColor = PixelColor.White;
     private ActiveColorTarget _activeTarget = ActiveColorTarget.Primary;
-    private ColorPickerViewMode _viewMode = ColorPickerViewMode.Palette;
+    private ColorPickerViewMode _viewMode = ColorPickerViewMode.Wheel;
     private readonly List<PixelColor> _currentPalette = new();
     private System.ComponentModel.INotifyPropertyChanged? _subscribedInpc;
 
@@ -93,6 +98,26 @@ public partial class ColorPickerView : UserControl
     public ColorPickerViewMode ViewMode => _viewMode;
 
     /// <summary>
+    /// Gets the inner ColorWheelControl.
+    /// </summary>
+    public Controls.ColorWheelControl WheelControl => ColorWheel;
+
+    /// <summary>
+    /// Gets the WheelContainer grid.
+    /// </summary>
+    public Grid WheelPanel => WheelContainer;
+
+    /// <summary>
+    /// Gets the PaletteContainer grid.
+    /// </summary>
+    public Grid PalettePanel => PaletteContainer;
+
+    /// <summary>
+    /// Gets the SlidersContainer stack panel.
+    /// </summary>
+    public StackPanel SlidersPanel => SlidersContainer;
+
+    /// <summary>
     /// Occurs when the primary color has changed.
     /// </summary>
     public event EventHandler<PixelColor>? PrimaryColorChanged;
@@ -128,6 +153,8 @@ public partial class ColorPickerView : UserControl
         PresetComboBox.SelectionChanged += OnPresetSelectionChanged;
 
         // View mode tabs
+        WheelTabButton.Click += (_, _) => SetViewMode(ColorPickerViewMode.Wheel);
+        ColorWheel.ColorChanged += OnColorWheelChanged;
         PaletteTabButton.Click += (_, _) => SetViewMode(ColorPickerViewMode.Palette);
         SlidersTabButton.Click += (_, _) => SetViewMode(ColorPickerViewMode.Sliders);
 
@@ -143,6 +170,7 @@ public partial class ColorPickerView : UserControl
         SetPrimaryColor(_primaryColor);
         SetSecondaryColor(_secondaryColor);
         SetActiveTarget(ActiveColorTarget.Primary);
+        SetViewMode(ColorPickerViewMode.Wheel);
     }
 
     /// <summary>
@@ -151,19 +179,17 @@ public partial class ColorPickerView : UserControl
     public void SetViewMode(ColorPickerViewMode mode)
     {
         _viewMode = mode;
-        if (mode == ColorPickerViewMode.Palette)
+        WheelTabButton.Classes.Set("active", mode == ColorPickerViewMode.Wheel);
+        PaletteTabButton.Classes.Set("active", mode == ColorPickerViewMode.Palette);
+        SlidersTabButton.Classes.Set("active", mode == ColorPickerViewMode.Sliders);
+
+        WheelContainer.IsVisible = mode == ColorPickerViewMode.Wheel;
+        PaletteContainer.IsVisible = mode == ColorPickerViewMode.Palette;
+        SlidersContainer.IsVisible = mode == ColorPickerViewMode.Sliders;
+
+        if (mode == ColorPickerViewMode.Wheel)
         {
-            PaletteTabButton.Classes.Set("active", true);
-            SlidersTabButton.Classes.Set("active", false);
-            PaletteContainer.IsVisible = true;
-            SlidersContainer.IsVisible = false;
-        }
-        else
-        {
-            SlidersTabButton.Classes.Set("active", true);
-            PaletteTabButton.Classes.Set("active", false);
-            SlidersContainer.IsVisible = true;
-            PaletteContainer.IsVisible = false;
+            UpdateWheelFromColor(_activeTarget == ActiveColorTarget.Primary ? _primaryColor : _secondaryColor);
         }
     }
 
@@ -186,6 +212,7 @@ public partial class ColorPickerView : UserControl
 
             UpdateSlidersFromColor(_primaryColor);
             UpdateHexTextFromColor(_primaryColor);
+            UpdateWheelFromColor(_primaryColor);
         }
         else
         {
@@ -196,6 +223,7 @@ public partial class ColorPickerView : UserControl
 
             UpdateSlidersFromColor(_secondaryColor);
             UpdateHexTextFromColor(_secondaryColor);
+            UpdateWheelFromColor(_secondaryColor);
         }
     }
 
@@ -378,7 +406,7 @@ public partial class ColorPickerView : UserControl
     /// <summary>
     /// Sets the primary color and updates visual representations.
     /// </summary>
-    public void SetPrimaryColor(PixelColor color, bool updateSliders = true)
+    public void SetPrimaryColor(PixelColor color, bool updateSliders = true, bool updateWheel = true)
     {
         _primaryColor = color;
         PrimaryColor = color;
@@ -393,6 +421,10 @@ public partial class ColorPickerView : UserControl
         if (_activeTarget == ActiveColorTarget.Primary)
         {
             UpdateHexTextFromColor(color);
+            if (updateWheel)
+            {
+                UpdateWheelFromColor(color);
+            }
         }
 
         UpdateActiveSwatchHighlight();
@@ -404,7 +436,7 @@ public partial class ColorPickerView : UserControl
     /// <summary>
     /// Sets the secondary color and updates visual representations.
     /// </summary>
-    public void SetSecondaryColor(PixelColor color, bool updateSliders = true)
+    public void SetSecondaryColor(PixelColor color, bool updateSliders = true, bool updateWheel = true)
     {
         _secondaryColor = color;
         SecondaryColor = color;
@@ -419,12 +451,45 @@ public partial class ColorPickerView : UserControl
         if (_activeTarget == ActiveColorTarget.Secondary)
         {
             UpdateHexTextFromColor(color);
+            if (updateWheel)
+            {
+                UpdateWheelFromColor(color);
+            }
         }
 
         UpdateActiveSwatchHighlight();
 
         SecondaryColorChanged?.Invoke(this, color);
         SyncToDataContext();
+    }
+
+    private void OnColorWheelChanged(object? sender, PixelColor newColor)
+    {
+        if (_isUpdating)
+        {
+            return;
+        }
+
+        if (_activeTarget == ActiveColorTarget.Primary)
+        {
+            SetPrimaryColor(newColor, updateSliders: true, updateWheel: false);
+        }
+        else
+        {
+            SetSecondaryColor(newColor, updateSliders: true, updateWheel: false);
+        }
+    }
+
+    private void UpdateWheelFromColor(PixelColor color)
+    {
+        if (_isUpdating)
+        {
+            return;
+        }
+
+        _isUpdating = true;
+        ColorWheel.SelectedColor = color;
+        _isUpdating = false;
     }
 
     private void UpdateSlidersFromColor(PixelColor color)

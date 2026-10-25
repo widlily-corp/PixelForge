@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:PixelForge.App.Controls"
              mc:Ignorable="d" d:DesignWidth="290" d:DesignHeight="380"
              x:Class="PixelForge.App.Views.ColorPickerView">
 
@@ -198,18 +199,25 @@
                     CornerRadius="6"
                     Padding="2"
                     Margin="0,0,0,10">
-                <Grid ColumnDefinitions="*,*">
-                    <Button Name="PaletteTabButton" Grid.Column="0" Content="{Binding Loc[Color_TabPalette]}"
-                            Classes="mode-tab-btn active" HorizontalAlignment="Stretch" />
-                    <Button Name="SlidersTabButton" Grid.Column="1" Content="{Binding Loc[Color_TabSliders]}"
+                <Grid ColumnDefinitions="*,*,*">
+                    <Button Name="WheelTabButton" Grid.Column="0" Content="{Binding Loc[Color_TabWheel]}" Classes="mode-tab-btn active" HorizontalAlignment="Stretch" />
+                    <Button Name="PaletteTabButton" Grid.Column="1" Content="{Binding Loc[Color_TabPalette]}"
+                            Classes="mode-tab-btn" HorizontalAlignment="Stretch" />
+                    <Button Name="SlidersTabButton" Grid.Column="2" Content="{Binding Loc[Color_TabSliders]}"
                             Classes="mode-tab-btn" HorizontalAlignment="Stretch" />
                 </Grid>
             </Border>
 
             <!-- 4. Content Area: Palette View or RGB Sliders View -->
             <Panel Grid.Row="3">
-                <!-- 4A. Palette Swatches Grid Container -->
-                <Grid Name="PaletteContainer" RowDefinitions="Auto,*" IsVisible="True">
+
+                <!-- 4A. HSV Color Wheel Container -->
+                <Grid Name="WheelContainer" RowDefinitions="Auto,*" IsVisible="True">
+                    <controls:ColorWheelControl Name="ColorWheel" Height="170" Margin="4" />
+                </Grid>
+
+                <!-- 4B. Palette Swatches Grid Container -->
+                <Grid Name="PaletteContainer" RowDefinitions="Auto,*" IsVisible="False">
                     <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,6">
                         <TextBlock Grid.Column="0" Text="{Binding Loc[Color_Swatches]}" FontSize="10" FontWeight="Bold"
                                    Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
