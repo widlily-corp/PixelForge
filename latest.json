@@ -1,7 +1,7 @@
 {
-    "version":  "0.1.11",
-    "releaseNotes":  "PixelForge v0.1.11: Глобальное обновление логики и эргономики: полная поддержка Alpha-Lock во всех инструментах, маска выделения в ластике и фигурах, аккордеон-инспектор с GridSplitter, инлайн-переименование слоев, контекстное меню холста, адаптивный тулбар и Quick Export",
-    "downloadUrl":  "https://github.com/widlily-corp/PixelForge/releases/download/v0.1.11/PixelForge_0.1.11_x64-setup.exe",
-    "installerSizeMb":  35.42,
-    "pub_date":  "2026-10-25T09:30:05Z"
+    "version":  "0.1.12",
+    "releaseNotes":  "PixelForge v0.1.12: Unified UI styling, interactive HSV Color Wheel (Hue ring + SV square), comprehensive rich tooltips across all tools and mechanics (LazyMouse stabilizer, pixel-perfect, dithering), and modular Settings Window (Ctrl+,) with instant live application.",
+    "downloadUrl":  "https://github.com/widlily-corp/PixelForge/releases/download/v0.1.12/PixelForge_0.1.12_x64-setup.exe",
+    "installerSizeMb":  35.52,
+    "pub_date":  "2026-10-25T18:04:29Z"
 }
