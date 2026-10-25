@@ -421,22 +421,32 @@ public partial class MainWindow : Window
         await OpenSettingsDialogAsync();
     }
 
+    private bool _isSettingsDialogOpen;
+
     private async Task OpenSettingsDialogAsync()
     {
-        if (ViewModel == null) return;
+        if (ViewModel == null || _isSettingsDialogOpen) return;
+        _isSettingsDialogOpen = true;
 
-        var vm = new SettingsViewModel(ViewModel.AppSettingsService);
-        var dialog = new SettingsWindow
+        try
         {
-            DataContext = vm
-        };
+            var vm = new SettingsViewModel(ViewModel.AppSettingsService);
+            var dialog = new SettingsWindow
+            {
+                DataContext = vm
+            };
 
-        vm.SettingsApplied += (_, _) =>
+            vm.SettingsApplied += (_, _) =>
+            {
+                ViewModel.ApplySettings(vm.CreateSnapshot());
+            };
+
+            await dialog.ShowDialog(this);
+        }
+        finally
         {
-            ViewModel.ApplySettings(vm.CreateSnapshot());
-        };
-
-        await dialog.ShowDialog(this);
+            _isSettingsDialogOpen = false;
+        }
     }
 
     private static bool MatchesKey(KeyEventArgs e, Key key, PhysicalKey physicalKey, char? ruChar = null)

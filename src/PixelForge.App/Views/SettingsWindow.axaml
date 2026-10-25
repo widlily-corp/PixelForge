@@ -462,8 +462,8 @@
                                     <TextBlock Classes="card-title" Text="{Binding Loc[Dlg_HotkeysCanvasTab]}" />
 
                                     <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_PixelPerfect]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="Shift+P" /></Border></Grid>
-                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="Симметрия X" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="Shift+X" /></Border></Grid>
-                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="Симметрия Y" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="Shift+Y" /></Border></Grid>
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_SymmetryX]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="Shift+X" /></Border></Grid>
+                                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_SymmetryY]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="Shift+Y" /></Border></Grid>
                                     <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_Tiled]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="F10" /></Border></Grid>
                                     <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_Undo]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="Ctrl+Z" /></Border></Grid>
                                     <Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Loc[Dlg_Hotkeys_Redo]}" Classes="card-desc" /><Border Grid.Column="1" Classes="key-badge"><TextBlock Text="Ctrl+Y" /></Border></Grid>
