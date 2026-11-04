@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using PixelForge.Core.Models;
 using SkiaSharp;
 
@@ -106,6 +107,261 @@ public class ExportService : IExportService
         }
 
         await destinationStream.FlushAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task ExportGifAsync(PixelCanvas canvas, string filePath, int scale = 1, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(canvas);
+        if (string.IsNullOrWhiteSpace(filePath))
+        {
+            throw new ArgumentException("File path cannot be null or empty.", nameof(filePath));
+        }
+
+        var directory = Path.GetDirectoryName(filePath);
+        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        await using var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, useAsync: true);
+        await ExportGifAsync(canvas, fs, scale, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task ExportGifAsync(PixelCanvas canvas, Stream destinationStream, int scale = 1, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(canvas);
+        ArgumentNullException.ThrowIfNull(destinationStream);
+        if (scale <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(scale), "Scale must be at least 1.");
+        }
+        if (canvas.Frames.Count == 0)
+        {
+            throw new InvalidOperationException("Canvas has no frames to export.");
+        }
+
+        var frames = new List<(PixelColor[] pixels, int width, int height, int durationMs)>(canvas.Frames.Count);
+        for (int i = 0; i < canvas.Frames.Count; i++)
+        {
+            var pixels = canvas.GetFrameCompositePixels(i);
+            frames.Add((pixels, canvas.Width, canvas.Height, canvas.Frames[i].DurationMs));
+        }
+
+        await GifEncoder.EncodeAsync(frames, destinationStream, scale, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task ExportSpritesheetAsync(
+        PixelCanvas canvas,
+        string imagePath,
+        string? jsonPath,
+        SpritesheetSettings settings,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(canvas);
+        if (string.IsNullOrWhiteSpace(imagePath))
+        {
+            throw new ArgumentException("Image path cannot be null or empty.", nameof(imagePath));
+        }
+        ArgumentNullException.ThrowIfNull(settings);
+
+        if (settings.Scale <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(settings.Scale), "Scale must be at least 1.");
+        }
+        if (settings.Padding < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(settings.Padding), "Padding cannot be negative.");
+        }
+        if (settings.Border < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(settings.Border), "Border cannot be negative.");
+        }
+        if (canvas.Frames.Count == 0)
+        {
+            throw new InvalidOperationException("Canvas has no frames to export.");
+        }
+
+        int frameCount = canvas.Frames.Count;
+        int scale = settings.Scale;
+        int frameWidth = canvas.Width * scale;
+        int frameHeight = canvas.Height * scale;
+        int padding = settings.Padding;
+        int border = settings.Border;
+
+        int columns;
+        int rows;
+
+        switch (settings.LayoutMode)
+        {
+            case SpritesheetLayoutMode.HorizontalStrip:
+                columns = frameCount;
+                rows = 1;
+                break;
+            case SpritesheetLayoutMode.VerticalStrip:
+                columns = 1;
+                rows = frameCount;
+                break;
+            case SpritesheetLayoutMode.Grid:
+            default:
+                if (settings.Columns > 0)
+                {
+                    columns = settings.Columns;
+                }
+                else
+                {
+                    columns = Math.Max(1, (int)Math.Ceiling(Math.Sqrt(frameCount)));
+                }
+                rows = Math.Max(1, (int)Math.Ceiling((double)frameCount / columns));
+                break;
+        }
+
+        int atlasWidth = (2 * border) + (columns * frameWidth) + ((columns - 1) * padding);
+        int atlasHeight = (2 * border) + (rows * frameHeight) + ((rows - 1) * padding);
+
+        var atlasPixels = new PixelColor[atlasWidth * atlasHeight];
+
+        var frameList = new List<object>(frameCount);
+        string prefix = Path.GetFileNameWithoutExtension(imagePath);
+        if (string.IsNullOrWhiteSpace(prefix))
+        {
+            prefix = "frame";
+        }
+
+        for (int i = 0; i < frameCount; i++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            int col = i % columns;
+            int row = i / columns;
+            int x = border + col * (frameWidth + padding);
+            int y = border + row * (frameHeight + padding);
+
+            var framePixels = canvas.GetFrameCompositePixels(i);
+
+            for (int dy = 0; dy < frameHeight; dy++)
+            {
+                int srcY = dy / scale;
+                int srcRowOffset = srcY * canvas.Width;
+                int destRowOffset = (y + dy) * atlasWidth;
+
+                for (int dx = 0; dx < frameWidth; dx++)
+                {
+                    int srcX = dx / scale;
+                    atlasPixels[destRowOffset + (x + dx)] = framePixels[srcRowOffset + srcX];
+                }
+            }
+
+            frameList.Add(new
+            {
+                filename = $"{prefix}_{i}",
+                frame = new { x = x, y = y, w = frameWidth, h = frameHeight },
+                rotated = false,
+                trimmed = false,
+                spriteSourceSize = new { x = 0, y = 0, w = frameWidth, h = frameHeight },
+                sourceSize = new { w = frameWidth, h = frameHeight },
+                duration = canvas.Frames[i].DurationMs
+            });
+        }
+
+        // Save atlas image PNG
+        await ExportPngAsync(atlasPixels, atlasWidth, atlasHeight, imagePath, scale: 1, cancellationToken).ConfigureAwait(false);
+
+        // Optionally save Aseprite-compatible JSON metadata
+        if (!string.IsNullOrWhiteSpace(jsonPath))
+        {
+            var tagList = new List<object>(canvas.Tags.Count);
+            foreach (var tag in canvas.Tags)
+            {
+                string direction = tag.LoopMode switch
+                {
+                    AnimationLoopMode.Reverse => "reverse",
+                    AnimationLoopMode.PingPong => "pingpong",
+                    _ => "forward"
+                };
+
+                tagList.Add(new
+                {
+                    name = tag.Name,
+                    from = tag.FromFrame,
+                    to = tag.ToFrame,
+                    direction = direction
+                });
+            }
+
+            var metadata = new
+            {
+                frames = frameList,
+                meta = new
+                {
+                    app = "PixelForge",
+                    version = AppVersionInfo.CurrentVersion,
+                    image = Path.GetFileName(imagePath),
+                    format = "RGBA8888",
+                    size = new { w = atlasWidth, h = atlasHeight },
+                    scale = scale.ToString(),
+                    frameTags = tagList
+                }
+            };
+
+            var jsonDir = Path.GetDirectoryName(jsonPath);
+            if (!string.IsNullOrEmpty(jsonDir) && !Directory.Exists(jsonDir))
+            {
+                Directory.CreateDirectory(jsonDir);
+            }
+
+            var jsonOptions = new JsonSerializerOptions
+            {
+                WriteIndented = true
+            };
+
+            var tmpJsonPath = jsonPath + ".tmp";
+            await using (var fs = new FileStream(tmpJsonPath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, useAsync: true))
+            {
+                await JsonSerializer.SerializeAsync(fs, metadata, jsonOptions, cancellationToken).ConfigureAwait(false);
+            }
+            File.Move(tmpJsonPath, jsonPath, overwrite: true);
+        }
+    }
+
+    public async Task ExportPngSequenceAsync(
+        PixelCanvas canvas,
+        string outputDirectory,
+        string prefix,
+        int scale = 1,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(canvas);
+        if (string.IsNullOrWhiteSpace(outputDirectory))
+        {
+            throw new ArgumentException("Output directory cannot be null or empty.", nameof(outputDirectory));
+        }
+        if (scale <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(scale), "Scale must be at least 1.");
+        }
+        if (canvas.Frames.Count == 0)
+        {
+            throw new InvalidOperationException("Canvas has no frames to export.");
+        }
+
+        if (string.IsNullOrWhiteSpace(prefix))
+        {
+            prefix = "frame";
+        }
+
+        if (!Directory.Exists(outputDirectory))
+        {
+            Directory.CreateDirectory(outputDirectory);
+        }
+
+        for (int i = 0; i < canvas.Frames.Count; i++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var framePixels = canvas.GetFrameCompositePixels(i);
+            string fileName = $"{prefix}_{i:D3}.png";
+            string filePath = Path.Combine(outputDirectory, fileName);
+            await ExportPngAsync(framePixels, canvas.Width, canvas.Height, filePath, scale, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     private static SKData EncodeToPngData(PixelColor[] scaledPixels, int scaledWidth, int scaledHeight)

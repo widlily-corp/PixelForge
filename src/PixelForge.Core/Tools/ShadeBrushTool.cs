@@ -111,7 +111,7 @@ public class ShadeBrushTool : ITool
 
         if (_deltas.Count > 0)
         {
-            var command = new DrawPixelsCommand(ctx.ActiveLayer, _deltas.ToArray(), "Shade Brush Stroke");
+            var command = new DrawPixelsCommand(ctx.ActiveLayer, _deltas.ToArray(), ctx.Canvas, ctx.Canvas?.CurrentFrameIndex, "Shade Brush Stroke");
             ctx.History.ExecuteCommand(command);
         }
 

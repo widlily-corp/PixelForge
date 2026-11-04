@@ -77,6 +77,24 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         }
     }
 
+    public static readonly DirectProperty<PixelCanvasControl, bool> IsPlayingProperty =
+        AvaloniaProperty.RegisterDirect<PixelCanvasControl, bool>(
+            nameof(IsPlaying),
+            o => o.IsPlaying,
+            (o, v) => o.IsPlaying = v);
+
+    private bool _isPlaying;
+
+    /// <summary>
+    /// Gets or sets whether animation playback is currently running on the canvas.
+    /// When playing, pointer interactions pause playback rather than drawing strokes.
+    /// </summary>
+    public bool IsPlaying
+    {
+        get => _isPlaying;
+        set => SetAndRaise(IsPlayingProperty, ref _isPlaying, value);
+    }
+
     public CanvasViewModel? CanvasViewModel
     {
         get => _canvasViewModel;
@@ -124,7 +142,8 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
     }
 
     // Cached cursors to prevent allocations during mouse interactions
-    private static readonly Cursor PanHandCursor = new(StandardCursorType.Hand);
+    private static Cursor? _panHandCursor;
+    private static Cursor PanHandCursor => _panHandCursor ??= new Cursor(StandardCursorType.Hand);
 
     // Viewport transform
     private float _panX;
@@ -229,6 +248,28 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         FilterQuality = SKFilterQuality.Low
     };
 
+    // Zero-Alloc Onion Skinning Skia resources
+    private readonly SKPaint _prevOnionPaint = new()
+    {
+        FilterQuality = SKFilterQuality.None,
+        IsAntialias = false
+    };
+    private readonly SKPaint _nextOnionPaint = new()
+    {
+        FilterQuality = SKFilterQuality.None,
+        IsAntialias = false
+    };
+    private SKColorFilter? _prevColorFilter;
+    private SKColorFilter? _nextColorFilter;
+    private PixelColor _cachedPrevTint;
+    private PixelColor _cachedNextTint;
+
+    private const int MaxOnionBitmaps = 10;
+    private readonly SKBitmap?[] _onionBitmaps = new SKBitmap?[MaxOnionBitmaps];
+    private PixelColor[]? _onionPixelBuffer;
+    private int _onionBufferWidth;
+    private int _onionBufferHeight;
+
     // Offscreen layer composite buffer
     private SKBitmap? _compositeBitmap;
     private PixelColor[]? _compositePixels;
@@ -302,6 +343,8 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         if (_subscribedCanvas != null)
         {
             _subscribedCanvas.PixelsChanged -= MarkCompositeDirty;
+            _subscribedCanvas.FrameChanged -= OnFrameChanged;
+            _subscribedCanvas.OnionSkin.PropertyChanged -= OnOnionSkinPropertyChanged;
             _subscribedCanvas = null;
         }
 
@@ -317,6 +360,8 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
             {
                 _subscribedCanvas = CanvasViewModel.Canvas;
                 _subscribedCanvas.PixelsChanged += MarkCompositeDirty;
+                _subscribedCanvas.FrameChanged += OnFrameChanged;
+                _subscribedCanvas.OnionSkin.PropertyChanged += OnOnionSkinPropertyChanged;
                 CanvasViewModel.Canvas.PropertyChanged += (_, _) => MarkCompositeDirty();
                 CanvasViewModel.Canvas.Layers.CollectionChanged += (_, _) => MarkCompositeDirty();
                 foreach (var layer in CanvasViewModel.Canvas.Layers)
@@ -340,7 +385,24 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         {
             InitializeCheckerboardShader();
         }
+        if (e.PropertyName == nameof(CanvasViewModel.IsPlaying))
+        {
+            if (CanvasViewModel != null)
+            {
+                IsPlaying = CanvasViewModel.IsPlaying;
+            }
+        }
         InvalidateVisual();
+    }
+
+    private void OnFrameChanged(int newFrameIndex)
+    {
+        MarkCompositeDirty();
+    }
+
+    private void OnOnionSkinPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        MarkCompositeDirty();
     }
 
     public void MarkCompositeDirty()
@@ -401,6 +463,13 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
             _subscribedCanvasViewModel.PropertyChanged -= OnCanvasViewModelPropertyChanged;
             _subscribedCanvasViewModel = null;
         }
+        if (_subscribedCanvas != null)
+        {
+            _subscribedCanvas.PixelsChanged -= MarkCompositeDirty;
+            _subscribedCanvas.FrameChanged -= OnFrameChanged;
+            _subscribedCanvas.OnionSkin.PropertyChanged -= OnOnionSkinPropertyChanged;
+            _subscribedCanvas = null;
+        }
         _compositeBitmap?.Dispose();
         _compositeBitmap = null;
         _checkerboardPaint.Dispose();
@@ -416,6 +485,7 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         _selectionPaint.Dispose();
         _cursorHoverPaint.Dispose();
         _referenceOverlayPaint.Dispose();
+        DisposeOnionSkinResources();
     }
 
     void ICustomDrawOperation.Render(ImmediateDrawingContext context)
@@ -456,6 +526,12 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
                         // Checkerboard
                         canvas.DrawRect(tileRect, _checkerboardPaint);
 
+                        // Onion skinning on central tile
+                        if (tx == 0 && ty == 0 && vm.Canvas.OnionSkin.IsEnabled && vm.Canvas.Frames.Count > 1)
+                        {
+                            RenderOnionSkinPass(canvas, tileRect, vm.Canvas);
+                        }
+
                         if (_compositeBitmap != null)
                         {
                             if (tx == 0 && ty == 0)
@@ -477,6 +553,12 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
             {
                 // 1. Checkerboard transparency background
                 canvas.DrawRect(destRect, _checkerboardPaint);
+
+                // Onion skinning pass (Pass 1: Prev frames, Pass 2: Next frames)
+                if (vm.Canvas.OnionSkin.IsEnabled && vm.Canvas.Frames.Count > 1)
+                {
+                    RenderOnionSkinPass(canvas, destRect, vm.Canvas);
+                }
 
                 // 2. Offscreen composite of layers with SKFilterQuality.None (Nearest Neighbor)
                 if (_compositeBitmap != null)
@@ -562,6 +644,149 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
             _compositeBitmap.NotifyPixelsChanged();
 
             _isDirtyComposite = false;
+        }
+    }
+
+    private void RenderOnionSkinPass(SKCanvas canvas, SKRect destRect, PixelCanvas canvasModel)
+    {
+        var onion = canvasModel.OnionSkin;
+        if (!onion.IsEnabled || canvasModel.Frames.Count <= 1)
+        {
+            return;
+        }
+
+        UpdateOnionSkinFilters(onion);
+
+        int w = canvasModel.Width;
+        int h = canvasModel.Height;
+        EnsureOnionPixelBuffer(w, h);
+        int total = w * h;
+
+        int currentFrame = canvasModel.CurrentFrameIndex;
+        int totalFrames = canvasModel.Frames.Count;
+        Guid? singleLayerId = onion.ActiveLayerOnly ? canvasModel.ActiveLayer?.Id : null;
+        int slotIndex = 0;
+
+        // Pass 1: Previous Frames
+        int prevCount = onion.PrevFramesCount;
+        for (int k = 1; k <= prevCount; k++)
+        {
+            int frameIdx = currentFrame - k;
+            if (frameIdx >= 0)
+            {
+                var bitmap = GetOrCreateOnionBitmap(slotIndex++, w, h);
+                canvasModel.GetFrameCompositePixels(frameIdx, _onionPixelBuffer, singleLayerId);
+
+                unsafe
+                {
+                    fixed (PixelColor* src = _onionPixelBuffer)
+                    {
+                        Buffer.MemoryCopy(src, (void*)bitmap.GetPixels(), (long)total * 4, (long)total * 4);
+                    }
+                }
+                bitmap.NotifyPixelsChanged();
+
+                float fade = 1.0f - ((float)(k - 1) / prevCount);
+                float alpha = Math.Clamp(onion.MaxOpacity * fade, 0.0f, 1.0f);
+                byte byteAlpha = (byte)(alpha * 255f);
+
+                _prevOnionPaint.Color = new SKColor(255, 255, 255, byteAlpha);
+                canvas.DrawBitmap(bitmap, destRect, _prevOnionPaint);
+            }
+        }
+
+        // Pass 2: Next Frames
+        int nextCount = onion.NextFramesCount;
+        for (int k = 1; k <= nextCount; k++)
+        {
+            int frameIdx = currentFrame + k;
+            if (frameIdx < totalFrames)
+            {
+                var bitmap = GetOrCreateOnionBitmap(slotIndex++, w, h);
+                canvasModel.GetFrameCompositePixels(frameIdx, _onionPixelBuffer, singleLayerId);
+
+                unsafe
+                {
+                    fixed (PixelColor* src = _onionPixelBuffer)
+                    {
+                        Buffer.MemoryCopy(src, (void*)bitmap.GetPixels(), (long)total * 4, (long)total * 4);
+                    }
+                }
+                bitmap.NotifyPixelsChanged();
+
+                float fade = 1.0f - ((float)(k - 1) / nextCount);
+                float alpha = Math.Clamp(onion.MaxOpacity * fade, 0.0f, 1.0f);
+                byte byteAlpha = (byte)(alpha * 255f);
+
+                _nextOnionPaint.Color = new SKColor(255, 255, 255, byteAlpha);
+                canvas.DrawBitmap(bitmap, destRect, _nextOnionPaint);
+            }
+        }
+    }
+
+    private void UpdateOnionSkinFilters(OnionSkinSettings settings)
+    {
+        if (_prevColorFilter == null || settings.PrevFrameTint != _cachedPrevTint)
+        {
+            _prevColorFilter?.Dispose();
+            _cachedPrevTint = settings.PrevFrameTint;
+            var skColor = new SKColor(_cachedPrevTint.R, _cachedPrevTint.G, _cachedPrevTint.B, _cachedPrevTint.A);
+            _prevColorFilter = SKColorFilter.CreateBlendMode(skColor, SKBlendMode.SrcATop);
+            _prevOnionPaint.ColorFilter = _prevColorFilter;
+        }
+
+        if (_nextColorFilter == null || settings.NextFrameTint != _cachedNextTint)
+        {
+            _nextColorFilter?.Dispose();
+            _cachedNextTint = settings.NextFrameTint;
+            var skColor = new SKColor(_cachedNextTint.R, _cachedNextTint.G, _cachedNextTint.B, _cachedNextTint.A);
+            _nextColorFilter = SKColorFilter.CreateBlendMode(skColor, SKBlendMode.SrcATop);
+            _nextOnionPaint.ColorFilter = _nextColorFilter;
+        }
+    }
+
+    private SKBitmap GetOrCreateOnionBitmap(int slotIndex, int width, int height)
+    {
+        if (slotIndex < 0 || slotIndex >= MaxOnionBitmaps)
+        {
+            slotIndex = 0;
+        }
+
+        var existing = _onionBitmaps[slotIndex];
+        if (existing == null || existing.Width != width || existing.Height != height)
+        {
+            existing?.Dispose();
+            existing = new SKBitmap(width, height, SKColorType.Rgba8888, SKAlphaType.Unpremul);
+            _onionBitmaps[slotIndex] = existing;
+        }
+
+        return existing;
+    }
+
+    private void EnsureOnionPixelBuffer(int width, int height)
+    {
+        int total = width * height;
+        if (_onionPixelBuffer == null || _onionPixelBuffer.Length != total || _onionBufferWidth != width || _onionBufferHeight != height)
+        {
+            _onionPixelBuffer = new PixelColor[total];
+            _onionBufferWidth = width;
+            _onionBufferHeight = height;
+        }
+    }
+
+    private void DisposeOnionSkinResources()
+    {
+        _prevColorFilter?.Dispose();
+        _prevColorFilter = null;
+        _nextColorFilter?.Dispose();
+        _nextColorFilter = null;
+        _prevOnionPaint.Dispose();
+        _nextOnionPaint.Dispose();
+
+        for (int i = 0; i < _onionBitmaps.Length; i++)
+        {
+            _onionBitmaps[i]?.Dispose();
+            _onionBitmaps[i] = null;
         }
     }
 
@@ -841,6 +1066,24 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
     {
         base.OnPointerPressed(e);
         Focus();
+
+        // Concurrency / Playback guard: if playback is running on the main canvas,
+        // any pointer press immediately stops playback and selects the clicked frame.
+        if (IsPlaying || (CanvasViewModel != null && CanvasViewModel.IsPlaying))
+        {
+            IsPlaying = false;
+            if (CanvasViewModel != null)
+            {
+                CanvasViewModel.StopPlayback();
+                if (CanvasViewModel.Canvas != null)
+                {
+                    CanvasViewModel.Canvas.SwitchToFrame(CanvasViewModel.Canvas.CurrentFrameIndex);
+                }
+            }
+            e.Handled = true;
+            return;
+        }
+
         var point = e.GetCurrentPoint(this);
         _lastPanPointerPos = point.Position;
 

@@ -17,6 +17,7 @@ public class MainViewModelTests
         public Task<string?> ShowOpenImageDialogAsync() => Task.FromResult<string?>(null);
         public Task<string?> ShowSaveProjectDialogAsync(string? defaultFileName = null) => Task.FromResult<string?>(null);
         public Task<string?> ShowExportImageDialogAsync(string defaultExtension = "png", string? defaultFileName = null) => Task.FromResult<string?>(null);
+        public Task<string?> ShowExportFolderDialogAsync(string? title = null) => Task.FromResult<string?>(null);
     }
 
     private class DummyClipboardService : IClipboardService

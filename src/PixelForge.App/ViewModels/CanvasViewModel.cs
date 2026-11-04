@@ -16,6 +16,26 @@ public partial class CanvasViewModel : ViewModelBase
     private PixelCanvas _canvas;
 
     [ObservableProperty]
+    private bool _isPlaying;
+
+    /// <summary>
+    /// Event raised when an interaction (e.g. pointer press) requests animation playback to stop immediately.
+    /// </summary>
+    public event Action? PlaybackStopRequested;
+
+    /// <summary>
+    /// Stops animation playback immediately and notifies listeners.
+    /// </summary>
+    public void StopPlayback()
+    {
+        if (IsPlaying)
+        {
+            IsPlaying = false;
+        }
+        PlaybackStopRequested?.Invoke();
+    }
+
+    [ObservableProperty]
     private float _zoom = 12.0f;
 
     [ObservableProperty]

@@ -68,7 +68,7 @@ public class LineTool : ITool
 
         if (_deltas.Count > 0)
         {
-            var command = new DrawPixelsCommand(ctx.ActiveLayer, _deltas.ToArray(), "Draw Line");
+            var command = new DrawPixelsCommand(ctx.ActiveLayer, _deltas.ToArray(), ctx.Canvas, ctx.Canvas?.CurrentFrameIndex, "Draw Line");
             ctx.History.ExecuteCommand(command);
         }
 

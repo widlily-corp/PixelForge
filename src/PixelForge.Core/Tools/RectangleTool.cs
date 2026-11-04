@@ -78,7 +78,7 @@ public class RectangleTool : ITool
 
         if (_deltas.Count > 0)
         {
-            var command = new DrawPixelsCommand(ctx.ActiveLayer, _deltas.ToArray(), IsFilled ? "Draw Filled Rectangle" : "Draw Rectangle Outline");
+            var command = new DrawPixelsCommand(ctx.ActiveLayer, _deltas.ToArray(), ctx.Canvas, ctx.Canvas?.CurrentFrameIndex, IsFilled ? "Draw Filled Rectangle" : "Draw Rectangle Outline");
             ctx.History.ExecuteCommand(command);
         }
 

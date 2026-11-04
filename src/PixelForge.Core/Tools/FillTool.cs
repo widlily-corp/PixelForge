@@ -160,7 +160,7 @@ public class FillTool : ITool
         if (deltas.Count > 0)
         {
             string desc = contiguous ? "Flood Fill" : "Replace Color";
-            var command = new DrawPixelsCommand(ctx.ActiveLayer, deltas, desc);
+            var command = new DrawPixelsCommand(ctx.ActiveLayer, deltas, ctx.Canvas, ctx.Canvas?.CurrentFrameIndex, desc);
             ctx.History.ExecuteCommand(command);
         }
     }

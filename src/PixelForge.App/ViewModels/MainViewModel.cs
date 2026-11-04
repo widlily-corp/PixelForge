@@ -23,6 +23,7 @@ public partial class MainViewModel : ViewModelBase
     private readonly IUpdateService _updateService;
     private readonly UndoRedoService _undoRedoService;
     private readonly AppSettingsService _appSettingsService;
+    private readonly IPlaybackService _playbackService;
 
     public ObservableCollection<string> RecentProjects { get; } = new();
 
@@ -42,6 +43,9 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty]
     private HistoryViewModel _historyViewModel;
+
+    [ObservableProperty]
+    private TimelineViewModel _timelineViewModel;
 
     [ObservableProperty]
     private ThemeService _themeService;
@@ -95,7 +99,8 @@ public partial class MainViewModel : ViewModelBase
         IUpdateService updateService,
         ThemeService themeService,
         UndoRedoService undoRedoService,
-        AppSettingsService? appSettingsService = null)
+        AppSettingsService? appSettingsService = null,
+        IPlaybackService? playbackService = null)
     {
         _projectService = projectService ?? throw new ArgumentNullException(nameof(projectService));
         _exportService = exportService ?? throw new ArgumentNullException(nameof(exportService));
@@ -106,6 +111,7 @@ public partial class MainViewModel : ViewModelBase
         _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
         _undoRedoService = undoRedoService ?? throw new ArgumentNullException(nameof(undoRedoService));
         _appSettingsService = appSettingsService ?? new AppSettingsService();
+        _playbackService = playbackService ?? new PlaybackService();
 
         // Load language from settings
         Loc.SetLanguage(_appSettingsService.Language);
@@ -140,6 +146,9 @@ public partial class MainViewModel : ViewModelBase
         _layerViewModel = new LayerViewModel(canvas, _undoRedoService);
         _paletteViewModel = new PaletteViewModel();
         _historyViewModel = new HistoryViewModel(_undoRedoService);
+
+        _timelineViewModel = new TimelineViewModel(_canvasViewModel, _playbackService, _undoRedoService, _exportService, _fileDialogService);
+        _timelineViewModel.StatusRequested += (_, msg) => StatusMessage = msg;
 
         // Forward status feedback from layers and palette
         _layerViewModel.StatusRequested += (_, msg) => StatusMessage = msg;
@@ -198,6 +207,7 @@ public partial class MainViewModel : ViewModelBase
         var canvas = project.ToCanvas();
         CanvasViewModel.SetCanvas(canvas);
         LayerViewModel.SetCanvas(canvas);
+        this.TimelineViewModel?.SetCanvas(canvas);
 
         if (project.Palette != null && project.Palette.Count > 0)
         {
@@ -236,6 +246,7 @@ public partial class MainViewModel : ViewModelBase
         var canvas = new PixelCanvas(width, height);
         CanvasViewModel.SetCanvas(canvas);
         LayerViewModel.SetCanvas(canvas);
+        this.TimelineViewModel?.SetCanvas(canvas);
         _undoRedoService.Clear();
         CurrentFilePath = null;
         IsDirty = false;
@@ -634,6 +645,71 @@ public partial class MainViewModel : ViewModelBase
         catch (Exception ex)
         {
             StatusMessage = $"Export error: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public async Task ExportGifAsync()
+    {
+        try
+        {
+            string defaultName = string.IsNullOrEmpty(CurrentFilePath) ? "animation.gif" : Path.ChangeExtension(Path.GetFileName(CurrentFilePath), ".gif");
+            string? filePath = await _fileDialogService.ShowExportImageDialogAsync("gif", defaultName);
+            if (string.IsNullOrEmpty(filePath))
+            {
+                return;
+            }
+
+            await _exportService.ExportGifAsync(CanvasViewModel.Canvas, filePath, scale: 1);
+            StatusMessage = $"Exported Animated GIF to {Path.GetFileName(filePath)}";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"GIF Export error: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public async Task ExportSpritesheetAsync()
+    {
+        try
+        {
+            string defaultName = string.IsNullOrEmpty(CurrentFilePath) ? "spritesheet.png" : Path.ChangeExtension(Path.GetFileName(CurrentFilePath), "_sheet.png");
+            string? imagePath = await _fileDialogService.ShowExportImageDialogAsync("png", defaultName);
+            if (string.IsNullOrEmpty(imagePath))
+            {
+                return;
+            }
+
+            string jsonPath = Path.ChangeExtension(imagePath, ".json");
+            var settings = new SpritesheetSettings { LayoutMode = SpritesheetLayoutMode.Grid, Scale = 1 };
+            await _exportService.ExportSpritesheetAsync(CanvasViewModel.Canvas, imagePath, jsonPath, settings);
+            StatusMessage = $"Exported Spritesheet to {Path.GetFileName(imagePath)}";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Spritesheet Export error: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public async Task ExportPngSequenceAsync()
+    {
+        try
+        {
+            string? folderPath = await _fileDialogService.ShowExportFolderDialogAsync("Select Folder for PNG Sequence");
+            if (string.IsNullOrEmpty(folderPath))
+            {
+                return;
+            }
+
+            string prefix = string.IsNullOrEmpty(CurrentFilePath) ? "frame" : Path.GetFileNameWithoutExtension(CurrentFilePath);
+            await _exportService.ExportPngSequenceAsync(CanvasViewModel.Canvas, folderPath, prefix, scale: 1);
+            StatusMessage = $"Exported PNG Sequence to {Path.GetFileName(folderPath)}";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"PNG Sequence Export error: {ex.Message}";
         }
     }
 

@@ -69,7 +69,7 @@ public class PencilTool : ITool
 
         if (_deltas.Count > 0)
         {
-            var command = new DrawPixelsCommand(ctx.ActiveLayer, _deltas.ToArray(), "Pencil Stroke");
+            var command = new DrawPixelsCommand(ctx.ActiveLayer, _deltas.ToArray(), ctx.Canvas, ctx.Canvas?.CurrentFrameIndex, "Pencil Stroke");
             ctx.History.ExecuteCommand(command);
         }
 

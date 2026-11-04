@@ -11,6 +11,7 @@ public partial class PixelCanvas : ObservableObject
     private Layer? _activeLayer;
     private int _width;
     private int _height;
+    private int _currentFrameIndex;
 
     public int Width
     {
@@ -25,6 +26,41 @@ public partial class PixelCanvas : ObservableObject
     }
 
     public ObservableCollection<Layer> Layers { get; } = new();
+
+    /// <summary>
+    /// Gets the collection of animation frames in the timeline.
+    /// </summary>
+    public ObservableCollection<AnimationFrame> Frames { get; } = new();
+
+    /// <summary>
+    /// Gets the collection of animation tags grouping frame ranges.
+    /// </summary>
+    public ObservableCollection<AnimationTag> Tags { get; } = new();
+
+    /// <summary>
+    /// Gets the onion skinning overlay configuration.
+    /// </summary>
+    public OnionSkinSettings OnionSkin { get; } = new();
+
+    /// <summary>
+    /// Gets or sets the active frame index (0-based) in the animation timeline.
+    /// Setting this property automatically switches to the frame and swaps cel pixel buffers.
+    /// </summary>
+    public int CurrentFrameIndex
+    {
+        get => _currentFrameIndex;
+        set => SwitchToFrame(value);
+    }
+
+    /// <summary>
+    /// Gets the currently active animation frame, or null if no frames exist.
+    /// </summary>
+    public AnimationFrame? CurrentFrame => (uint)_currentFrameIndex < (uint)Frames.Count ? Frames[_currentFrameIndex] : null;
+
+    /// <summary>
+    /// Event raised when the current animation frame index changes.
+    /// </summary>
+    public event Action<int>? FrameChanged;
 
     /// <summary>
     /// Event raised when any layer's pixels or layer composition changes.
@@ -61,10 +97,11 @@ public partial class PixelCanvas : ObservableObject
         Layers.Add(defaultLayer);
         ActiveLayer = defaultLayer;
         InitializeLayerEvents();
+        InitializeAnimationTimeline();
     }
 
     /// <summary>
-    /// Updates the canvas dimensions during a resize operation.
+    /// Updates the canvas dimensions during a resize operation, adjusting all layer buffers and animation cels across all frames.
     /// </summary>
     public void SetDimensions(int newWidth, int newHeight)
     {
@@ -78,8 +115,79 @@ public partial class PixelCanvas : ObservableObject
             throw new ArgumentOutOfRangeException(nameof(newHeight), "Height must be greater than zero.");
         }
 
+        int oldWidth = Width;
+        int oldHeight = Height;
+
         Width = newWidth;
         Height = newHeight;
+
+        if (oldWidth == newWidth && oldHeight == newHeight)
+        {
+            InvalidateComposite();
+            return;
+        }
+
+        int copyW = Math.Min(oldWidth, newWidth);
+        int copyH = Math.Min(oldHeight, newHeight);
+
+        // Resize cels across all frames
+        foreach (var frame in Frames)
+        {
+            foreach (var layer in Layers)
+            {
+                if (!frame.Cels.TryGetValue(layer.Id, out var cel))
+                {
+                    cel = new AnimationCel(layer.Id, newWidth, newHeight);
+                    frame.Cels[layer.Id] = cel;
+                }
+                else if (frame == CurrentFrame && layer.Pixels.Length == newWidth * newHeight)
+                {
+                    // Active layer buffer has already been resized (e.g., via SetDimensionsAndPixels in ResizeCanvasCommand)
+                    if (cel.Pixels != layer.Pixels)
+                    {
+                        cel.SetPixels(layer.Pixels, cel.IsEmpty);
+                    }
+                }
+                else if (cel.Pixels.Length != newWidth * newHeight)
+                {
+                    var oldPixels = cel.Pixels;
+                    var newPixels = new PixelColor[newWidth * newHeight];
+                    if (oldPixels.Length == oldWidth * oldHeight)
+                    {
+                        for (int y = 0; y < copyH; y++)
+                        {
+                            Array.Copy(oldPixels, y * oldWidth, newPixels, y * newWidth, copyW);
+                        }
+                    }
+                    cel.SetPixels(newPixels);
+                    cel.UpdateIsEmpty();
+                }
+            }
+        }
+
+        // Ensure layers also match new dimensions
+        foreach (var layer in Layers)
+        {
+            if (layer.Width != newWidth || layer.Height != newHeight || layer.Pixels.Length != newWidth * newHeight)
+            {
+                if (CurrentFrame != null && CurrentFrame.Cels.TryGetValue(layer.Id, out var activeCel))
+                {
+                    layer.SetDimensionsAndPixels(newWidth, newHeight, activeCel.Pixels);
+                }
+                else
+                {
+                    var newPixels = new PixelColor[newWidth * newHeight];
+                    int copyLayerW = Math.Min(layer.Width, newWidth);
+                    int copyLayerH = Math.Min(layer.Height, newHeight);
+                    for (int y = 0; y < copyLayerH; y++)
+                    {
+                        Array.Copy(layer.Pixels, y * layer.Width, newPixels, y * newWidth, copyLayerW);
+                    }
+                    layer.SetDimensionsAndPixels(newWidth, newHeight, newPixels);
+                }
+            }
+        }
+
         InvalidateComposite();
     }
 
@@ -115,6 +223,7 @@ public partial class PixelCanvas : ObservableObject
             Layers.Add(defaultLayer);
             ActiveLayer = defaultLayer;
             InitializeLayerEvents();
+            InitializeAnimationTimeline();
         }
         else
         {
@@ -122,6 +231,7 @@ public partial class PixelCanvas : ObservableObject
                 ? activeLayer
                 : Layers[^1];
             InitializeLayerEvents();
+            InitializeAnimationTimeline();
         }
     }
 
@@ -202,6 +312,10 @@ public partial class PixelCanvas : ObservableObject
     /// <summary>
     /// Merges the layer at index with the layer directly beneath it (index - 1).
     /// </summary>
+    /// <summary>
+    /// Merges the layer at index with the layer directly beneath it (index - 1).
+    /// Blends cels across all animation frames in the timeline.
+    /// </summary>
     public Layer MergeLayerDown(int index)
     {
         if (index <= 0 || index >= Layers.Count)
@@ -212,15 +326,27 @@ public partial class PixelCanvas : ObservableObject
         var topLayer = Layers[index];
         var bottomLayer = Layers[index - 1];
 
-        // Bake composite into bottom layer
         float topOpacity = topLayer.IsVisible ? topLayer.Opacity : 0f;
         float botOpacity = bottomLayer.IsVisible ? bottomLayer.Opacity : 0f;
 
-        for (int i = 0; i < bottomLayer.Pixels.Length; i++)
+        // Blend cels across all frames in the timeline
+        foreach (var frame in Frames)
         {
-            var botPixel = bottomLayer.Pixels[i];
-            var topPixel = topLayer.Pixels[i];
-            bottomLayer.Pixels[i] = BlendColors(botPixel, botOpacity, topPixel, topOpacity);
+            if (!frame.Cels.TryGetValue(bottomLayer.Id, out var botCel))
+            {
+                botCel = new AnimationCel(bottomLayer.Id, Width, Height);
+                frame.Cels[bottomLayer.Id] = botCel;
+            }
+
+            if (frame.Cels.TryGetValue(topLayer.Id, out var topCel))
+            {
+                int len = Math.Min(botCel.Pixels.Length, topCel.Pixels.Length);
+                for (int i = 0; i < len; i++)
+                {
+                    botCel.Pixels[i] = BlendColors(botCel.Pixels[i], botOpacity, topCel.Pixels[i], topOpacity);
+                }
+                botCel.UpdateIsEmpty();
+            }
         }
 
         bottomLayer.Opacity = 1.0f;
@@ -388,6 +514,238 @@ public partial class PixelCanvas : ObservableObject
         InvalidateComposite();
     }
 
+    /// <summary>
+    /// Switches the active animation frame, updating all layer pixel buffers via zero-allocation reference swapping.
+    /// </summary>
+    /// <param name="index">Target frame index.</param>
+    public void SwitchToFrame(int index)
+    {
+        if (Frames.Count == 0)
+        {
+            return;
+        }
+
+        index = Math.Clamp(index, 0, Frames.Count - 1);
+        var targetFrame = Frames[index];
+
+        for (int i = 0; i < Layers.Count; i++)
+        {
+            var layer = Layers[i];
+            if (!targetFrame.Cels.TryGetValue(layer.Id, out var cel))
+            {
+                cel = new AnimationCel(layer.Id, Width, Height);
+                targetFrame.Cels[layer.Id] = cel;
+            }
+
+            if (cel.Pixels.Length != Width * Height)
+            {
+                cel.SetPixels(new PixelColor[Width * Height], true);
+            }
+
+            layer.SetPixelsDirect(cel.Pixels);
+        }
+
+        SetProperty(ref _currentFrameIndex, index, nameof(CurrentFrameIndex));
+        OnPropertyChanged(nameof(CurrentFrame));
+        InvalidateComposite();
+        FrameChanged?.Invoke(index);
+    }
+
+    /// <summary>
+    /// Adds a new animation frame with empty cels for all layers and switches to it.
+    /// </summary>
+    /// <param name="insertIndex">Optional 0-based insertion index; if null, appends to the end.</param>
+    /// <param name="durationMs">Frame duration in milliseconds (default: 100ms).</param>
+    /// <returns>The newly created <see cref="AnimationFrame"/>.</returns>
+    public AnimationFrame AddFrame(int? insertIndex = null, int durationMs = 100)
+    {
+        var frame = new AnimationFrame(durationMs);
+        foreach (var layer in Layers)
+        {
+            frame.Cels[layer.Id] = new AnimationCel(layer.Id, Width, Height);
+        }
+
+        int targetIndex = insertIndex.HasValue
+            ? Math.Clamp(insertIndex.Value, 0, Frames.Count)
+            : Frames.Count;
+
+        Frames.Insert(targetIndex, frame);
+        SwitchToFrame(targetIndex);
+        return frame;
+    }
+
+    /// <summary>
+    /// Duplicates an existing frame by deep-copying its cels, inserts it immediately after the source frame, and switches to it.
+    /// </summary>
+    /// <param name="sourceIndex">Index of the frame to duplicate.</param>
+    /// <returns>The newly cloned <see cref="AnimationFrame"/>.</returns>
+    public AnimationFrame DuplicateFrame(int sourceIndex)
+    {
+        if (sourceIndex < 0 || sourceIndex >= Frames.Count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(sourceIndex), "Source frame index is out of range.");
+        }
+
+        var sourceFrame = Frames[sourceIndex];
+        var newFrame = new AnimationFrame(sourceFrame.DurationMs);
+
+        foreach (var layer in Layers)
+        {
+            if (sourceFrame.Cels.TryGetValue(layer.Id, out var sourceCel))
+            {
+                var pixelsCopy = new PixelColor[sourceCel.Pixels.Length];
+                Array.Copy(sourceCel.Pixels, pixelsCopy, sourceCel.Pixels.Length);
+                newFrame.Cels[layer.Id] = new AnimationCel(layer.Id, pixelsCopy, sourceCel.IsEmpty);
+            }
+            else
+            {
+                newFrame.Cels[layer.Id] = new AnimationCel(layer.Id, Width, Height);
+            }
+        }
+
+        int targetIndex = sourceIndex + 1;
+        Frames.Insert(targetIndex, newFrame);
+        SwitchToFrame(targetIndex);
+        return newFrame;
+    }
+
+    /// <summary>
+    /// Removes the frame at the specified index. Ensures at least one frame always remains in the timeline.
+    /// </summary>
+    /// <param name="index">Index of the frame to remove.</param>
+    /// <returns>True if the frame was successfully removed; otherwise false.</returns>
+    public bool RemoveFrame(int index)
+    {
+        if (Frames.Count <= 1 || index < 0 || index >= Frames.Count)
+        {
+            return false;
+        }
+
+        Frames.RemoveAt(index);
+
+        // Clamp tag frame bounds to remaining frames
+        foreach (var tag in Tags)
+        {
+            tag.FromFrame = Math.Clamp(tag.FromFrame, 0, Frames.Count - 1);
+            tag.ToFrame = Math.Clamp(tag.ToFrame, 0, Frames.Count - 1);
+        }
+
+        int targetIndex;
+        if (CurrentFrameIndex == index)
+        {
+            targetIndex = Math.Min(CurrentFrameIndex, Frames.Count - 1);
+        }
+        else if (CurrentFrameIndex > index)
+        {
+            targetIndex = CurrentFrameIndex - 1;
+        }
+        else
+        {
+            targetIndex = CurrentFrameIndex;
+        }
+
+        SwitchToFrame(targetIndex);
+        return true;
+    }
+
+    /// <summary>
+    /// Adds an animation tag grouping a range of frames.
+    /// </summary>
+    public AnimationTag AddTag(string name, int fromFrame, int toFrame, PixelColor? color = null, AnimationLoopMode loopMode = AnimationLoopMode.Forward, int repeatCount = 0)
+    {
+        int maxFrame = Math.Max(0, Frames.Count - 1);
+        var tag = new AnimationTag
+        {
+            Name = name,
+            FromFrame = Math.Clamp(fromFrame, 0, maxFrame),
+            ToFrame = Math.Clamp(toFrame, 0, maxFrame),
+            Color = color ?? new PixelColor(0x4A, 0x90, 0xE2, 0xFF),
+            LoopMode = loopMode,
+            RepeatCount = repeatCount
+        };
+        Tags.Add(tag);
+        return tag;
+    }
+
+    /// <summary>
+    /// Computes the flattened composite image for a specific animation frame without changing the active frame.
+    /// </summary>
+    /// <param name="frameIndex">0-based frame index to composite.</param>
+    /// <param name="destination">Optional destination buffer. If null or wrong size, a new array is allocated.</param>
+    /// <param name="singleLayerId">Optional layer ID. If specified, only that layer's cel is composited.</param>
+    /// <returns>Pixel array with composite colors.</returns>
+    public PixelColor[] GetFrameCompositePixels(int frameIndex, PixelColor[]? destination = null, Guid? singleLayerId = null)
+    {
+        if (frameIndex < 0 || frameIndex >= Frames.Count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(frameIndex));
+        }
+
+        int totalPixels = Width * Height;
+        if (destination == null || destination.Length != totalPixels)
+        {
+            destination = new PixelColor[totalPixels];
+        }
+        else
+        {
+            Array.Clear(destination, 0, totalPixels);
+        }
+
+        var frame = Frames[frameIndex];
+
+        for (int layerIdx = 0; layerIdx < Layers.Count; layerIdx++)
+        {
+            var layer = Layers[layerIdx];
+            if (!layer.IsVisible || layer.Opacity <= 0f)
+            {
+                continue;
+            }
+
+            if (singleLayerId.HasValue && layer.Id != singleLayerId.Value)
+            {
+                continue;
+            }
+
+            if (!frame.Cels.TryGetValue(layer.Id, out var cel))
+            {
+                continue;
+            }
+
+            float layerOpacity = layer.Opacity;
+            var celPixels = cel.Pixels;
+
+            for (int p = 0; p < totalPixels; p++)
+            {
+                var srcPixel = celPixels[p];
+                if (srcPixel.A == 0)
+                {
+                    continue;
+                }
+
+                var dstPixel = destination[p];
+                destination[p] = BlendColors(dstPixel, 1.0f, srcPixel, layerOpacity);
+            }
+        }
+
+        return destination;
+    }
+
+    private void InitializeAnimationTimeline()
+    {
+        OnionSkin.PropertyChanged += (_, _) => InvalidateComposite();
+
+        if (Frames.Count == 0)
+        {
+            var initialFrame = new AnimationFrame(100);
+            foreach (var layer in Layers)
+            {
+                initialFrame.Cels[layer.Id] = new AnimationCel(layer.Id, layer.Pixels);
+            }
+            Frames.Add(initialFrame);
+            _currentFrameIndex = 0;
+        }
+    }
+
     private void OnLayersCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {
         if (e.OldItems != null)
@@ -395,6 +753,11 @@ public partial class PixelCanvas : ObservableObject
             foreach (Layer oldLayer in e.OldItems)
             {
                 UnhookLayerEvents(oldLayer);
+
+                foreach (var frame in Frames)
+                {
+                    frame.Cels.Remove(oldLayer.Id);
+                }
             }
         }
 
@@ -403,6 +766,21 @@ public partial class PixelCanvas : ObservableObject
             foreach (Layer newLayer in e.NewItems)
             {
                 HookLayerEvents(newLayer);
+
+                foreach (var frame in Frames)
+                {
+                    if (!frame.Cels.ContainsKey(newLayer.Id))
+                    {
+                        if (frame == CurrentFrame)
+                        {
+                            frame.Cels[newLayer.Id] = new AnimationCel(newLayer.Id, newLayer.Pixels);
+                        }
+                        else
+                        {
+                            frame.Cels[newLayer.Id] = new AnimationCel(newLayer.Id, Width, Height);
+                        }
+                    }
+                }
             }
         }
 

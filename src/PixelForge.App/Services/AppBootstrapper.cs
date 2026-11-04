@@ -139,7 +139,10 @@ public class AppBootstrapper
             typeof(ClipboardService),
             typeof(FileDialogService),
             typeof(MainWindow),
-            typeof(LivePreviewControl)
+            typeof(LivePreviewControl),
+            typeof(PlaybackService),
+            typeof(AnimationPreviewViewModel),
+            typeof(AnimationPreviewWindow)
         ];
 
         foreach (var type in appTypes)
@@ -156,6 +159,7 @@ public class AppBootstrapper
         services.AddSingleton<IFileDialogService, FileDialogService>();
         services.AddSingleton<IClipboardService, ClipboardService>();
         services.AddSingleton<IUpdateService, UpdateService>();
+        services.AddSingleton<IPlaybackService, PlaybackService>();
         services.AddSingleton<IMemoryPreloadService>(_ => MemoryPreloadService.Instance);
         services.AddSingleton<ICrashReportService>(_ => CrashReportService.Instance);
         services.AddSingleton<ThemeService>();

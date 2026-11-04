@@ -16,4 +16,11 @@ public interface IExportService
     Task ExportBmpAsync(PixelCanvas canvas, Stream destinationStream, int scale = 1, CancellationToken cancellationToken = default);
     Task ExportBmpAsync(PixelColor[] pixels, int width, int height, string filePath, int scale = 1, CancellationToken cancellationToken = default);
     Task ExportBmpAsync(PixelColor[] pixels, int width, int height, Stream destinationStream, int scale = 1, CancellationToken cancellationToken = default);
+
+    Task ExportGifAsync(PixelCanvas canvas, string filePath, int scale = 1, CancellationToken cancellationToken = default);
+    Task ExportGifAsync(PixelCanvas canvas, Stream destinationStream, int scale = 1, CancellationToken cancellationToken = default);
+
+    Task ExportSpritesheetAsync(PixelCanvas canvas, string imagePath, string? jsonPath, SpritesheetSettings settings, CancellationToken cancellationToken = default);
+
+    Task ExportPngSequenceAsync(PixelCanvas canvas, string outputDirectory, string prefix, int scale = 1, CancellationToken cancellationToken = default);
 }

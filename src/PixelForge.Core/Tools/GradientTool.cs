@@ -159,7 +159,7 @@ public class GradientTool : ITool
 
         if (deltas.Count > 0)
         {
-            var command = new DrawPixelsCommand(ctx.ActiveLayer, deltas.ToArray(), "Gradient Fill");
+            var command = new DrawPixelsCommand(ctx.ActiveLayer, deltas.ToArray(), ctx.Canvas, ctx.Canvas?.CurrentFrameIndex, "Gradient Fill");
             ctx.History.ExecuteCommand(command);
         }
     }

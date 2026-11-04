@@ -21,7 +21,12 @@ public interface IFileDialogService
     Task<string?> ShowSaveProjectDialogAsync(string? defaultFileName = null);
 
     /// <summary>
-    /// Shows the file save dialog for exporting images (PNG or BMP).
+    /// Shows the file save dialog for exporting images (PNG, BMP, GIF).
     /// </summary>
     Task<string?> ShowExportImageDialogAsync(string defaultExtension = "png", string? defaultFileName = null);
+
+    /// <summary>
+    /// Shows the folder picker dialog for exporting image sequences.
+    /// </summary>
+    Task<string?> ShowExportFolderDialogAsync(string? title = null);
 }

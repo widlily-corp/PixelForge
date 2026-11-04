@@ -183,7 +183,7 @@ public class SprayBrushTool : ITool
 
         if (_deltas.Count > 0)
         {
-            var command = new DrawPixelsCommand(ctx.ActiveLayer, _deltas.ToArray(), "Spray Brush Stroke");
+            var command = new DrawPixelsCommand(ctx.ActiveLayer, _deltas.ToArray(), ctx.Canvas, ctx.Canvas?.CurrentFrameIndex, "Spray Brush Stroke");
             ctx.History.ExecuteCommand(command);
         }
 

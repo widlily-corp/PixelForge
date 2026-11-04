@@ -66,7 +66,7 @@ public class EraserTool : ITool
 
         if (_deltas.Count > 0)
         {
-            var command = new DrawPixelsCommand(ctx.ActiveLayer, _deltas.ToArray(), "Erase Pixels");
+            var command = new DrawPixelsCommand(ctx.ActiveLayer, _deltas.ToArray(), ctx.Canvas, ctx.Canvas?.CurrentFrameIndex, "Erase Pixels");
             ctx.History.ExecuteCommand(command);
         }
 

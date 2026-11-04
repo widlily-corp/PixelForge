@@ -1201,6 +1201,16 @@
                             </controls:PixelCanvasControl.ContextMenu>
                         </controls:PixelCanvasControl>
                     </Grid>
+
+                    <!-- GridSplitter between Canvas and Timeline -->
+                    <GridSplitter Grid.Row="2" Height="4" Background="Transparent"
+                                  ResizeDirection="Rows" ShowsPreview="False"
+                                  IsVisible="{Binding !TimelineViewModel.IsCollapsed}" />
+
+                    <!-- Bottom Timeline Dock -->
+                    <views:TimelineControl Grid.Row="3" DataContext="{Binding TimelineViewModel}"
+                                           Height="{Binding TimelineViewModel.TimelineHeight, Mode=TwoWay}"
+                                           MinHeight="80" MaxHeight="350" />
                 </Grid>
             </Border>
 

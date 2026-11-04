@@ -89,9 +89,9 @@ public class ProjectService : IProjectService
     {
         ArgumentNullException.ThrowIfNull(project);
 
-        if (project.FormatVersion != 1)
+        if (project.FormatVersion is < 1 or > 2)
         {
-            throw new InvalidDataException($"Unsupported project format version: {project.FormatVersion}. Expected: 1.");
+            throw new InvalidDataException($"Unsupported project format version: {project.FormatVersion}. Expected: 1 or 2.");
         }
 
         if (project.Width <= 0 || project.Height <= 0)
@@ -119,16 +119,63 @@ public class ProjectService : IProjectService
                 throw new InvalidDataException($"Layer at index {i} is null.");
             }
 
-            if (layer.Pixels == null || layer.Pixels.Length != expectedByteCount)
+            if (layer.Pixels == null || layer.Pixels.Length == 0)
+            {
+                if (project.FormatVersion == 2 && project.Frames is { Count: > 0 })
+                {
+                    layer.Pixels = new byte[expectedByteCount];
+                }
+                else
+                {
+                    throw new InvalidDataException(
+                        $"Layer '{layer.Name}' (index {i}) has invalid pixel buffer size: 0 bytes. Expected: {expectedByteCount} bytes.");
+                }
+            }
+            else if (layer.Pixels.Length != expectedByteCount)
             {
                 throw new InvalidDataException(
-                    $"Layer '{layer.Name}' (index {i}) has invalid pixel buffer size: {layer.Pixels?.Length ?? 0} bytes. Expected: {expectedByteCount} bytes.");
+                    $"Layer '{layer.Name}' (index {i}) has invalid pixel buffer size: {layer.Pixels.Length} bytes. Expected: {expectedByteCount} bytes.");
             }
         }
 
         if (project.ActiveLayerIndex < 0 || project.ActiveLayerIndex >= project.Layers.Count)
         {
             project.ActiveLayerIndex = Math.Clamp(project.ActiveLayerIndex, 0, project.Layers.Count - 1);
+        }
+
+        if (project.Frames != null)
+        {
+            for (int f = 0; f < project.Frames.Count; f++)
+            {
+                var frame = project.Frames[f];
+                if (frame == null)
+                {
+                    throw new InvalidDataException($"Frame at index {f} is null.");
+                }
+
+                if (frame.Cels != null)
+                {
+                    for (int c = 0; c < frame.Cels.Count; c++)
+                    {
+                        var cel = frame.Cels[c];
+                        if (cel == null)
+                        {
+                            throw new InvalidDataException($"Cel at index {c} in frame {f} is null.");
+                        }
+
+                        if (cel.Pixels != null && cel.Pixels.Length > 0 && cel.Pixels.Length != expectedByteCount)
+                        {
+                            throw new InvalidDataException(
+                                $"Cel for layer '{cel.LayerId}' on frame {f} has invalid pixel buffer size: {cel.Pixels.Length} bytes. Expected: {expectedByteCount} bytes.");
+                        }
+                    }
+                }
+            }
+
+            if (project.Frames.Count > 0)
+            {
+                project.ActiveFrameIndex = Math.Clamp(project.ActiveFrameIndex, 0, project.Frames.Count - 1);
+            }
         }
     }
 }

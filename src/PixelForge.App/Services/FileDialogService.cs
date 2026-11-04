@@ -29,6 +29,11 @@ public class FileDialogService : IFileDialogService
         Patterns = new[] { "*.bmp" }
     };
 
+    private static readonly FilePickerFileType GifFileType = new("Animated GIF (*.gif)")
+    {
+        Patterns = new[] { "*.gif" }
+    };
+
     private static IStorageProvider? GetStorageProvider()
     {
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
@@ -103,19 +108,42 @@ public class FileDialogService : IFileDialogService
         }
 
         bool isBmp = string.Equals(defaultExtension, "bmp", StringComparison.OrdinalIgnoreCase);
+        bool isGif = string.Equals(defaultExtension, "gif", StringComparison.OrdinalIgnoreCase);
 
-        var choices = isBmp
-            ? new[] { BmpFileType, PngFileType, FilePickerFileTypes.All }
-            : new[] { PngFileType, BmpFileType, FilePickerFileTypes.All };
+        var choices = isGif
+            ? new[] { GifFileType, PngFileType, FilePickerFileTypes.All }
+            : isBmp
+                ? new[] { BmpFileType, PngFileType, FilePickerFileTypes.All }
+                : new[] { PngFileType, BmpFileType, FilePickerFileTypes.All };
+
+        string ext = isGif ? "gif" : (isBmp ? "bmp" : "png");
+        string defaultName = defaultFileName ?? (isGif ? "animation.gif" : (isBmp ? "export.bmp" : "export.png"));
 
         var file = await storage.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            Title = "Export Canvas Image",
-            DefaultExtension = isBmp ? "bmp" : "png",
-            SuggestedFileName = defaultFileName ?? (isBmp ? "export.bmp" : "export.png"),
+            Title = isGif ? "Export Animated GIF" : "Export Canvas Image",
+            DefaultExtension = ext,
+            SuggestedFileName = defaultName,
             FileTypeChoices = choices
         }).ConfigureAwait(false);
 
         return file?.Path.LocalPath;
+    }
+
+    public async Task<string?> ShowExportFolderDialogAsync(string? title = null)
+    {
+        var storage = GetStorageProvider();
+        if (storage == null)
+        {
+            return null;
+        }
+
+        var folders = await storage.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = title ?? "Select Export Folder",
+            AllowMultiple = false
+        }).ConfigureAwait(false);
+
+        return folders.Count > 0 ? folders[0].Path.LocalPath : null;
     }
 }

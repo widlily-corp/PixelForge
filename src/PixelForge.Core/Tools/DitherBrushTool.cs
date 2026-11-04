@@ -66,7 +66,7 @@ public class DitherBrushTool : ITool
 
         if (_deltas.Count > 0)
         {
-            var command = new DrawPixelsCommand(ctx.ActiveLayer, _deltas.ToArray(), "Dither Stroke");
+            var command = new DrawPixelsCommand(ctx.ActiveLayer, _deltas.ToArray(), ctx.Canvas, ctx.Canvas?.CurrentFrameIndex, "Dither Stroke");
             ctx.History.ExecuteCommand(command);
         }
 

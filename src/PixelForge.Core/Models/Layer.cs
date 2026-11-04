@@ -145,6 +145,23 @@ public partial class Layer : ObservableObject
     }
 
     /// <summary>
+    /// Directly updates the pixel buffer reference (used for zero-allocation cel buffer swapping in animation frames).
+    /// </summary>
+    /// <param name="pixels">The pixel array from the target animation cel.</param>
+    public void SetPixelsDirect(PixelColor[] pixels)
+    {
+        ArgumentNullException.ThrowIfNull(pixels);
+
+        if (pixels.Length != Width * Height)
+        {
+            throw new ArgumentException($"Pixel array length ({pixels.Length}) does not match layer dimensions ({Width}x{Height} = {Width * Height}).", nameof(pixels));
+        }
+
+        Pixels = pixels;
+        OnPropertyChanged(nameof(Pixels));
+    }
+
+    /// <summary>
     /// Gets the color of the pixel at the specified coordinates.
     /// Returns Transparent if coordinates are out of bounds.
     /// </summary>

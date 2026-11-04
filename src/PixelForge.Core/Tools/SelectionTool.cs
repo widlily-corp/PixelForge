@@ -314,7 +314,7 @@ public class SelectionTool : ITool
 
         if (deltas.Count > 0)
         {
-            var command = new DrawPixelsCommand(ctx.ActiveLayer, deltas.ToArray(), "Delete Selection");
+            var command = new DrawPixelsCommand(ctx.ActiveLayer, deltas.ToArray(), ctx.Canvas, ctx.Canvas?.CurrentFrameIndex, "Delete Selection");
             ctx.History.ExecuteCommand(command);
         }
 
@@ -355,7 +355,7 @@ public class SelectionTool : ITool
 
         if (deltas.Count > 0)
         {
-            var command = new DrawPixelsCommand(ctx.ActiveLayer, deltas.ToArray(), "Lift Selection");
+            var command = new DrawPixelsCommand(ctx.ActiveLayer, deltas.ToArray(), ctx.Canvas, ctx.Canvas?.CurrentFrameIndex, "Lift Selection");
             ctx.History.ExecuteCommand(command);
         }
     }
@@ -400,7 +400,7 @@ public class SelectionTool : ITool
 
         if (deltas.Count > 0)
         {
-            var command = new DrawPixelsCommand(ctx.ActiveLayer, deltas.ToArray(), "Stamp Floating Selection");
+            var command = new DrawPixelsCommand(ctx.ActiveLayer, deltas.ToArray(), ctx.Canvas, ctx.Canvas?.CurrentFrameIndex, "Stamp Floating Selection");
             ctx.History.ExecuteCommand(command);
         }
     }

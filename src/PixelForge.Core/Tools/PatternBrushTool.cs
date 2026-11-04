@@ -159,7 +159,7 @@ public class PatternBrushTool : ITool
 
         if (_deltas.Count > 0)
         {
-            var command = new DrawPixelsCommand(ctx.ActiveLayer, _deltas.ToArray(), "Pattern Brush Stroke");
+            var command = new DrawPixelsCommand(ctx.ActiveLayer, _deltas.ToArray(), ctx.Canvas, ctx.Canvas?.CurrentFrameIndex, "Pattern Brush Stroke");
             ctx.History.ExecuteCommand(command);
         }
 

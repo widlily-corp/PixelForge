@@ -1,0 +1,199 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:PixelForge.App.ViewModels"
+             xmlns:models="using:PixelForge.Core.Models"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="180"
+             x:Class="PixelForge.App.Views.TimelineControl"
+             x:DataType="vm:TimelineViewModel"
+             Background="{DynamicResource SurfacePanelBrush}">
+
+    <UserControl.Styles>
+        <Style Selector="Button.transport-btn">
+            <Setter Property="Width" Value="30" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.transport-btn:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+        </Style>
+        <Style Selector="Button.transport-btn:pressed">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardSelectedBrush}" />
+        </Style>
+        <Style Selector="ToggleButton.transport-toggle-btn">
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="8,2" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="ToggleButton.transport-toggle-btn:checked">
+            <Setter Property="Background" Value="{DynamicResource AccentGlowBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+        </Style>
+
+        <!-- Frame Card Style -->
+        <Style Selector="Border.frame-card">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+            <Setter Property="BorderThickness" Value="1.5" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.12" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.12" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.frame-card:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource TextSecondaryBrush}" />
+        </Style>
+        <Style Selector="Border.frame-card.active">
+            <Setter Property="Background" Value="{DynamicResource AccentGlowBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- 1. Top Transport Toolbar -->
+        <Border Grid.Row="0" Background="{DynamicResource SurfaceCardBrush}" 
+                BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,0,0,1"
+                Padding="6,4">
+            <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto">
+                <!-- Playback Group -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                    <Button Classes="transport-btn" Command="{Binding FirstFrameCommand}" ToolTip.Tip="First Frame (Home)">
+                        <TextBlock Text="⏮" FontSize="11" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    </Button>
+                    <Button Classes="transport-btn" Command="{Binding StepBackwardCommand}" ToolTip.Tip="Step Backward (,)">
+                        <PathIcon Data="{DynamicResource IconStepBackward}" Width="12" Height="12" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    </Button>
+                    <ToggleButton Classes="transport-toggle-btn" IsChecked="{Binding IsPlaying, Mode=OneWay}" 
+                                  Command="{Binding TogglePlayCommand}" ToolTip.Tip="Play / Pause (Space)">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <PathIcon Data="{DynamicResource IconPlay}" Width="11" Height="11" 
+                                      IsVisible="{Binding !IsPlaying}" Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <PathIcon Data="{DynamicResource IconPause}" Width="11" Height="11" 
+                                      IsVisible="{Binding IsPlaying}" Foreground="{DynamicResource AccentPrimaryBrush}" />
+                        </StackPanel>
+                    </ToggleButton>
+                    <Button Classes="transport-btn" Command="{Binding StepForwardCommand}" ToolTip.Tip="Step Forward (.)">
+                        <PathIcon Data="{DynamicResource IconStepForward}" Width="12" Height="12" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    </Button>
+                    <Button Classes="transport-btn" Command="{Binding LastFrameCommand}" ToolTip.Tip="Last Frame (End)">
+                        <TextBlock Text="⏭" FontSize="11" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    </Button>
+                    <ToggleButton Classes="transport-toggle-btn" IsChecked="{Binding IsLooping}" ToolTip.Tip="Loop Animation">
+                        <PathIcon Data="{DynamicResource IconLoop}" Width="12" Height="12" />
+                    </ToggleButton>
+                </StackPanel>
+
+                <Rectangle Grid.Column="1" Width="1" Height="18" Fill="{DynamicResource BorderSubtleBrush}" Margin="8,0" VerticalAlignment="Center" />
+
+                <!-- Frame Info & Duration Stepper -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <Border Background="{DynamicResource SurfacePanelBrush}" CornerRadius="4" Padding="6,2" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
+                        <TextBlock Text="{Binding FrameDisplayNumber}" FontSize="11" FontWeight="SemiBold" 
+                                   Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock Text="Duration:" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                    <NumericUpDown Value="{Binding CurrentFrameDurationMs}" Minimum="10" Maximum="5000" Increment="10" 
+                                   FormatString="{}{0} ms" Width="100" Height="26" FontSize="11" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <Rectangle Grid.Column="3" Width="1" Height="18" Fill="{DynamicResource BorderSubtleBrush}" Margin="8,0" VerticalAlignment="Center" />
+
+                <!-- Frame Operations & Onion Skin -->
+                <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                    <Button Classes="transport-btn" Command="{Binding AddFrameCommand}" ToolTip.Tip="Add Frame (F6 / Alt+N)" Width="74">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="+" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource AccentPrimaryBrush}" />
+                            <TextBlock Text="Frame" FontSize="11" Foreground="{DynamicResource TextPrimaryBrush}" />
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="transport-btn" Command="{Binding DuplicateFrameCommand}" ToolTip.Tip="Duplicate Frame (F5)" Width="70">
+                        <TextBlock Text="Clone" FontSize="11" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    </Button>
+                    <Button Classes="transport-btn" Command="{Binding DeleteFrameCommand}" ToolTip.Tip="Delete Frame (Del)" Width="32">
+                        <TextBlock Text="✕" FontSize="11" Foreground="#FF4D4D" />
+                    </Button>
+
+                    <ToggleButton Classes="transport-toggle-btn" IsChecked="{Binding IsOnionSkinEnabled}" ToolTip.Tip="Onion Skinning (O)">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <PathIcon Data="{DynamicResource IconEye}" Width="12" Height="12" />
+                            <TextBlock Text="Onion" FontSize="11" />
+                        </StackPanel>
+                    </ToggleButton>
+                </StackPanel>
+
+                <!-- Right Action Buttons: Mini-Preview & Collapse -->
+                <StackPanel Grid.Column="6" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                    <Button Classes="transport-btn" Command="{Binding OpenPreviewWindowCommand}" ToolTip.Tip="Open Floating Mini-Preview Window" Width="72">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <PathIcon Data="{DynamicResource IconZoomIn}" Width="11" Height="11" Foreground="{DynamicResource AccentPrimaryBrush}" />
+                            <TextBlock Text="Preview" FontSize="11" Foreground="{DynamicResource TextPrimaryBrush}" />
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="transport-btn" Command="{Binding ToggleCollapseCommand}" ToolTip.Tip="Collapse/Expand Timeline (Tab)">
+                        <TextBlock Text="{Binding IsCollapsed, Converter={x:Static StringConverters.IsNullOrEmpty}}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 2. Horizontal Scrollable Frames Matrix -->
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"
+                      IsVisible="{Binding !IsCollapsed}" Padding="8,6">
+            <ItemsControl ItemsSource="{Binding Frames}" x:Name="FramesItemsControl">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="6" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:AnimationFrame">
+                        <Border Classes="frame-card" Width="68" Height="96" Margin="0"
+                                PointerPressed="OnFrameCardPointerPressed"
+                                Tag="{Binding}">
+                            <Grid RowDefinitions="Auto,*,Auto" Margin="4">
+                                <!-- Top Frame Header -->
+                                <Border Grid.Row="0" Background="{DynamicResource SurfacePanelBrush}" CornerRadius="3" Padding="4,2">
+                                    <TextBlock Text="{Binding DurationMs, StringFormat='{}{0}ms'}" FontSize="9" 
+                                               Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" />
+                                </Border>
+
+                                <!-- Central Cel Thumbnail Area -->
+                                <Border Grid.Row="1" Background="#18181A" CornerRadius="4" Margin="0,4"
+                                        BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
+                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
+                                        <TextBlock Text="FRAME" FontSize="8" Foreground="#555566" HorizontalAlignment="Center" />
+                                        <Ellipse Width="10" Height="10" Fill="{DynamicResource AccentPrimaryBrush}" Opacity="0.8" HorizontalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Bottom Frame Index -->
+                                <TextBlock Grid.Row="2" FontSize="10" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center"
+                                           Text="{Binding Id, StringFormat='{}Frame'}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

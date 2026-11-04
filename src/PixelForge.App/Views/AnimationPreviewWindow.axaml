@@ -1,0 +1,268 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:PixelForge.App.ViewModels"
+        xmlns:loc="clr-namespace:PixelForge.Core.Localization;assembly=PixelForge.Core"
+        mc:Ignorable="d" d:DesignWidth="420" d:DesignHeight="460"
+        x:Class="PixelForge.App.Views.AnimationPreviewWindow"
+        x:DataType="vm:AnimationPreviewViewModel"
+        Title="{Binding [Dlg_AnimPreviewTitle], Source={x:Static loc:LocalizationService.Instance}}"
+        Width="420" Height="460"
+        MinWidth="320" MinHeight="340"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource SurfaceBaseBrush}">
+
+    <Window.Styles>
+        <!-- Toolbar Action Buttons -->
+        <Style Selector="Button.preview-btn">
+            <Setter Property="Background" Value="{DynamicResource SurfacePanelBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="6,4" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.preview-btn:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+        </Style>
+
+        <!-- Segmented Scale & Speed Buttons -->
+        <Style Selector="Button.seg-btn">
+            <Setter Property="Background" Value="{DynamicResource SurfacePanelBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Padding" Value="7,3" />
+            <Setter Property="Margin" Value="2,0" />
+            <Setter Property="Height" Value="24" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.seg-btn:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardHoverBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        </Style>
+        <Style Selector="Button.seg-btn.active">
+            <Setter Property="Background" Value="{DynamicResource AccentPrimaryBrush}" />
+            <Setter Property="Foreground" Value="#0A0E17" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+        </Style>
+
+        <Style Selector="ToggleButton.loop-btn">
+            <Setter Property="Background" Value="{DynamicResource SurfacePanelBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="6,4" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="ToggleButton.loop-btn:checked">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="10">
+
+        <!-- Top Mini-Toolbar -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource SurfaceCardBrush}"
+                BorderBrush="{DynamicResource BorderSubtleBrush}"
+                BorderThickness="1"
+                CornerRadius="6"
+                Padding="8,6"
+                Margin="0,0,0,8">
+            <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto">
+
+                <!-- Play / Pause Toggle Button -->
+                <Button Grid.Column="0"
+                        Classes="preview-btn"
+                        Command="{Binding TogglePlayCommand}"
+                        ToolTip.Tip="{Binding [AnimPreview_Play], Source={x:Static loc:LocalizationService.Instance}}"
+                        Margin="0,0,4,0">
+                    <Panel>
+                        <PathIcon Data="{DynamicResource IconPlay}" Width="12" Height="12"
+                                  IsVisible="{Binding !IsPlaying}"
+                                  Foreground="{DynamicResource AccentPrimaryBrush}" />
+                        <PathIcon Data="{DynamicResource IconPause}" Width="12" Height="12"
+                                  IsVisible="{Binding IsPlaying}"
+                                  Foreground="{DynamicResource AccentPrimaryBrush}" />
+                    </Panel>
+                </Button>
+
+                <!-- Step Backward Button -->
+                <Button Grid.Column="1"
+                        Classes="preview-btn"
+                        Command="{Binding StepBackwardCommand}"
+                        ToolTip.Tip="{Binding [AnimPreview_StepBackward], Source={x:Static loc:LocalizationService.Instance}}"
+                        Margin="0,0,4,0">
+                    <PathIcon Data="{DynamicResource IconStepBackward}" Width="12" Height="12" />
+                </Button>
+
+                <!-- Step Forward Button -->
+                <Button Grid.Column="2"
+                        Classes="preview-btn"
+                        Command="{Binding StepForwardCommand}"
+                        ToolTip.Tip="{Binding [AnimPreview_StepForward], Source={x:Static loc:LocalizationService.Instance}}"
+                        Margin="0,0,8,0">
+                    <PathIcon Data="{DynamicResource IconStepForward}" Width="12" Height="12" />
+                </Button>
+
+                <!-- Frame Counter / Duration Badge -->
+                <Border Grid.Column="3"
+                        Background="{DynamicResource SurfaceBaseBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="8,3"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                    <TextBlock Text="{Binding FrameCounterText}"
+                               FontSize="11"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
+                               FontFamily="Consolas, monospace" />
+                </Border>
+
+                <!-- Loop Toggle -->
+                <ToggleButton Grid.Column="4"
+                              Classes="loop-btn"
+                              IsChecked="{Binding IsLooping}"
+                              ToolTip.Tip="{Binding [AnimPreview_Loop], Source={x:Static loc:LocalizationService.Instance}}"
+                              Margin="4,0,0,0">
+                    <PathIcon Data="{DynamicResource IconLoop}" Width="12" Height="12" />
+                </ToggleButton>
+            </Grid>
+        </Border>
+
+        <!-- Viewport Area (Center) -->
+        <Border Grid.Row="1"
+                Background="{DynamicResource SurfaceBaseBrush}"
+                BorderBrush="{DynamicResource BorderSubtleBrush}"
+                BorderThickness="1"
+                CornerRadius="6"
+                ClipToBounds="True">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                <Panel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="16">
+                    <Border Name="CheckerContainer"
+                            BorderBrush="{DynamicResource BorderStrongBrush}"
+                            BorderThickness="1"
+                            BoxShadow="0 6 20 #30000000">
+                        <Panel Name="CheckerPanel">
+                            <!-- Background Checkerboard -->
+                            <Canvas Name="CheckerCanvas" IsHitTestVisible="False" />
+                            <!-- Nearest-Neighbor Scaled Pixel Art Image -->
+                            <Image Name="PreviewImage"
+                                   Stretch="None"
+                                   RenderOptions.BitmapInterpolationMode="None"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                        </Panel>
+                    </Border>
+                </Panel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Bottom Mini-Toolbar (Scale & Speed Controls) -->
+        <Border Grid.Row="2"
+                Background="{DynamicResource SurfaceCardBrush}"
+                BorderBrush="{DynamicResource BorderSubtleBrush}"
+                BorderThickness="1"
+                CornerRadius="6"
+                Padding="8,6"
+                Margin="0,8,0,0">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+
+                <!-- Scale Selector -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding [AnimPreview_Scale], Source={x:Static loc:LocalizationService.Instance}}"
+                               FontSize="11"
+                               Foreground="{DynamicResource TextMutedBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,6,0" />
+
+                    <Button Classes="seg-btn" Classes.active="{Binding IsScale1}" Content="1x"
+                            Command="{Binding SetScaleCommand}">
+                        <Button.CommandParameter>
+                            <x:Int32>1</x:Int32>
+                        </Button.CommandParameter>
+                    </Button>
+                    <Button Classes="seg-btn" Classes.active="{Binding IsScale2}" Content="2x"
+                            Command="{Binding SetScaleCommand}">
+                        <Button.CommandParameter>
+                            <x:Int32>2</x:Int32>
+                        </Button.CommandParameter>
+                    </Button>
+                    <Button Classes="seg-btn" Classes.active="{Binding IsScale3}" Content="3x"
+                            Command="{Binding SetScaleCommand}">
+                        <Button.CommandParameter>
+                            <x:Int32>3</x:Int32>
+                        </Button.CommandParameter>
+                    </Button>
+                    <Button Classes="seg-btn" Classes.active="{Binding IsScale4}" Content="4x"
+                            Command="{Binding SetScaleCommand}">
+                        <Button.CommandParameter>
+                            <x:Int32>4</x:Int32>
+                        </Button.CommandParameter>
+                    </Button>
+                    <Button Classes="seg-btn" Classes.active="{Binding IsScale8}" Content="8x"
+                            Command="{Binding SetScaleCommand}">
+                        <Button.CommandParameter>
+                            <x:Int32>8</x:Int32>
+                        </Button.CommandParameter>
+                    </Button>
+                </StackPanel>
+
+                <!-- Speed Selector -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding [AnimPreview_Speed], Source={x:Static loc:LocalizationService.Instance}}"
+                               FontSize="11"
+                               Foreground="{DynamicResource TextMutedBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,6,0" />
+
+                    <Button Classes="seg-btn" Classes.active="{Binding IsSpeed025}" Content="0.25x"
+                            Command="{Binding SetSpeedCommand}">
+                        <Button.CommandParameter>
+                            <x:Double>0.25</x:Double>
+                        </Button.CommandParameter>
+                    </Button>
+                    <Button Classes="seg-btn" Classes.active="{Binding IsSpeed05}" Content="0.5x"
+                            Command="{Binding SetSpeedCommand}">
+                        <Button.CommandParameter>
+                            <x:Double>0.5</x:Double>
+                        </Button.CommandParameter>
+                    </Button>
+                    <Button Classes="seg-btn" Classes.active="{Binding IsSpeed1}" Content="1x"
+                            Command="{Binding SetSpeedCommand}">
+                        <Button.CommandParameter>
+                            <x:Double>1.0</x:Double>
+                        </Button.CommandParameter>
+                    </Button>
+                    <Button Classes="seg-btn" Classes.active="{Binding IsSpeed2}" Content="2x"
+                            Command="{Binding SetSpeedCommand}">
+                        <Button.CommandParameter>
+                            <x:Double>2.0</x:Double>
+                        </Button.CommandParameter>
+                    </Button>
+                    <Button Classes="seg-btn" Classes.active="{Binding IsSpeed4}" Content="4x"
+                            Command="{Binding SetSpeedCommand}">
+                        <Button.CommandParameter>
+                            <x:Double>4.0</x:Double>
+                        </Button.CommandParameter>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

@@ -78,7 +78,7 @@ public class EllipseTool : ITool
 
         if (_deltas.Count > 0)
         {
-            var command = new DrawPixelsCommand(ctx.ActiveLayer, _deltas.ToArray(), IsFilled ? "Draw Filled Ellipse" : "Draw Ellipse Outline");
+            var command = new DrawPixelsCommand(ctx.ActiveLayer, _deltas.ToArray(), ctx.Canvas, ctx.Canvas?.CurrentFrameIndex, IsFilled ? "Draw Filled Ellipse" : "Draw Ellipse Outline");
             ctx.History.ExecuteCommand(command);
         }
 
