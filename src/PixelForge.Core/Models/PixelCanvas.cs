@@ -733,6 +733,7 @@ public partial class PixelCanvas : ObservableObject
     private void InitializeAnimationTimeline()
     {
         OnionSkin.PropertyChanged += (_, _) => InvalidateComposite();
+        Frames.CollectionChanged += (_, _) => UpdateFrameNumbers();
 
         if (Frames.Count == 0)
         {
@@ -743,6 +744,19 @@ public partial class PixelCanvas : ObservableObject
             }
             Frames.Add(initialFrame);
             _currentFrameIndex = 0;
+        }
+
+        UpdateFrameNumbers();
+    }
+
+    /// <summary>
+    /// Synchronizes the 1-based display numbers of all frames in the timeline.
+    /// </summary>
+    public void UpdateFrameNumbers()
+    {
+        for (int i = 0; i < Frames.Count; i++)
+        {
+            Frames[i].FrameNumber = i + 1;
         }
     }
 

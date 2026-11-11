@@ -142,4 +142,48 @@ public class TimelineViewModelTests
         timelineVm.Frames.Count.Should().Be(2);
         timelineVm.Canvas.Width.Should().Be(32);
     }
+
+    [Fact]
+    public void TimelineViewModel_FrameNumbers_TrackSequential1BasedIndices()
+    {
+        var canvas = new PixelCanvas(16, 16);
+        var canvasVm = new CanvasViewModel(canvas);
+        var playback = new PlaybackService();
+        var undoRedo = new UndoRedoService();
+        var timelineVm = new TimelineViewModel(canvasVm, playback, undoRedo);
+
+        // Initial frame has FrameNumber == 1
+        timelineVm.Frames[0].FrameNumber.Should().Be(1);
+
+        // Add 2 frames -> 1, 2, 3
+        timelineVm.AddFrameCommand.Execute(null);
+        timelineVm.AddFrameCommand.Execute(null);
+        timelineVm.Frames.Count.Should().Be(3);
+        timelineVm.Frames[0].FrameNumber.Should().Be(1);
+        timelineVm.Frames[1].FrameNumber.Should().Be(2);
+        timelineVm.Frames[2].FrameNumber.Should().Be(3);
+
+        // Delete frame at index 1 -> remaining should be 1, 2
+        timelineVm.SelectFrame(1);
+        timelineVm.DeleteFrameCommand.Execute(null);
+        timelineVm.Frames.Count.Should().Be(2);
+        timelineVm.Frames[0].FrameNumber.Should().Be(1);
+        timelineVm.Frames[1].FrameNumber.Should().Be(2);
+    }
+
+    [Fact]
+    public void TimelineViewModel_ToggleCollapseCommand_TogglesCollapsedState()
+    {
+        var canvas = new PixelCanvas(16, 16);
+        var canvasVm = new CanvasViewModel(canvas);
+        var playback = new PlaybackService();
+        var undoRedo = new UndoRedoService();
+        var timelineVm = new TimelineViewModel(canvasVm, playback, undoRedo);
+
+        timelineVm.IsCollapsed.Should().BeFalse();
+        timelineVm.ToggleCollapseCommand.Execute(null);
+        timelineVm.IsCollapsed.Should().BeTrue();
+        timelineVm.ToggleCollapseCommand.Execute(null);
+        timelineVm.IsCollapsed.Should().BeFalse();
+    }
 }

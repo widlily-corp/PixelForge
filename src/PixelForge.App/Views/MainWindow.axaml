@@ -588,6 +588,7 @@
                         <MenuItem Header="{Binding Loc[Menu_ColorRamp]}" Command="{Binding OpenColorRampDialogCommand}" />
                         <Separator />
                         <MenuItem Header="{Binding Loc[Menu_TiledMode]}" HotKey="F10" Command="{Binding ToggleTiledModeCommand}" />
+
                     </MenuItem>
                 </MenuItem>
 
@@ -602,6 +603,8 @@
                     <MenuItem Header="{Binding Loc[Menu_SymmetryX]}" Command="{Binding CanvasViewModel.ToggleSymmetryXCommand}" />
                     <MenuItem Header="{Binding Loc[Menu_SymmetryY]}" Command="{Binding CanvasViewModel.ToggleSymmetryYCommand}" />
                     <MenuItem Header="{Binding Loc[Menu_TiledMode]}" HotKey="F10" Command="{Binding ToggleTiledModeCommand}" />
+                    <MenuItem Header="{Binding Loc[Menu_ToggleTimeline]}" HotKey="Tab" Command="{Binding TimelineViewModel.ToggleCollapseCommand}" />
+
                     <Separator />
                     <MenuItem Header="{Binding Loc[Menu_ZoomIn]}" HotKey="Ctrl+Add" Command="{Binding CanvasViewModel.ZoomInCommand}" />
                     <MenuItem Header="{Binding Loc[Menu_ZoomOut]}" HotKey="Ctrl+Subtract" Command="{Binding CanvasViewModel.ZoomOutCommand}" />
@@ -964,7 +967,7 @@
 
             <!-- Center: Interactive SkiaSharp Canvas Control with Tool Context Bar & Floating HUD -->
             <Border Grid.Column="1" Background="{DynamicResource SurfaceBaseBrush}" ClipToBounds="True">
-                <Grid RowDefinitions="Auto,*">
+                <Grid RowDefinitions="Auto,*,Auto,Auto">
                     <!-- Tool Context Bar (Chip / Capsule UI) -->
                     <Border Grid.Row="0" Background="{DynamicResource SurfacePanelBrush}"
                             BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,0,0,1"
@@ -1208,9 +1211,9 @@
                                   IsVisible="{Binding !TimelineViewModel.IsCollapsed}" />
 
                     <!-- Bottom Timeline Dock -->
-                    <views:TimelineControl Grid.Row="3" DataContext="{Binding TimelineViewModel}"
-                                           Height="{Binding TimelineViewModel.TimelineHeight, Mode=TwoWay}"
-                                           MinHeight="80" MaxHeight="350" />
+                    <views:TimelineControl Grid.Row="3" DataContext="{Binding TimelineViewModel}" MinHeight="36" MaxHeight="350" />
+                                           
+
                 </Grid>
             </Border>
 

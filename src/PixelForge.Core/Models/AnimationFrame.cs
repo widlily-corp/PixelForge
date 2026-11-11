@@ -9,11 +9,21 @@ namespace PixelForge.Core.Models;
 public class AnimationFrame : ObservableObject
 {
     private int _durationMs = 100;
+    private int _frameNumber = 1;
 
     /// <summary>
     /// Gets the unique identifier of this frame.
     /// </summary>
     public Guid Id { get; init; }
+
+    /// <summary>
+    /// Gets or sets the 1-based display number of this frame (e.g. 1, 2, 3...).
+    /// </summary>
+    public int FrameNumber
+    {
+        get => _frameNumber;
+        set => SetProperty(ref _frameNumber, value);
+    }
 
     /// <summary>
     /// Gets or sets the frame duration in milliseconds (default 100 ms = 10 FPS).

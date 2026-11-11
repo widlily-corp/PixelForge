@@ -76,14 +76,14 @@
             <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto">
                 <!-- Playback Group -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-                    <Button Classes="transport-btn" Command="{Binding FirstFrameCommand}" ToolTip.Tip="First Frame (Home)">
-                        <TextBlock Text="⏮" FontSize="11" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    <Button Classes="transport-btn" Command="{Binding FirstFrameCommand}" ToolTip.Tip="{Binding Loc[Timeline_First], FallbackValue='First Frame (Home)'}">
+                        <PathIcon Data="{DynamicResource IconFirstFrame}" Width="12" Height="12" Foreground="{DynamicResource TextPrimaryBrush}" />
                     </Button>
-                    <Button Classes="transport-btn" Command="{Binding StepBackwardCommand}" ToolTip.Tip="Step Backward (,)">
+                    <Button Classes="transport-btn" Command="{Binding StepBackwardCommand}" ToolTip.Tip="{Binding Loc[Timeline_StepBack], FallbackValue='Step Backward (,)'}">
                         <PathIcon Data="{DynamicResource IconStepBackward}" Width="12" Height="12" Foreground="{DynamicResource TextPrimaryBrush}" />
                     </Button>
                     <ToggleButton Classes="transport-toggle-btn" IsChecked="{Binding IsPlaying, Mode=OneWay}" 
-                                  Command="{Binding TogglePlayCommand}" ToolTip.Tip="Play / Pause (Space)">
+                                  Command="{Binding TogglePlayCommand}" ToolTip.Tip="{Binding Loc[Timeline_Play], FallbackValue='Play / Pause (Space)'}">
                         <StackPanel Orientation="Horizontal" Spacing="4">
                             <PathIcon Data="{DynamicResource IconPlay}" Width="11" Height="11" 
                                       IsVisible="{Binding !IsPlaying}" Foreground="{DynamicResource TextPrimaryBrush}" />
@@ -91,13 +91,13 @@
                                       IsVisible="{Binding IsPlaying}" Foreground="{DynamicResource AccentPrimaryBrush}" />
                         </StackPanel>
                     </ToggleButton>
-                    <Button Classes="transport-btn" Command="{Binding StepForwardCommand}" ToolTip.Tip="Step Forward (.)">
+                    <Button Classes="transport-btn" Command="{Binding StepForwardCommand}" ToolTip.Tip="{Binding Loc[Timeline_StepForward], FallbackValue='Step Forward (.)'}">
                         <PathIcon Data="{DynamicResource IconStepForward}" Width="12" Height="12" Foreground="{DynamicResource TextPrimaryBrush}" />
                     </Button>
-                    <Button Classes="transport-btn" Command="{Binding LastFrameCommand}" ToolTip.Tip="Last Frame (End)">
-                        <TextBlock Text="⏭" FontSize="11" Foreground="{DynamicResource TextPrimaryBrush}" />
+                    <Button Classes="transport-btn" Command="{Binding LastFrameCommand}" ToolTip.Tip="{Binding Loc[Timeline_Last], FallbackValue='Last Frame (End)'}">
+                        <PathIcon Data="{DynamicResource IconLastFrame}" Width="12" Height="12" Foreground="{DynamicResource TextPrimaryBrush}" />
                     </Button>
-                    <ToggleButton Classes="transport-toggle-btn" IsChecked="{Binding IsLooping}" ToolTip.Tip="Loop Animation">
+                    <ToggleButton Classes="transport-toggle-btn" IsChecked="{Binding IsLooping}" ToolTip.Tip="{Binding Loc[Timeline_Loop], FallbackValue='Loop Animation'}">
                         <PathIcon Data="{DynamicResource IconLoop}" Width="12" Height="12" />
                     </ToggleButton>
                 </StackPanel>
@@ -110,9 +110,9 @@
                         <TextBlock Text="{Binding FrameDisplayNumber}" FontSize="11" FontWeight="SemiBold" 
                                    Foreground="{DynamicResource AccentPrimaryBrush}" VerticalAlignment="Center" />
                     </Border>
-                    <TextBlock Text="Duration:" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding Loc[Timeline_Duration], FallbackValue='Duration:'}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
                     <NumericUpDown Value="{Binding CurrentFrameDurationMs}" Minimum="10" Maximum="5000" Increment="10" 
-                                   FormatString="{}{0} ms" Width="100" Height="26" FontSize="11" VerticalAlignment="Center" />
+                                   FormatString="{}{0} ms" Width="115" Height="26" FontSize="11" VerticalAlignment="Center" />
                 </StackPanel>
 
                 <Rectangle Grid.Column="3" Width="1" Height="18" Fill="{DynamicResource BorderSubtleBrush}" Margin="8,0" VerticalAlignment="Center" />
@@ -134,7 +134,7 @@
 
                     <ToggleButton Classes="transport-toggle-btn" IsChecked="{Binding IsOnionSkinEnabled}" ToolTip.Tip="Onion Skinning (O)">
                         <StackPanel Orientation="Horizontal" Spacing="4">
-                            <PathIcon Data="{DynamicResource IconEye}" Width="12" Height="12" />
+                            <PathIcon Data="{DynamicResource IconOnionSkin}" Width="12" Height="12" />
                             <TextBlock Text="Onion" FontSize="11" />
                         </StackPanel>
                     </ToggleButton>
@@ -148,8 +148,13 @@
                             <TextBlock Text="Preview" FontSize="11" Foreground="{DynamicResource TextPrimaryBrush}" />
                         </StackPanel>
                     </Button>
-                    <Button Classes="transport-btn" Command="{Binding ToggleCollapseCommand}" ToolTip.Tip="Collapse/Expand Timeline (Tab)">
-                        <TextBlock Text="{Binding IsCollapsed, Converter={x:Static StringConverters.IsNullOrEmpty}}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
+                    <Button Classes="transport-btn" Command="{Binding ToggleCollapseCommand}" ToolTip.Tip="{Binding Loc[Timeline_Collapse], FallbackValue='Collapse/Expand Timeline (Tab)'}" Width="28">
+                        <Panel>
+                            <PathIcon Data="{DynamicResource IconChevronDown}" Width="12" Height="12"
+                                      IsVisible="{Binding !IsCollapsed}" Foreground="{DynamicResource TextSecondaryBrush}" />
+                            <PathIcon Data="{DynamicResource IconChevronUp}" Width="12" Height="12"
+                                      IsVisible="{Binding IsCollapsed}" Foreground="{DynamicResource AccentPrimaryBrush}" />
+                        </Panel>
                     </Button>
                 </StackPanel>
             </Grid>
@@ -188,7 +193,7 @@
                                 <!-- Bottom Frame Index -->
                                 <TextBlock Grid.Row="2" FontSize="10" FontWeight="SemiBold"
                                            Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center"
-                                           Text="{Binding Id, StringFormat='{}Frame'}" />
+                                           Text="{Binding FrameNumber, StringFormat='{}Frame {0}'}" />
                             </Grid>
                         </Border>
                     </DataTemplate>
