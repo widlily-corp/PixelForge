@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.2.0-blue.svg" alt="Version 0.2.0" />
+  <img src="https://img.shields.io/badge/version-0.2.1-blue.svg" alt="Version 0.2.0" />
   <img src="https://img.shields.io/badge/.NET-8.0-purple.svg" alt=".NET 8.0" />
   <img src="https://img.shields.io/badge/Avalonia-11.1.3-informational.svg" alt="Avalonia 11" />
   <img src="https://img.shields.io/badge/Rendering-SkiaSharp-orange.svg" alt="SkiaSharp" />

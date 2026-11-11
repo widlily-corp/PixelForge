@@ -1,7 +1,7 @@
 {
-    "version":  "0.2.0",
-    "releaseNotes":  "PixelForge v0.2.0: Full Frame Animation \u0026 Timeline Engine, Cel-Layer Matrix, Zero-Alloc Skia Onion Skinning, Dual Playback Preview, Animated GIF \u0026 Aseprite-compatible Spritesheet Export, .pxproj v2 Format",
-    "downloadUrl":  "https://github.com/widlily-corp/PixelForge/releases/download/v0.2.0/PixelForge_0.2.0_x64-setup.exe",
+    "version":  "0.2.1",
+    "releaseNotes":  "PixelForge v0.2.1: Fix timeline dock row layout and canvas clipping, restore collapsible timeline height, add sequential frame numbering, and polish transport controls with vector icons.",
+    "downloadUrl":  "https://github.com/widlily-corp/PixelForge/releases/download/v0.2.1/PixelForge_0.2.1_x64-setup.exe",
     "installerSizeMb":  35.65,
-    "pub_date":  "2026-11-04T20:07:03Z"
+    "pub_date":  "2026-11-11T17:28:41Z"
 }
