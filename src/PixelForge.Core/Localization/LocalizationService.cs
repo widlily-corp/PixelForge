@@ -313,6 +313,9 @@ public class LocalizationService : INotifyPropertyChanged
         ["Tool_Selection"] = "Выделение",
         ["Tool_SelectionTip"] = "Прямоугольное выделение [M] — рамка выделения для перемещения, копирования и трансформации пикселей",
         ["Tip_ToolSelection"] = "Прямоугольное выделение [M] — рамка выделения для перемещения, копирования и трансформации пикселей",
+        ["Tool_Transform"] = "Свободная трансформация",
+        ["Tool_TransformTip"] = "Свободная трансформация [Ctrl+T] — масштабирование, поворот и перемещение с алгоритмом RotSprite",
+        ["Tip_ToolTransform"] = "Свободная трансформация [Ctrl+T] — масштабирование, поворот и перемещение с алгоритмом RotSprite",
 
         // Brush Size Widget
         ["Brush_Header"] = "КИСТЬ",
@@ -947,6 +950,9 @@ public class LocalizationService : INotifyPropertyChanged
         ["Tool_Selection"] = "Selection",
         ["Tool_SelectionTip"] = "Marquee Selection [M] — rectangular selection to move, copy, crop, and transform pixels",
         ["Tip_ToolSelection"] = "Marquee Selection [M] — rectangular selection to move, copy, crop, and transform pixels",
+        ["Tool_Transform"] = "Free Transform",
+        ["Tool_TransformTip"] = "Free Transform [Ctrl+T] — scale, rotate, and move with RotSprite resampling",
+        ["Tip_ToolTransform"] = "Free Transform [Ctrl+T] — scale, rotate, and move with RotSprite resampling",
 
         // Brush Size Widget
         ["Brush_Header"] = "BRUSH",

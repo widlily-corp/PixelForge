@@ -17,7 +17,7 @@ namespace PixelForge.App.Views;
 
 public partial class MainWindow : Window
 {
-    private MainViewModel? ViewModel => DataContext as MainViewModel;
+    private MainViewModel ViewModel => (DataContext as MainViewModel)!;
 
     public MainWindow()
     {
@@ -66,6 +66,7 @@ public partial class MainWindow : Window
         ToolRectangleButton.Click += (_, _) => SelectTool(CanvasToolType.Rectangle);
         ToolEllipseButton.Click += (_, _) => SelectTool(CanvasToolType.Ellipse);
         ToolSelectionButton.Click += (_, _) => SelectTool(CanvasToolType.Selection);
+        ToolTransformButton.Click += (_, _) => SelectTool(CanvasToolType.Transform);
     }
 
     private MainViewModel? _subscribedMainVm;
@@ -176,6 +177,7 @@ public partial class MainWindow : Window
         SetToolButtonVisuals(ToolRectangleButton, activeTool == CanvasToolType.Rectangle, accentBrush, activeBackground, mutedTextBrush);
         SetToolButtonVisuals(ToolEllipseButton, activeTool == CanvasToolType.Ellipse, accentBrush, activeBackground, mutedTextBrush);
         SetToolButtonVisuals(ToolSelectionButton, activeTool == CanvasToolType.Selection, accentBrush, activeBackground, mutedTextBrush);
+        SetToolButtonVisuals(ToolTransformButton, activeTool == CanvasToolType.Transform, accentBrush, activeBackground, mutedTextBrush);
 
         if (ActiveToolIcon != null)
         {
@@ -530,13 +532,37 @@ public partial class MainWindow : Window
         bool shift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
         bool alt = e.KeyModifiers.HasFlag(KeyModifiers.Alt);
 
-        // Escape: Deselect active selection or cancel active drag
+        // Escape: Cancel active transform session, or deselect active selection
         if (!ctrl && !alt && !shift && (e.Key == Key.Escape || e.PhysicalKey == PhysicalKey.Escape))
         {
+            if (ViewModel.ToolViewModel.ActiveTool == CanvasToolType.Transform &&
+                ViewModel.ToolViewModel.TransformTool.ActiveSession != null &&
+                ViewModel.ToolViewModel.ToolContext != null)
+            {
+                e.Handled = true;
+                ViewModel.ToolViewModel.TransformTool.Cancel(ViewModel.ToolViewModel.ToolContext);
+                MainCanvasControl?.InvalidateVisual();
+                return;
+            }
+
             if (ViewModel.CanvasViewModel.HasActiveSelection)
             {
                 e.Handled = true;
                 ViewModel.Deselect();
+                return;
+            }
+        }
+
+        // Enter: Commit active transform session
+        if (!ctrl && !alt && !shift && (e.Key == Key.Enter || e.PhysicalKey == PhysicalKey.Enter))
+        {
+            if (ViewModel.ToolViewModel.ActiveTool == CanvasToolType.Transform &&
+                ViewModel.ToolViewModel.TransformTool.ActiveSession != null &&
+                ViewModel.ToolViewModel.ToolContext != null)
+            {
+                e.Handled = true;
+                ViewModel.ToolViewModel.TransformTool.Commit(ViewModel.ToolViewModel.ToolContext);
+                MainCanvasControl?.InvalidateVisual();
                 return;
             }
         }
@@ -699,6 +725,16 @@ public partial class MainWindow : Window
             {
                 e.Handled = true;
                 ViewModel.Deselect();
+            }
+            else if (MatchesKey(e, Key.T, PhysicalKey.T, 'е'))
+            {
+                e.Handled = true;
+                ViewModel.ToolViewModel.SelectTool(CanvasToolType.Transform);
+                if (ViewModel.ToolViewModel.ToolContext != null)
+                {
+                    ViewModel.ToolViewModel.TransformTool.InitializeSession(ViewModel.ToolViewModel.ToolContext);
+                    MainCanvasControl?.InvalidateVisual();
+                }
             }
             else if (MatchesKey(e, Key.OemComma, PhysicalKey.Comma, 'б') || e.Key == Key.OemComma || e.KeySymbol == ",")
             {
@@ -950,6 +986,7 @@ public class ToolToIconGeometryConverter : Avalonia.Data.Converters.IValueConver
         CanvasToolType.Rectangle => "IconRectangle",
         CanvasToolType.Ellipse => "IconEllipse",
         CanvasToolType.Selection => "IconSelection",
+        CanvasToolType.Transform => "IconTransform",
         _ => "IconPencil"
     };
 

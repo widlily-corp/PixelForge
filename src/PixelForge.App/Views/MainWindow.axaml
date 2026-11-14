@@ -915,6 +915,10 @@
                                     ToolTip.Tip="{Binding Loc[Tool_SelectionTip]}">
                                 <PathIcon Data="{DynamicResource IconSelection}" Width="18" Height="18" />
                             </Button>
+                            <Button Name="ToolTransformButton" Classes="tool-btn"
+                                    ToolTip.Tip="{Binding Loc[Tool_TransformTip]}">
+                                <PathIcon Data="{DynamicResource IconTransform}" Width="18" Height="18" />
+                            </Button>
                         </StackPanel>
                     </ScrollViewer>
 

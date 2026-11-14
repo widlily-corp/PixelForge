@@ -13,6 +13,7 @@ using PixelForge.Core.History;
 using PixelForge.Core.Models;
 using PixelForge.Core.Patterns;
 using PixelForge.Core.Tools;
+using PixelForge.Core.Transforms;
 using SkiaSharp;
 
 namespace PixelForge.App.Controls;
@@ -247,6 +248,44 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         IsAntialias = true,
         FilterQuality = SKFilterQuality.Low
     };
+
+    // Zero-Alloc Free Transform Skia resources
+    private readonly SKPaint _transformOutlinePaint = new()
+    {
+        Color = new SKColor(0, 200, 255, 230),
+        StrokeWidth = 1.5f,
+        IsAntialias = false,
+        PathEffect = SKPathEffect.CreateDash([4f, 4f], 0f),
+        Style = SKPaintStyle.Stroke
+    };
+    private readonly SKPaint _transformHandleFillPaint = new()
+    {
+        Color = new SKColor(255, 255, 255, 255),
+        IsAntialias = true,
+        Style = SKPaintStyle.Fill
+    };
+    private readonly SKPaint _transformHandleStrokePaint = new()
+    {
+        Color = new SKColor(0, 0, 0, 220),
+        StrokeWidth = 1.5f,
+        IsAntialias = true,
+        Style = SKPaintStyle.Stroke
+    };
+    private readonly SKPaint _transformStemPaint = new()
+    {
+        Color = new SKColor(0, 200, 255, 200),
+        StrokeWidth = 1f,
+        IsAntialias = false,
+        Style = SKPaintStyle.Stroke
+    };
+    private readonly SKPaint _transformPivotPaint = new()
+    {
+        Color = new SKColor(255, 100, 0, 230),
+        StrokeWidth = 1.5f,
+        IsAntialias = true,
+        Style = SKPaintStyle.Stroke
+    };
+    private SKBitmap? _transformPreviewBitmap;
 
     // Zero-Alloc Onion Skinning Skia resources
     private readonly SKPaint _prevOnionPaint = new()
@@ -485,6 +524,12 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
         _selectionPaint.Dispose();
         _cursorHoverPaint.Dispose();
         _referenceOverlayPaint.Dispose();
+        _transformOutlinePaint.Dispose();
+        _transformHandleFillPaint.Dispose();
+        _transformHandleStrokePaint.Dispose();
+        _transformStemPaint.Dispose();
+        _transformPivotPaint.Dispose();
+        _transformPreviewBitmap?.Dispose();
         DisposeOnionSkinResources();
     }
 
@@ -572,6 +617,12 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
 
             // 3. Tool live preview overlay (e.g. current shape, line, selection)
             RenderToolPreview(canvas, destRect, zoom);
+
+            // 3.5. Free Transform Overlay
+            if (ToolViewModel?.ActiveTool == CanvasToolType.Transform && ToolViewModel.TransformTool.ActiveSession != null)
+            {
+                RenderTransformOverlay(canvas, destRect, zoom, ToolViewModel.TransformTool.ActiveSession);
+            }
 
             // 4. Adaptive pixel grid when zoom >= 4x
             if (vm.ShowGrid && zoom >= vm.PixelGridMinZoom)
@@ -788,6 +839,115 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
             _onionBitmaps[i]?.Dispose();
             _onionBitmaps[i] = null;
         }
+    }
+
+    private void RenderTransformOverlay(SKCanvas canvas, SKRect destRect, float zoom, TransformSession session)
+    {
+        int origW = session.OriginalBounds.Width;
+        int origH = session.OriginalBounds.Height;
+        if (origW <= 0 || origH <= 0 || session.OriginalPixels.Length < origW * origH) return;
+
+        // 1. Draw transformed preview bitmap
+        if (_transformPreviewBitmap == null || _transformPreviewBitmap.Width != origW || _transformPreviewBitmap.Height != origH)
+        {
+            _transformPreviewBitmap?.Dispose();
+            _transformPreviewBitmap = new SKBitmap(origW, origH, SKColorType.Rgba8888, SKAlphaType.Unpremul);
+        }
+
+        unsafe
+        {
+            fixed (PixelColor* ptr = session.OriginalPixels)
+            {
+                _transformPreviewBitmap.SetPixels((IntPtr)ptr);
+            }
+        }
+
+        canvas.Save();
+        canvas.Translate(destRect.Left, destRect.Top);
+        canvas.Scale(zoom);
+
+        var matrix = session.ComputeMatrix();
+        canvas.Concat(ref matrix);
+
+        var srcRect = new SKRect(session.OriginalBounds.Left, session.OriginalBounds.Top, session.OriginalBounds.Right, session.OriginalBounds.Bottom);
+        canvas.DrawBitmap(_transformPreviewBitmap, srcRect, _bitmapPaint);
+        canvas.Restore();
+
+        // 2. Draw transformed bounding box outline & handles in screen coordinates
+        float left = session.OriginalBounds.Left;
+        float top = session.OriginalBounds.Top;
+        float right = session.OriginalBounds.Right;
+        float bottom = session.OriginalBounds.Bottom;
+        float midX = left + origW / 2.0f;
+        float midY = top + origH / 2.0f;
+
+        SKPoint ToScreen(SKPoint pt)
+        {
+            var mapped = matrix.MapPoint(pt);
+            return new SKPoint(destRect.Left + mapped.X * zoom, destRect.Top + mapped.Y * zoom);
+        }
+
+        var scrTL = ToScreen(new SKPoint(left, top));
+        var scrTR = ToScreen(new SKPoint(right, top));
+        var scrBR = ToScreen(new SKPoint(right, bottom));
+        var scrBL = ToScreen(new SKPoint(left, bottom));
+
+        var scrTM = ToScreen(new SKPoint(midX, top));
+        var scrRM = ToScreen(new SKPoint(right, midY));
+        var scrBM = ToScreen(new SKPoint(midX, bottom));
+        var scrLM = ToScreen(new SKPoint(left, midY));
+
+        var scrRot = ToScreen(new SKPoint(midX, top - 20.0f));
+        var scrPivot = ToScreen(session.Pivot);
+
+        using var path = new SKPath();
+        path.MoveTo(scrTL);
+        path.LineTo(scrTR);
+        path.LineTo(scrBR);
+        path.LineTo(scrBL);
+        path.Close();
+        canvas.DrawPath(path, _transformOutlinePaint);
+
+        // Rotation stem line & circle handle
+        canvas.DrawLine(scrTM, scrRot, _transformStemPaint);
+        canvas.DrawCircle(scrRot, 6.0f, _transformHandleFillPaint);
+        canvas.DrawCircle(scrRot, 6.0f, _transformHandleStrokePaint);
+
+        // 8 handles (square 8x8)
+        DrawTransformHandle(canvas, scrTL);
+        DrawTransformHandle(canvas, scrTR);
+        DrawTransformHandle(canvas, scrBR);
+        DrawTransformHandle(canvas, scrBL);
+        DrawTransformHandle(canvas, scrTM);
+        DrawTransformHandle(canvas, scrRM);
+        DrawTransformHandle(canvas, scrBM);
+        DrawTransformHandle(canvas, scrLM);
+
+        // Pivot crosshair
+        canvas.DrawLine(scrPivot.X - 5, scrPivot.Y, scrPivot.X + 5, scrPivot.Y, _transformPivotPaint);
+        canvas.DrawLine(scrPivot.X, scrPivot.Y - 5, scrPivot.X, scrPivot.Y + 5, _transformPivotPaint);
+    }
+
+    private void DrawTransformHandle(SKCanvas canvas, SKPoint center, float size = 8.0f)
+    {
+        float half = size / 2.0f;
+        var rect = new SKRect(center.X - half, center.Y - half, center.X + half, center.Y + half);
+        canvas.DrawRect(rect, _transformHandleFillPaint);
+        canvas.DrawRect(rect, _transformHandleStrokePaint);
+    }
+
+    private void UpdateTransformCursor(TransformHandle handle)
+    {
+        Cursor = handle switch
+        {
+            TransformHandle.Rotate => new Cursor(StandardCursorType.Cross),
+            TransformHandle.TopLeft or TransformHandle.BottomRight => new Cursor(StandardCursorType.TopLeftCorner),
+            TransformHandle.TopRight or TransformHandle.BottomLeft => new Cursor(StandardCursorType.TopRightCorner),
+            TransformHandle.Top or TransformHandle.Bottom => new Cursor(StandardCursorType.SizeNorthSouth),
+            TransformHandle.Left or TransformHandle.Right => new Cursor(StandardCursorType.SizeWestEast),
+            TransformHandle.Move => new Cursor(StandardCursorType.SizeAll),
+            _ => Cursor.Default
+        };
     }
 
     private void RenderReferenceOverlay(SKCanvas canvas, SKRect destRect, ReferenceImageOverlay? overlay)
@@ -1097,6 +1257,22 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
             return;
         }
 
+        if (ToolViewModel?.ActiveTool == CanvasToolType.Transform && CanvasViewModel != null && ToolViewModel.ToolContext != null)
+        {
+            if (point.Properties.IsLeftButtonPressed)
+            {
+                float canvasX = (float)((point.Position.X - _panX) / CanvasViewModel.Zoom);
+                float canvasY = (float)((point.Position.Y - _panY) / CanvasViewModel.Zoom);
+
+                e.Pointer.Capture(this);
+                _isDrawing = true;
+                ToolViewModel.TransformTool.OnPointerDown(ToolViewModel.ToolContext, (int)MathF.Round(canvasX), (int)MathF.Round(canvasY));
+                InvalidateVisual();
+                e.Handled = true;
+                return;
+            }
+        }
+
         if (point.Properties.IsLeftButtonPressed || point.Properties.IsRightButtonPressed)
         {
             var (px, py, isInside) = ScreenToCanvasPixel(point.Position);
@@ -1157,6 +1333,21 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
             return;
         }
 
+        if (ToolViewModel?.ActiveTool == CanvasToolType.Transform && CanvasViewModel != null && ToolViewModel.ToolContext != null)
+        {
+            float canvasX = (float)((pos.X - _panX) / CanvasViewModel.Zoom);
+            float canvasY = (float)((pos.Y - _panY) / CanvasViewModel.Zoom);
+
+            ToolViewModel.TransformTool.OnPointerMove(ToolViewModel.ToolContext, (int)MathF.Round(canvasX), (int)MathF.Round(canvasY));
+            UpdateTransformCursor(ToolViewModel.TransformTool.HoveredHandle);
+            InvalidateVisual();
+            if (_isDrawing)
+            {
+                e.Handled = true;
+                return;
+            }
+        }
+
         var (px, py, isInside) = ScreenToCanvasPixel(pos);
         _currentHoverPixelX = px;
         _currentHoverPixelY = py;
@@ -1209,6 +1400,24 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
             return;
         }
 
+        if (ToolViewModel?.ActiveTool == CanvasToolType.Transform && CanvasViewModel != null && ToolViewModel.ToolContext != null)
+        {
+            if (_isDrawing)
+            {
+                _isDrawing = false;
+                e.Pointer.Capture(null);
+
+                var pos = e.GetPosition(this);
+                float canvasX = (float)((pos.X - _panX) / CanvasViewModel.Zoom);
+                float canvasY = (float)((pos.Y - _panY) / CanvasViewModel.Zoom);
+
+                ToolViewModel.TransformTool.OnPointerUp(ToolViewModel.ToolContext, (int)MathF.Round(canvasX), (int)MathF.Round(canvasY));
+                InvalidateVisual();
+                e.Handled = true;
+                return;
+            }
+        }
+
         if (_isDrawing)
         {
             _isDrawing = false;
@@ -1237,6 +1446,15 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
+        if (e.Key is Key.LeftShift or Key.RightShift)
+        {
+            if (ToolViewModel?.TransformTool != null) ToolViewModel.TransformTool.IsShiftDown = true;
+        }
+        else if (e.Key is Key.LeftCtrl or Key.RightCtrl)
+        {
+            if (ToolViewModel?.TransformTool != null) ToolViewModel.TransformTool.IsCtrlDown = true;
+        }
+
         if (e.Key == Key.Space || e.PhysicalKey == PhysicalKey.Space)
         {
             _isSpacePressed = true;
@@ -1250,6 +1468,15 @@ public class PixelCanvasControl : Control, ICustomDrawOperation
     protected override void OnKeyUp(KeyEventArgs e)
     {
         base.OnKeyUp(e);
+        if (e.Key is Key.LeftShift or Key.RightShift)
+        {
+            if (ToolViewModel?.TransformTool != null) ToolViewModel.TransformTool.IsShiftDown = false;
+        }
+        else if (e.Key is Key.LeftCtrl or Key.RightCtrl)
+        {
+            if (ToolViewModel?.TransformTool != null) ToolViewModel.TransformTool.IsCtrlDown = false;
+        }
+
         if (e.Key == Key.Space || e.PhysicalKey == PhysicalKey.Space)
         {
             _isSpacePressed = false;

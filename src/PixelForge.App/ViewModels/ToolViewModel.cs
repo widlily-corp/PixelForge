@@ -20,6 +20,7 @@ public enum CanvasToolType
     Rectangle,
     Ellipse,
     Selection,
+    Transform,
     DitherBrush,
     Gradient,
     PatternBrush,
@@ -128,6 +129,7 @@ public partial class ToolViewModel : ViewModelBase
     /// Gets the registered Pattern Brush tool instance.
     /// </summary>
     public PatternBrushTool PatternBrushTool { get; } = new();
+    public TransformTool TransformTool { get; } = new();
 
     /// <summary>
     /// Gets the dictionary of all registered tool instances.
@@ -153,7 +155,8 @@ public partial class ToolViewModel : ViewModelBase
         new(CanvasToolType.Line, "Line", "L", "IconLine"),
         new(CanvasToolType.Rectangle, "Rectangle", "U", "IconRectangle"),
         new(CanvasToolType.Ellipse, "Ellipse", "C", "IconEllipse"),
-        new(CanvasToolType.Selection, "Selection", "M", "IconSelection")
+        new(CanvasToolType.Selection, "Selection", "M", "IconSelection"),
+        new(CanvasToolType.Transform, "Transform", "Ctrl+T", "IconTransform")
     };
 
     public ToolItem ActiveToolItem => AvailableTools.First(t => t.Type == ActiveTool);
@@ -212,7 +215,8 @@ public partial class ToolViewModel : ViewModelBase
             [CanvasToolType.Line] = new LineTool(),
             [CanvasToolType.Rectangle] = new RectangleTool(),
             [CanvasToolType.Ellipse] = new EllipseTool(),
-            [CanvasToolType.Selection] = new SelectionTool()
+            [CanvasToolType.Selection] = new SelectionTool(),
+            [CanvasToolType.Transform] = TransformTool
         };
     }
 
@@ -331,6 +335,15 @@ public partial class ToolViewModel : ViewModelBase
 
     partial void OnActiveToolChanged(CanvasToolType value)
     {
+        if (value != CanvasToolType.Transform && TransformTool.ActiveSession != null && ActiveToolContext != null)
+        {
+            TransformTool.Commit(ActiveToolContext);
+        }
+        else if (value == CanvasToolType.Transform && TransformTool.ActiveSession == null && ActiveToolContext != null)
+        {
+            TransformTool.InitializeSession(ActiveToolContext);
+        }
+
         if (value == CanvasToolType.DitherBrush && SelectedDitherPattern == DitherPattern.None)
         {
             SelectedDitherPattern = DitherPattern.Bayer4x4;
